@@ -1,6 +1,7 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import {Button} from 'reactstrap';
 
 
 function Searchbox() {
@@ -117,6 +118,7 @@ const Slider = (): JSX.Element => {
 function App() {
   return (
     <div className="App">
+        <Button color="danger"> Reactstrap Button!</Button>
       <HelloVariante1 who="World 2221" />
       <HelloVariante2 who="World 2" />
       <HelloVariante3 who="World 3" />
