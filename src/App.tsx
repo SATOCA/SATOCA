@@ -1,15 +1,9 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import {Button} from 'reactstrap';
+import {Button, Jumbotron} from 'reactstrap';
 
 
-function Searchbox() {
-  const [criteria, setCriteria] = React.useState("");
-  return <input type="text" value={criteria} onChange={e => setCriteria(e.currentTarget.value)} />;
-}
-
-const mock_survey = [
+const MockSurveyQuestion1 = [
   {
     question: "this is the question",
     choices: [
@@ -98,35 +92,18 @@ class Counter extends React.Component<Props, State> {
   }
 }
 
-const Slider = (): JSX.Element => {
-  const [sliderValue, setSliderValue] = React.useState<number>(0);
-  return (
-    <input
-      type="range"
-      min={0}
-      max={100}
-      value={sliderValue}
-      onChange={(
-        ev: React.ChangeEvent<HTMLInputElement>,
-      ): void => {
-        setSliderValue(parseInt(ev.target.value, 10),);
-      }}
-    />
-  );
-};
-
 function App() {
   return (
     <div className="App">
-        <Button color="danger"> Reactstrap Button!</Button>
+      <Jumbotron>
+        <h2>Secure Adaptive Testing for Organized Capability Assessment</h2>
+      </Jumbotron>
+      {/* <Button color="danger"> Reactstrap Button!</Button>
       <HelloVariante1 who="World 2221" />
       <HelloVariante2 who="World 2" />
       <HelloVariante3 who="World 3" />
-      <Searchbox />
       <Counter />
-      <br />
-      <Slider />
-      <Survey question="this is the question" choices={["one", "two", "three"]} />
+      <Survey question="this is the question" choices={["one", "two", "three"]} /> */}
     </div>
   );
 }

@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('render application name', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+  const appname = screen.getByText(/Secure Adaptive Testing for Organized Capability Assessment/i);
+  expect(appname).toBeInTheDocument();
 });
