@@ -2,6 +2,7 @@ import React from "react";
 import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import { Jumbotron } from "reactstrap";
+import { SurveyComponent } from "./SurveyComponent";
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
       </Jumbotron>
       <Switch>
         <Route path="/:surveyId">
-          <h3>Survey with id</h3>
+          <SurveyComponent id={42} />
         </Route>
         <Route path="/">
           <h3>home</h3>
