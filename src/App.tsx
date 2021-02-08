@@ -3,6 +3,7 @@ import "./App.css";
 import { BrowserRouter as Router, Link, Route, Switch } from "react-router-dom";
 import { Jumbotron } from "reactstrap";
 import { SurveyComponent } from "./SurveyComponent";
+import SurveyFinished from "./SurveyFinished/SurveyFinished";
 
 function App() {
   return (
@@ -17,10 +18,16 @@ function App() {
             <li>
               <Link to="/3">Survey 3</Link>
             </li>
+            <li>
+              <Link to="/survey-end">Survey 3</Link>
+            </li>
           </ul>
         </nav>
       </Jumbotron>
       <Switch>
+        <Route path="/survey-end">
+          <SurveyFinished />
+        </Route>
         <Route path="/:surveyId">
           <SurveyComponent id={42} />
         </Route>
