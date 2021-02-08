@@ -60,4 +60,11 @@ class SurveyDataService {
   }
 }
 
+// allows simpler access to the data and easyer usage in initialization code
+export function getSurveyFromMock()
+{
+  const surveyDataService = new SurveyDataService();
+  return surveyDataService.getSurveyFromMock();
+}
+
 export { SurveyDataService };
