@@ -33,10 +33,10 @@ export class SurveyComponent extends React.Component<SurveyComponentProps, Surve
   render() {
     return (
       <div>
-        <h3 role="header">Survey with id: {this.props.id}</h3>
+        <h3 data-testid="header">Survey with id: {this.props.id}</h3>
         {/* //! \todo replace with component (arg: item[0]) */}
-        <span role="question" onClick={this.nextQuestion}>{this.state.items[0].question.text}</span>
-        <p role="finished">finished: {this.state.finished ? "yes" : "no"}</p>
+        <span data-testid="question" onClick={this.nextQuestion}>{this.state.items[0].question.text}</span>
+        <p data-testid="finished">finished: {this.state.finished ? "yes" : "no"}</p>
       </div>
     );
   }

@@ -2,15 +2,14 @@ import { render } from "@testing-library/react";
 import { SurveyComponent } from "./SurveyComponent";
 
 test("render a SurveyComponent", () => {
-    const handler = jest.fn();
-    const { getByLabelText, getByRole } = render(<SurveyComponent id={2} />);
+    const { getByTestId, getByRole } = render(<SurveyComponent id={2} />);
 
-    const head = getByRole("header");
+    const head = getByTestId("header");
     expect(head).toHaveTextContent("Survey with id: 2");
 
-    const finishedState = getByRole("finished");
+    const finishedState = getByTestId("finished");
     expect(finishedState).toHaveTextContent("no");
 
-    const question = getByRole("question");
+    const question = getByTestId("question");
     expect(question).toBeInTheDocument();
 });
