@@ -7,9 +7,6 @@ test("render a SurveyComponent", () => {
     const head = getByTestId("header");
     expect(head).toHaveTextContent("Survey with id: 2");
 
-    const finishedState = getByTestId("finished");
-    expect(finishedState).toHaveTextContent("no");
-
     const question = getByTestId("question");
     expect(question).toBeInTheDocument();
 });
