@@ -29,7 +29,7 @@ function App() {
         </Route>
         <Redirect to="/404" />
       </Switch>
-      <footer className="footer">insert footer here</footer>
+      <footer className="footer">going live</footer>
     </Router>
   );
 }
