@@ -1,25 +1,43 @@
 import { Answer } from "../../../DataModel/Answer";
-import React from "react";
+import React, { MouseEvent } from "react";
 import { Button, ButtonGroup } from "reactstrap";
 
-export function DisplayRadioButtons(answerOptions: Answer[]) {
-  const [rSelected, setRSelected] = React.useState<number | null>(null);
+type DisplayRadioBtnProps = {
+  answerOptions: Answer[];
+  onSelectionChange: (value: number) => void;
+  rSelected: Array<number>;
+};
 
-  return (
-    <div className="Answer-Options">
-      <h5>Radio Buttons</h5>
-      <ButtonGroup vertical>
-        {answerOptions.map((answer) => (
-          <Button
-            color="primary"
-            onClick={() => setRSelected(answer.id)}
-            active={rSelected === answer.id}
-          >
-            {answer.text}
-          </Button>
-        ))}
-      </ButtonGroup>
-      <p>Selected: {rSelected}</p>
-    </div>
-  );
+export class DisplayRadioButtons extends React.Component<
+  DisplayRadioBtnProps,
+  {}
+> {
+  constructor(props: DisplayRadioBtnProps) {
+    super(props);
+    this.handleChange = this.handleChange.bind(this);
+  }
+
+  handleChange = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+    this.props.onSelectionChange(parseInt(e.currentTarget.value));
+  };
+
+  render() {
+    return (
+      <div className="Answer-Options">
+        <ButtonGroup vertical>
+          {this.props.answerOptions.map((answer) => (
+            <Button
+              key={answer.id}
+              color="primary"
+              onClick={this.handleChange}
+              active={this.props.rSelected[0] === answer.id}
+              value={answer.id}
+            >
+              {answer.text}
+            </Button>
+          ))}
+        </ButtonGroup>
+      </div>
+    );
+  }
 }

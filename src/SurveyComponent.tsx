@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
 import { getSurveyFromMock } from "./Services/SurveyDataService";
+import { DisplayItem } from "./Display/Item/DisplayItem";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
@@ -31,9 +32,11 @@ export function SurveyComponent(props: SurveyComponentProps) {
     <div>
       <h3 data-testid="header">Survey with id: {props.id}</h3>
       {/* //! \todo replace with component (arg: item[0]) */}
-      <span data-testid="question" onClick={nextQuestion}>
-        {items[0].question.text}
+      <span data-testid="question">
+        <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
       </span>
     </div>
   );
 }
+
+
