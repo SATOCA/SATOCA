@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useHistory } from "react-router-dom";
+import { RouteComponentProps, useHistory } from "react-router-dom";
 import { getSurveyFromMock } from "./Services/SurveyDataService";
 import { DisplayItem } from "./Display/Item/DisplayItem";
 
@@ -10,9 +10,13 @@ function setupSurvey() {
   return survey.items;
 }
 
-export type SurveyComponentProps = {
-  id: number;
-};
+type SurveyComponentProps = {
+  surveyId: string;
+  uniqueSurveyId: string;
+}
+
+export interface RouterSurveyComponentProps
+  extends RouteComponentProps<SurveyComponentProps> {}
 
 export function SurveyComponent(props: SurveyComponentProps) {
   //! \todo should have no items data -> items: {}
@@ -30,7 +34,10 @@ export function SurveyComponent(props: SurveyComponentProps) {
 
   return (
     <div>
-      <h3 data-testid="header">Survey with id: {props.id}</h3>
+      <h3 data-testid="header">Survey with id: {props.surveyId}</h3>
+      <h3 data-testid="header2">
+        Unique Survey with id: {props.uniqueSurveyId}
+      </h3>
       {/* //! \todo replace with component (arg: item[0]) */}
       <span data-testid="question">
         <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
