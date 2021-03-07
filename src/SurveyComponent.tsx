@@ -24,6 +24,9 @@ export function SurveyComponent(props: SurveyComponentProps) {
   let history = useHistory();
 
   let nextQuestion = () => {
+//let nextQuestion = (response: Array<number>) => {
+//    console.log("reponse: ", response);
+//    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
     if (items.length > 1) {
       //! \todo implement logic to select next item. for now the first item will be poped.
       setItems(items.slice(1, items.length));
@@ -38,7 +41,6 @@ export function SurveyComponent(props: SurveyComponentProps) {
       <h3 data-testid="header2">
         Unique Survey with id: {props.uniqueSurveyId}
       </h3>
-      {/* //! \todo replace with component (arg: item[0]) */}
       <span data-testid="question">
         <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
       </span>
