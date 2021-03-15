@@ -1,4 +1,4 @@
-import { Answer } from "../../../DataModel/Answer";
+import { Answer } from "../../../../DataModel/Answer";
 import React, { MouseEvent } from "react";
 import { Button, ButtonGroup } from "reactstrap";
 

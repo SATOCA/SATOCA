@@ -1,9 +1,12 @@
 import React from "react";
 import "./App.css";
 import { Redirect, Route, Switch } from "react-router-dom";
-import { RouterSurveyComponentProps, SurveyComponent } from "./SurveyComponent";
-import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import { Header } from "./Header/Header";
+import {
+  RouterSurveyComponentProps,
+  SurveyComponent,
+} from "./Components/SurveyComponent/SurveyComponent";
+import SurveyFinished from "./Components/SurveyComponent/SurveyFinished/SurveyFinished";
+import { Header } from "./Components/Header/Header";
 
 function App() {
   return (

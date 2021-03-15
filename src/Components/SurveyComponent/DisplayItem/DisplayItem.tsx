@@ -1,8 +1,8 @@
 import React, { MouseEvent } from "react";
-import { Item } from "../../DataModel/Item";
+import { Item } from "../../../DataModel/Item";
 import { DisplayCheckboxButtons } from "./Answer/DisplayCheckboxButtons";
 import { DisplayRadioButtons } from "./Answer/DisplayRadioButtons";
-import { saveSubmittedAnswer } from "../../Services/SubmitAnswerService";
+import { saveSubmittedAnswer } from "../../../Services/SubmitAnswerService";
 
 export type displayItemProps = {
   item: Item;

@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
-import { getSurveyFromMock } from "./Services/SurveyDataService";
-import { DisplayItem } from "./Display/Item/DisplayItem";
+import { getSurveyFromMock } from "../../Services/SurveyDataService";
+import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import { validateSurveyId } from "./Services/surveyAPI";
+import { validateSurveyId } from "../../Services/SurveyAPI";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
