@@ -12,10 +12,10 @@ test("render a SurveyComponent", () => {
   );
 
   const head = getByTestId("header");
-  expect(head).toHaveTextContent("Survey with id: 3");
+  expect(head).toHaveTextContent("Survey with id: init-survey");
 
   const head2 = getByTestId("header2");
-  expect(head2).toHaveTextContent("Unique Survey with id: 4");
+  expect(head2).toHaveTextContent("Unique Survey with id: 42-3-4");
 
   const question = getByTestId("question");
   expect(question).toBeInTheDocument();
