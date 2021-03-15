@@ -1,4 +1,5 @@
 import React from "react";
+import { Container } from "reactstrap";
 import "./App.css";
 import { Redirect, Route, Switch } from "react-router-dom";
 import {
@@ -7,7 +8,6 @@ import {
 } from "./Components/SurveyComponent/SurveyComponent";
 import SurveyFinished from "./Components/SurveyComponent/SurveyFinished/SurveyFinished";
 import { Header } from "./Components/Header/Header";
-import Container from "reactstrap/es/Container";
 
 function App() {
   return (

@@ -1,9 +1,24 @@
-.NavbarText {
-    color: white;
-}
-
 .App-header {
     background-color: black;
     min-height: 10vh;
+}
+
+/* unvisited link */
+a:link {
     color: white;
+}
+
+/* visited link */
+a:visited {
+    color: white;
+}
+
+/* mouse over link */
+a:hover {
+    color: lightgrey;
+}
+
+/* selected link */
+a:active {
+    color: lightgrey;
 }
