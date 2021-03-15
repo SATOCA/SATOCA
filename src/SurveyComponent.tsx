@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
 import { getSurveyFromMock } from "./Services/SurveyDataService";
 import { DisplayItem } from "./Display/Item/DisplayItem";
+import SurveyFinished from "./SurveyFinished/SurveyFinished";
+import { validateSurveyId } from "./Services/surveyAPI";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
@@ -13,27 +15,37 @@ function setupSurvey() {
 type SurveyComponentProps = {
   surveyId: string;
   uniqueSurveyId: string;
-}
+};
 
 export interface RouterSurveyComponentProps
   extends RouteComponentProps<SurveyComponentProps> {}
 
 export function SurveyComponent(props: SurveyComponentProps) {
   //! \todo should have no items data -> items: {}
-  const [items, setItems] = useState(setupSurvey());
   let history = useHistory();
+  const [items, setItems] = useState(setupSurvey());
+  const [surveyEnded, setSurveyEnded] = useState(false);
+
+  useEffect(() => {
+    if (!validateSurveyId(props.surveyId, props.uniqueSurveyId)) {
+      history.push("/404");
+    }
+  });
 
   let nextQuestion = () => {
-//let nextQuestion = (response: Array<number>) => {
-//    console.log("reponse: ", response);
-//    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
+    //let nextQuestion = (response: Array<number>) => {
+    //    console.log("reponse: ", response);
+    //    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
     if (items.length > 1) {
       //! \todo implement logic to select next item. for now the first item will be poped.
       setItems(items.slice(1, items.length));
+      setSurveyEnded(false);
     } else {
-      history.push("/survey-end");
+      setSurveyEnded(true);
     }
   };
+
+  if (surveyEnded) return <SurveyFinished />;
 
   return (
     <div>
@@ -47,5 +59,3 @@ export function SurveyComponent(props: SurveyComponentProps) {
     </div>
   );
 }
-
-

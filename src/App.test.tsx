@@ -15,9 +15,9 @@ test("render application name", () => {
   expect(appName).toBeInTheDocument();
 });
 
-test("render application with route /42/3", () => {
+test("render application with route /init-survey/42-3-4", () => {
   const { getByText, getByTestId } = render(
-    <MemoryRouter initialEntries={["/42/3"]}>
+    <MemoryRouter initialEntries={["/init-survey/42-3-4"]}>
       <App />
     </MemoryRouter>
   );
@@ -29,9 +29,9 @@ test("render application with route /42/3", () => {
 
   const surveyId = getByTestId("header");
   expect(surveyId).toBeInTheDocument();
-  expect(surveyId).toHaveTextContent("Survey with id: 42");
+  expect(surveyId).toHaveTextContent("Survey with id: init-survey");
 
   const uniqueSurveyId = getByTestId("header2");
   expect(uniqueSurveyId).toBeInTheDocument();
-  expect(uniqueSurveyId).toHaveTextContent("Unique Survey with id: 3");
+  expect(uniqueSurveyId).toHaveTextContent("Unique Survey with id: 42-3-4");
 });
