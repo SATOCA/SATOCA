@@ -8,6 +8,7 @@ import {
 } from "./Components/SurveyComponent/SurveyComponent";
 import SurveyFinished from "./Components/SurveyComponent/SurveyFinished/SurveyFinished";
 import { Header } from "./Components/Header/Header";
+import { NotFound } from "./Components/NotFound/NotFound";
 
 function App() {
   return (
@@ -19,7 +20,7 @@ function App() {
             <SurveyFinished />
           </Route>
           <Route exact path="/404">
-            <p>404</p>
+            <NotFound />
           </Route>
           <Route
             exact
