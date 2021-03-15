@@ -4,6 +4,6 @@ import SurveyFinished from "./SurveyFinished";
 
 test("render application name", () => {
   render(<SurveyFinished />);
-  const finishedMessage = screen.getByText("Survey Finished");
+  const finishedMessage = screen.getByText(/Survey Finished/i);
   expect(finishedMessage).toBeInTheDocument();
 });

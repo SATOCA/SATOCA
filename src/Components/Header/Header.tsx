@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import React from "react";
 import "./Header.css";
 
-export function Header() {
+export default function Header() {
   return (
     <Navbar data-testid="navbar" className="App-header">
       <NavbarBrand tag={Link} to="/" data-testid="navbarBrand">
@@ -19,12 +19,7 @@ export function Header() {
         </NavItem>
         <NavItem>
           <NavLink className="NavbarText" tag={Link} to="/test-survey/42">
-            Survey 3
-          </NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink className="NavbarText" tag={Link} to="/survey-end">
-            Survey End
+            Test Survey
           </NavLink>
         </NavItem>
       </Nav>

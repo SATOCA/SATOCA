@@ -2,13 +2,11 @@ import React from "react";
 import { Container } from "reactstrap";
 import "./App.css";
 import { Redirect, Route, Switch } from "react-router-dom";
-import {
+import SurveyComponent, {
   RouterSurveyComponentProps,
-  SurveyComponent,
 } from "./Components/SurveyComponent/SurveyComponent";
-import SurveyFinished from "./Components/SurveyComponent/SurveyFinished/SurveyFinished";
-import { Header } from "./Components/Header/Header";
-import { NotFound } from "./Components/NotFound/NotFound";
+import Header from "./Components/Header/Header";
+import NotFound from "./Components/NotFound/NotFound";
 
 function App() {
   return (
@@ -16,9 +14,6 @@ function App() {
       <Header />
       <Container className="content" fluid="lg">
         <Switch>
-          <Route exact path="/survey-end">
-            <SurveyFinished />
-          </Route>
           <Route exact path="/404">
             <NotFound />
           </Route>

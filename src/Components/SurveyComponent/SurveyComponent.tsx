@@ -20,7 +20,7 @@ type SurveyComponentProps = {
 export interface RouterSurveyComponentProps
   extends RouteComponentProps<SurveyComponentProps> {}
 
-export function SurveyComponent(props: SurveyComponentProps) {
+export default function SurveyComponent(props: SurveyComponentProps) {
   //! \todo should have no items data -> items: {}
   let history = useHistory();
   const [items, setItems] = useState(setupSurvey());

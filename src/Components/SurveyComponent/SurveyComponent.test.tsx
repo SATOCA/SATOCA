@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
 import React from "react";
-import { SurveyComponent } from "./SurveyComponent";
+import SurveyComponent from "./SurveyComponent";
 import { MemoryRouter } from "react-router-dom";
 
 test("render a SurveyComponent", () => {

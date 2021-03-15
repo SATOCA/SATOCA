@@ -2,10 +2,11 @@ import React from "react";
 import "./NotFound.css";
 import slice from "./slice.svg";
 
-export function NotFound() {
+export default function NotFound() {
   return (
-    <div className="centered not-found">
-      <h1>404 - Survey could not be found</h1>{"          "}
+    <div className="centered content-min-height">
+      <h1>404 - Survey could not be found</h1>
+      {"          "}
       <div className="spinner">
         <img src={slice} alt="slice 1" className="pizza-part pizza-part-1" />
         <img src={slice} alt="slice 2" className="pizza-part pizza-part-2" />
