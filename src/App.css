@@ -13,7 +13,11 @@
     color: white;
 }
 
-.content {
+.content-height {
+    height: calc(100vh - 5vh - 60px);
+}
+
+.glass-card-content {
     background: rgba( 255, 255, 255, 0.35 );
     box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
     backdrop-filter: blur( 8px );
@@ -25,6 +29,6 @@
     min-height: 50vh;
 }
 
-.content-min-height {
+.glass-card-content-min-height {
     min-height: 50vh;
 }

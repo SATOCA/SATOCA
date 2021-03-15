@@ -4,6 +4,7 @@ import { getSurveyFromMock } from "../../Services/SurveyDataService";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
 import { validateSurveyId } from "../../Services/SurveyAPI";
+import { Container } from "reactstrap";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
@@ -45,10 +46,15 @@ export default function SurveyComponent(props: SurveyComponentProps) {
     }
   };
 
-  if (surveyEnded) return <SurveyFinished />;
+  if (surveyEnded)
+    return (
+      <Container className="glass-card-content" fluid="lg">
+        <SurveyFinished />
+      </Container>
+    );
 
   return (
-    <div>
+    <Container className="glass-card-content" fluid="lg">
       <h3 data-testid="header">Survey with id: {props.surveyId}</h3>
       <h3 data-testid="header2">
         Unique Survey with id: {props.uniqueSurveyId}
@@ -56,6 +62,6 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       <span data-testid="question">
         <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
       </span>
-    </div>
+    </Container>
   );
 }

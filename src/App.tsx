@@ -7,12 +7,13 @@ import SurveyComponent, {
 } from "./Components/SurveyComponent/SurveyComponent";
 import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
+import Frontpage from "./Components/Frontpage/Frontpage";
 
 function App() {
   return (
     <div className="App">
       <Header />
-      <Container className="content" fluid="lg">
+      <div className="content-height">
         <Switch>
           <Route exact path="/404">
             <NotFound />
@@ -28,11 +29,11 @@ function App() {
             )}
           />
           <Route exact path="/">
-            <h3>home</h3>
+            <Frontpage />
           </Route>
           <Redirect to="/404" />
         </Switch>
-      </Container>
+      </div>
       <footer className="footer">
         <Container fluid={true}>going live</Container>
       </footer>
