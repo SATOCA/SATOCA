@@ -7,34 +7,39 @@ import {
 } from "./Components/SurveyComponent/SurveyComponent";
 import SurveyFinished from "./Components/SurveyComponent/SurveyFinished/SurveyFinished";
 import { Header } from "./Components/Header/Header";
+import Container from "reactstrap/es/Container";
 
 function App() {
   return (
-    <div>
+    <div className="App">
       <Header />
-      <Switch>
-        <Route exact path="/survey-end">
-          <SurveyFinished />
-        </Route>
-        <Route exact path="/404">
-          <p>404</p>
-        </Route>
-        <Route
-          exact
-          path="/:surveyId/:uniqueSurveyId"
-          render={({ match }: RouterSurveyComponentProps) => (
-            <SurveyComponent
-              uniqueSurveyId={match.params.uniqueSurveyId}
-              surveyId={match.params.surveyId}
-            />
-          )}
-        />
-        <Route exact path="/">
-          <h3>home</h3>
-        </Route>
-        <Redirect to="/404" />
-      </Switch>
-      <footer className="footer">going live</footer>
+      <Container className="content" fluid="lg">
+        <Switch>
+          <Route exact path="/survey-end">
+            <SurveyFinished />
+          </Route>
+          <Route exact path="/404">
+            <p>404</p>
+          </Route>
+          <Route
+            exact
+            path="/:surveyId/:uniqueSurveyId"
+            render={({ match }: RouterSurveyComponentProps) => (
+              <SurveyComponent
+                uniqueSurveyId={match.params.uniqueSurveyId}
+                surveyId={match.params.surveyId}
+              />
+            )}
+          />
+          <Route exact path="/">
+            <h3>home</h3>
+          </Route>
+          <Redirect to="/404" />
+        </Switch>
+      </Container>
+      <footer className="footer">
+        <Container fluid={true}>going live</Container>
+      </footer>
     </div>
   );
 }
