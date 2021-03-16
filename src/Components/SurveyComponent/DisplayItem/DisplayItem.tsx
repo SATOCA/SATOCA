@@ -60,7 +60,7 @@ export class DisplayItem extends React.Component<
     if (this.props.item.isMultiResponse) {
       return (
         <DisplayCheckboxButtons
-          answerOptions={this.props.item.answerOptions}
+          item={this.props.item}
           onSelectionChange={this.handleOptionChange}
           cSelected={this.state.selectedOptions}
         />
@@ -68,7 +68,7 @@ export class DisplayItem extends React.Component<
     } else {
       return (
         <DisplayRadioButtons
-          answerOptions={this.props.item.answerOptions}
+          item={this.props.item}
           onSelectionChange={this.handleOptionChange}
           rSelected={this.state.selectedOptions}
         />
@@ -88,6 +88,7 @@ export class DisplayItem extends React.Component<
           <button
             className="btn btn-primary mt-2"
             type="submit"
+            disabled={this.state.selectedOptions.length === 0}
             onClick={this.handleFormSubmit}
           >
             Submit
