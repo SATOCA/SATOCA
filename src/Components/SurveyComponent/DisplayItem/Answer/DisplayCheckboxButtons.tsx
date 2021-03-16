@@ -1,13 +1,5 @@
-import React, { ChangeEvent, MouseEvent } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-} from "reactstrap";
+import React, { ChangeEvent } from "react";
+import { Col, Form, FormGroup, Input, Label } from "reactstrap";
 import { Item } from "../../../../DataModel/Item";
 
 type DisplayCheckboxBtnProps = {

@@ -1,13 +1,5 @@
-import React, { ChangeEvent, MouseEvent } from "react";
-import {
-  Button,
-  ButtonGroup,
-  Col,
-  Form,
-  FormGroup,
-  Input,
-  Label,
-} from "reactstrap";
+import React, { ChangeEvent } from "react";
+import { Col, Form, FormGroup, Input, Label } from "reactstrap";
 import { Item } from "../../../../DataModel/Item";
 
 type DisplayRadioBtnProps = {
@@ -33,7 +25,7 @@ export class DisplayRadioButtons extends React.Component<
   handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     this.props.onSelectionChange(parseInt(e.currentTarget.value));
   };
-
+  
   render() {
     return (
       <Form className="Answer-Options">
