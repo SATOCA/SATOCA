@@ -1,27 +1,25 @@
-import React, { Component } from 'react';
-import Button from 'react-bootstrap/Button';
-import {Nav, NavItem, NavLink} from "reactstrap";
-import {Link} from "react-router-dom";
+import React from "react";
+import { Button } from "reactstrap";
+import { useHistory } from "react-router-dom";
 
-type State = {}
 type Props = {
-    text?: string,
-    onClick: Function
-}
-export default class StartButton extends Component<Props, State> {
-    render() {
-        const { text,  onClick, children = 'Click' } = this.props
-        const value = text || children
-        return (
-            <Button variant="success"  size="lg" onClick={(e) => onClick(e)}>
-                <Nav>
-                    <NavItem>
-                        <NavLink className="NavbarText" tag={Link} to={"/test-survey/"+value}>
-                            Start Survey
-                        </NavLink>
-                    </NavItem>
-                </Nav>
-            </Button>
-        )
-    }
+  text: string;
+  onClick: Function;
+  children: string;
+};
+
+export default function StartButton(props: Props) {
+  let history = useHistory();
+  const { text, onClick } = props;
+
+  let onClickInternal = (e: React.MouseEvent<HTMLButtonElement>) => {
+    onClick(e);
+    history.push("/test-survey/" + text);
+  };
+
+  return (
+    <Button variant="success" size="lg" onClick={(e) => onClickInternal(e)}>
+      {props.children}
+    </Button>
+  );
 }
