@@ -9,6 +9,6 @@ test("smoke test frontpage", () => {
       <Frontpage />
     </MemoryRouter>
   );
-  const finishedMessage = screen.getByText(/Front Page/i);
-  expect(finishedMessage).toBeInTheDocument();
+  const startButton = screen.getByText(/Exemplary Survey/i);
+  expect(startButton).toBeInTheDocument();
 });
