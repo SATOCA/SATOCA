@@ -25,14 +25,14 @@ export class DisplayRadioButtons extends React.Component<
   handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     this.props.onSelectionChange(parseInt(e.currentTarget.value));
   };
-  
+
   render() {
     return (
       <Form className="Answer-Options">
         <FormGroup>
           <Col sm={10}>
-            {this.props.item.answerOptions.map((answer) => (
-              <FormGroup check>
+            {this.props.item.answerOptions.map((answer, i) => (
+              <FormGroup check key={i}>
                 <Input
                   type="radio"
                   name={this.props.item.question.text}
