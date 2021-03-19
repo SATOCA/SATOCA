@@ -16,10 +16,11 @@ export class DisplayCheckboxButtons extends React.Component<
     super(props);
     this.handleChange = this.handleChange.bind(this);
   }
+
   // for button type checkboxes
   /*handleChange = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
-    this.props.onSelectionChange(parseInt(e.currentTarget.value));
-  };*/
+      this.props.onSelectionChange(parseInt(e.currentTarget.value));
+    };*/
 
   handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     this.props.onSelectionChange(parseInt(e.currentTarget.value));
@@ -30,19 +31,17 @@ export class DisplayCheckboxButtons extends React.Component<
       <Form className="Answer-Options">
         <FormGroup>
           <Col sm={10}>
-            {this.props.item.answerOptions.map((answer) => (
-              <FormGroup check>
-                <Label check>
-                  <Input
-                    type="checkbox"
-                    id={answer.id.toString()}
-                    name={this.props.item.question.text}
-                    onChange={this.handleChange}
-                    checked={this.props.cSelected.includes(answer.id)}
-                    value={answer.id}
-                  />
-                  {answer.text}
-                </Label>
+            {this.props.item.answerOptions.map((answer, i) => (
+              <FormGroup check key={i}>
+                <Input
+                  type="checkbox"
+                  id={answer.id.toString()}
+                  name={this.props.item.question.text}
+                  onChange={this.handleChange}
+                  checked={this.props.cSelected.includes(answer.id)}
+                  value={answer.id}
+                />
+                <Label check>{answer.text}</Label>
               </FormGroup>
             ))}
           </Col>
