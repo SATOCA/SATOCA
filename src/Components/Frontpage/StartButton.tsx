@@ -18,7 +18,7 @@ export default function StartButton(props: Props) {
   };
 
   return (
-    <Button variant="success" size="lg" onClick={(e) => onClickInternal(e)}>
+    <Button color="success" size="lg" onClick={(e) => onClickInternal(e)}>
       {props.children}
     </Button>
   );
