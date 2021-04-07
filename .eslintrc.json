@@ -9,7 +9,10 @@
     "no-new-object": "error",
     "object-shorthand": "error",
     "object-curly-newline": "error",
-    "quote-props": "warn",
+    "quote-props": [
+      "error",
+      "as-needed"
+    ],
     "no-prototype-builtins": "error",
     "no-array-constructor": "error",
     "array-callback-return": "warn",
@@ -18,25 +21,30 @@
     "prefer-template": "warn",
     "no-eval": "error",
     "no-useless-escape": "error",
-    //"func-style":"warn", <-- not compatible with react-style
+    //<-- not compatible with react-style
+    "func-style": "off",
     "wrap-iife": "error",
     "no-loop-func": "error",
-    // "prefer-rest-params":"error"
+    // conflicts with react
+    "prefer-rest-params": "off",
     "default-param-last": "error",
     "no-new-func": "error",
-    "space-before-function-paren": "warn",
+    //conflict with prettier
+    "space-before-function-paren": "off",
     "space-before-blocks": "warn",
     "keyword-spacing": "warn",
     "space-infix-ops": "warn",
     "no-param-reassign": "error",
-    "function-paren-newline": "warn",
+    //conflict with prettier
+    "function-paren-newline": "off",
     "prefer-spread": "warn",
     "prefer-arrow-callback": "error",
     "arrow-spacing": "error",
     "arrow-parens": "warn",
     "arrow-body-style": "warn",
     "no-confusing-arrow": "warn",
-    "implicit-arrow-linebreak": "warn",
+    //conflict with prettier
+    "implicit-arrow-linebreak": "off",
     "no-useless-constructor": "error",
     "no-dupe-class-members": "error",
     "class-methods-use-this": "warn",
@@ -56,20 +64,35 @@
     "no-nested-ternary": "warn",
     "no-unneeded-ternary": "error",
     "no-mixed-operators": "warn",
-    "nonblock-statement-body-position": "warn",
+    //conflict with prettier
+    "nonblock-statement-body-position": "off",
     "brace-style": "warn",
     "no-else-return": "warn",
     "spaced-comment": "warn",
-    "indent": "warn",
+    //conflict with prettier
+    "indent": "off",
     "eol-last": "warn",
     "newline-per-chained-call": "warn",
     "no-whitespace-before-property": "warn",
-    "padded-blocks": "warn",
+    //conflict with prettier
+    "padded-blocks": "off",
     "no-multiple-empty-lines": "warn",
     "space-in-parens": "warn",
     "array-bracket-spacing": "warn",
-    "object-curly-spacing": "warn",
-    "max-len": "warn",
+    //conflict with prettier
+    "object-curly-spacing": "off",
+    "max-len": [
+      "warn",
+      {
+        "code": 100,
+        "ignoreComments": true,
+        "ignoreTrailingComments": true,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
     "id-length": "warn",
     "camelcase": "warn",
     "new-cap": "warn",
@@ -77,7 +100,8 @@
     "block-spacing": "warn",
     "comma-spacing": "warn",
     "comma-style": "warn",
-    "comma-dangle": "warn",
+    //conflict with prettier
+    "comma-dangle": "off",
     "computed-property-spacing": "warn",
     "func-call-spacing": "warn",
     "key-spacing": "warn",
