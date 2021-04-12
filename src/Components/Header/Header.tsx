@@ -9,8 +9,8 @@ export default function Header() {
       <NavbarBrand tag={Link} to="/" data-testid="navbarBrand">
         Secure Adaptive Testing for Organized Capability Assessment
       </NavbarBrand>
-      {/*<NavbarToggler onClick={toggle} />*/}
-      {/*<Collapse isOpen={isOpen} navbar>*/}
+      {/* <NavbarToggler onClick={toggle} />*/}
+      {/* <Collapse isOpen={isOpen} navbar>*/}
       <Nav>
         <NavItem>
           <NavLink tag={Link} to="/">
@@ -23,7 +23,7 @@ export default function Header() {
           </NavLink>
         </NavItem>
       </Nav>
-      {/*</Collapse>*/}
+      {/* </Collapse>*/}
     </Navbar>
   );
 }

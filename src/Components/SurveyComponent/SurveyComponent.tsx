@@ -23,9 +23,9 @@ export interface RouterSurveyComponentProps
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   // ! \todo should have no items data -> items: {}
-  const history = useHistory(),
-    [items, setItems] = useState(setupSurvey()),
-    [surveyEnded, setSurveyEnded] = useState(false);
+  const history = useHistory();
+  const [items, setItems] = useState(setupSurvey());
+  const [surveyEnded, setSurveyEnded] = useState(false);
 
   useEffect(() => {
     if (!validateSurveyId(props.surveyId, props.uniqueSurveyId)) {

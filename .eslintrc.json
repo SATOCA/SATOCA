@@ -54,9 +54,17 @@
     "dot-notation": "warn",
     "no-restricted-properties": "warn",
     "no-undef": "error",
-    "one-var": "warn",
+    "one-var": [
+      "warn",
+      "never"
+    ],
     "no-multi-assign": "error",
-    "no-plusplus": "warn",
+    "no-plusplus": [
+      "warn",
+      {
+        "allowForLoopAfterthoughts": true
+      }
+    ],
     "operator-linebreak": "warn",
     "no-unused-vars": "warn",
     "eqeqeq": "error",
@@ -93,7 +101,18 @@
         "ignoreRegExpLiterals": true
       }
     ],
-    "id-length": "warn",
+    "id-length": [
+      "warn",
+      {
+        "exceptions": [
+          "x",
+          "y",
+          "z",
+          "e",
+          "i"
+        ]
+      }
+    ],
     "camelcase": "warn",
     "new-cap": "warn",
     "no-underscore-dangle": "warn",
@@ -132,7 +151,13 @@
     "react/no-string-refs": "warn",
     "react/jsx-wrap-multilines": "warn",
     "react/self-closing-comp": "warn",
-    "react/jsx-no-bind": "warn",
+    "react/jsx-no-bind": [
+      "warn",
+      {
+        "ignoreDOMComponents": true,
+        "allowArrowFunctions": true
+      }
+    ],
     "react/require-render-return": "warn",
     "react/no-is-mounted": "error"
   }
