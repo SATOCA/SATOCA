@@ -626,9 +626,11 @@ Style Guides
 ## Functions
 
   <a name="functions--declarations"></a><a name="7.1"></a>
-  - [7.1](#functions--declarations) Use named function expressions instead of function declarations. eslint: [`func-style`](https://eslint.org/docs/rules/func-style)
-
-    > Why? Function declarations are hoisted, which means that it’s easy - too easy - to reference the function before it is defined in the file. This harms readability and maintainability. If you find that a function’s definition is large or complex enough that it is interfering with understanding the rest of the file, then perhaps it’s time to extract it to its own module! Don’t forget to explicitly name the expression, regardless of whether or not the name is inferred from the containing variable (which is often the case in modern browsers or when using compilers such as Babel). This eliminates any assumptions made about the Error’s call stack. 
+  - [7.1](#functions--declarations) ~~Use named function expressions instead of function declarations.~~ eslint: [`func-style`](https://eslint.org/docs/rules/func-style)
+    
+    >  Conflicts with react coding style and was thous excluded 
+    
+    > ~~Why? Function declarations are hoisted, which means that it’s easy - too easy - to reference the function before it is defined in the file. This harms readability and maintainability. If you find that a function’s definition is large or complex enough that it is interfering with understanding the rest of the file, then perhaps it’s time to extract it to its own module! Don’t forget to explicitly name the expression, regardless of whether or not the name is inferred from the containing variable (which is often the case in modern browsers or when using compilers such as Babel). This eliminates any assumptions made about the Error’s call stack.~~ 
 
     ```javascript
     // bad
@@ -789,9 +791,11 @@ Style Guides
     ```
 
   <a name="functions--signature-spacing"></a><a name="7.11"></a>
-  - [7.11](#functions--signature-spacing) Spacing in a function signature. eslint: [`space-before-function-paren`](https://eslint.org/docs/rules/space-before-function-paren) [`space-before-blocks`](https://eslint.org/docs/rules/space-before-blocks)
+  - [7.11](#functions--signature-spacing) ~~Spacing in a function signature.~~ eslint: [`space-before-function-paren`](https://eslint.org/docs/rules/space-before-function-paren) [`space-before-blocks`](https://eslint.org/docs/rules/space-before-blocks)
 
-    > Why? Consistency is good, and you shouldn’t have to add or remove a space when adding or removing a name.
+    > Conflicts prettier
+
+    > ~~Why? Consistency is good, and you shouldn’t have to add or remove a space when adding or removing a name.~~
 
     ```javascript
     // bad
@@ -871,7 +875,9 @@ Style Guides
     ```
 
   <a name="functions--signature-invocation-indentation"></a>
-  - [7.15](#functions--signature-invocation-indentation) Functions with multiline signatures, or invocations, should be indented just like every other multiline list in this guide: with each item on a line by itself, with a trailing comma on the last item. eslint: [`function-paren-newline`](https://eslint.org/docs/rules/function-paren-newline)
+  - [7.15](#functions--signature-invocation-indentation) ~~Functions with multiline signatures, or invocations, should be indented just like every other multiline list in this guide: with each item on a line by itself, with a trailing comma on the last item.~~ eslint: [`function-paren-newline`](https://eslint.org/docs/rules/function-paren-newline)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -1051,7 +1057,9 @@ Style Guides
     ```
 
   <a name="whitespace--implicit-arrow-linebreak"></a>
-  - [8.6](#whitespace--implicit-arrow-linebreak) Enforce the location of arrow function bodies with implicit returns. eslint: [`implicit-arrow-linebreak`](https://eslint.org/docs/rules/implicit-arrow-linebreak)
+  - [8.6](#whitespace--implicit-arrow-linebreak) ~~Enforce the location of arrow function bodies with implicit returns.~~ eslint: [`implicit-arrow-linebreak`](https://eslint.org/docs/rules/implicit-arrow-linebreak)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -2120,7 +2128,9 @@ Style Guides
 ## Blocks
 
   <a name="blocks--braces"></a><a name="16.1"></a>
-  - [16.1](#blocks--braces) Use braces with all multiline blocks. eslint: [`nonblock-statement-body-position`](https://eslint.org/docs/rules/nonblock-statement-body-position)
+  - [16.1](#blocks--braces) ~~Use braces with all multiline blocks.~~ eslint: [`nonblock-statement-body-position`](https://eslint.org/docs/rules/nonblock-statement-body-position)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -2448,7 +2458,9 @@ Style Guides
 ## Whitespace
 
   <a name="whitespace--spaces"></a><a name="18.1"></a>
-  - [19.1](#whitespace--spaces) Use soft tabs (space character) set to 2 spaces. eslint: [`indent`](https://eslint.org/docs/rules/indent.html)
+  - [19.1](#whitespace--spaces) ~~Use soft tabs (space character) set to 2 spaces.~~ eslint: [`indent`](https://eslint.org/docs/rules/indent.html)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -2662,7 +2674,9 @@ Style Guides
     ```
 
   <a name="whitespace--padded-blocks"></a><a name="18.8"></a>
-  - [19.8](#whitespace--padded-blocks) Do not pad your blocks with blank lines. eslint: [`padded-blocks`](https://eslint.org/docs/rules/padded-blocks.html)
+  - [19.8](#whitespace--padded-blocks) ~~Do not pad your blocks with blank lines.~~ eslint: [`padded-blocks`](https://eslint.org/docs/rules/padded-blocks.html)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -2795,7 +2809,9 @@ Style Guides
     ```
 
   <a name="whitespace--in-braces"></a><a name="18.11"></a>
-  - [19.12](#whitespace--in-braces) Add spaces inside curly braces. eslint: [`object-curly-spacing`](https://eslint.org/docs/rules/object-curly-spacing.html)
+  - [19.12](#whitespace--in-braces) ~~Add spaces inside curly braces.~~ eslint: [`object-curly-spacing`](https://eslint.org/docs/rules/object-curly-spacing.html)
+
+    > Conflicts prettier
 
     ```javascript
     // bad
@@ -2975,7 +2991,9 @@ Style Guides
     ```
 
   <a name="commas--dangling"></a><a name="19.2"></a>
-  - [20.2](#commas--dangling) Additional trailing comma: **Yup.** eslint: [`comma-dangle`](https://eslint.org/docs/rules/comma-dangle.html)
+  - [20.2](#commas--dangling) ~~Additional trailing comma: **Yup.**~~ eslint: [`comma-dangle`](https://eslint.org/docs/rules/comma-dangle.html)
+
+    > Conflicts prettier
 
     ```diff
     // bad - git diff without trailing comma

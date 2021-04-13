@@ -25,8 +25,7 @@
     "func-style": "off",
     "wrap-iife": "error",
     "no-loop-func": "error",
-    // conflicts with react
-    "prefer-rest-params": "off",
+    "prefer-rest-params": "warn",
     "default-param-last": "error",
     "no-new-func": "error",
     //conflict with prettier
