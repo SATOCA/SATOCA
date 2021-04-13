@@ -1,13 +1,13 @@
 import React, { MouseEvent } from "react";
 import { Item } from "../../../DataModel/Item";
-import { DisplayCheckboxButtons } from "./Answer/DisplayCheckboxButtons";
-import { DisplayRadioButtons } from "./Answer/DisplayRadioButtons";
+import DisplayCheckboxButtons from "./Answer/DisplayCheckboxButtons";
+import DisplayRadioButtons from "./Answer/DisplayRadioButtons";
 import { saveSubmittedAnswer } from "../../../Services/SubmitAnswerService";
 
 export type displayItemProps = {
   item: Item;
   onAnswerSubmit: () => void;
-  //onAnswerSubmit: (response: Array<number>) => void;
+  // onAnswerSubmit: (response: Array<number>) => void;
 };
 
 export type displayItemState = {
@@ -45,15 +45,16 @@ export class DisplayItem extends React.Component<
   };
 
   handleFormSubmit = (
+    // eslint-disable-next-line no-undef
     submitEvent: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
   ) => {
     submitEvent.preventDefault();
     console.log("You have submitted: ", this.state.selectedOptions);
-    alert("You have submitted: " + this.state.selectedOptions.toString());
+    alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
     saveSubmittedAnswer(this.props.item, this.state.selectedOptions);
     this.setState({ selectedOptions: [] });
     this.props.onAnswerSubmit();
-    //this.props.onAnswerSubmit(this.state.selectedOptions);
+    // this.props.onAnswerSubmit(this.state.selectedOptions);
   };
 
   chooseButtonType = () => {
@@ -65,15 +66,14 @@ export class DisplayItem extends React.Component<
           cSelected={this.state.selectedOptions}
         />
       );
-    } else {
-      return (
-        <DisplayRadioButtons
-          item={this.props.item}
-          onSelectionChange={this.handleOptionChange}
-          rSelected={this.state.selectedOptions}
-        />
-      );
     }
+    return (
+      <DisplayRadioButtons
+        item={this.props.item}
+        onSelectionChange={this.handleOptionChange}
+        rSelected={this.state.selectedOptions}
+      />
+    );
   };
 
   render() {

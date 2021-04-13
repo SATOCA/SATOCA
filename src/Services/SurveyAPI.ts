@@ -3,7 +3,7 @@ type surveyIdTuple = {
   uniqueSurveyId: string;
 };
 
-export function validateSurveyId(
+export default function validateSurveyId(
   surveyId: string,
   uniqueSurveyId: string
 ): boolean {
