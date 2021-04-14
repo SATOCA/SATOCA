@@ -8,7 +8,7 @@ type DisplayCheckboxBtnProps = {
   cSelected: Array<number>;
 };
 
-export class DisplayCheckboxButtons extends React.Component<
+export default class DisplayCheckboxButtons extends React.Component<
   DisplayCheckboxBtnProps,
   {}
 > {
@@ -18,22 +18,23 @@ export class DisplayCheckboxButtons extends React.Component<
   }
 
   // for button type checkboxes
-  /*handleChange = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
+  /* handleChange = (e: MouseEvent<HTMLButtonElement, globalThis.MouseEvent>) => {
       this.props.onSelectionChange(parseInt(e.currentTarget.value));
     };*/
 
-  handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    this.props.onSelectionChange(parseInt(e.currentTarget.value));
+  handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    this.props.onSelectionChange(parseInt(event.currentTarget.value, 10));
   };
 
   render() {
     return (
-      <Form className="Answer-Options">
-        <FormGroup>
+      <Form className="Checkbox-Options">
+        <FormGroup data-testid="checkOptions">
           <Col sm={10}>
-            {this.props.item.answerOptions.map((answer, i) => (
-              <FormGroup check key={i}>
+            {this.props.item.answerOptions.map((answer) => (
+              <FormGroup check key={answer.id}>
                 <Input
+                  data-testid={answer.id.toString()}
                   type="checkbox"
                   id={answer.id.toString()}
                   name={this.props.item.question.text}
