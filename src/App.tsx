@@ -35,7 +35,7 @@ function App() {
         </Switch>
       </div>
       <footer className="footer">
-        <Container fluid={true}>going live</Container>
+        <Container fluid>going live</Container>
       </footer>
     </div>
   );
