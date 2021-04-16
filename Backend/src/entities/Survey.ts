@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
-import { Participant } from "./Participant";
-
+import { Participant } from './Participant';
+import { Question } from './Question'
 @Entity({ name: 'survey' })
 export class Survey extends BaseEntity {
 
@@ -11,5 +11,8 @@ export class Survey extends BaseEntity {
    title: string = "";
 
    @OneToMany(type => Participant, participants => participants.survey)
-   participants!: Participant[];   
+   participants!: Participant[];
+
+   @OneToMany(type => Question, questions => questions.survey)
+   questions!: Question[];
 }
