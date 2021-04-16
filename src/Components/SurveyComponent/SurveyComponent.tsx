@@ -59,7 +59,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       <h3 data-testid="header2">
         Unique Survey with id: {props.uniqueSurveyId}
       </h3>
-      <span data-testid="question">
+      <span data-testid="item">
         <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
       </span>
     </Container>

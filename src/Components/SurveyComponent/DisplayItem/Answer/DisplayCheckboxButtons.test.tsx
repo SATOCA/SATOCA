@@ -39,7 +39,7 @@ test("checkboxes checked", () => {
     <DisplayCheckboxButtons
       item={survey.items[1]}
       onSelectionChange={handleChange}
-      cSelected={[5, 8, 7]} // possible stings (answer IDs of item[1]) => 4,5,6,7,8,9
+      cSelected={[5, 8]} // possible stings (answer IDs of item[1]) => 4,5,6,7,8,9
     />
   );
   const checkbox4 = getByTestId("4") as HTMLInputElement;
