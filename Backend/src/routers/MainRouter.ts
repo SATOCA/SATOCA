@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import SubRouter from './SubRouter';
-
+import AdminRouter from './AdminRouter';
 class MainRouter {
     private _router = Router();
     private _subrouter = SubRouter;
-
+    private _adminrouter = AdminRouter;
 
     get router() {
         return this._router;
@@ -19,6 +19,7 @@ class MainRouter {
      */
     private _configure() {
         this._router.use('/themeA', this._subrouter);
+        this._router.use('/admin', this._adminrouter);
     }
 }
 
