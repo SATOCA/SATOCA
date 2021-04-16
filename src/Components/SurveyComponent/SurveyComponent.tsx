@@ -3,12 +3,12 @@ import { RouteComponentProps, useHistory } from "react-router-dom";
 import { getSurveyFromMock } from "../../Services/SurveyDataService";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import { validateSurveyId } from "../../Services/SurveyAPI";
+import validateSurveyId from "../../Services/SurveyAPI";
 import { Container } from "reactstrap";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
-  //! \todo implement logic. for now it is a random shuffle
+  // ! \todo implement logic. for now it is a random shuffle
   survey.items.sort(() => Math.random() - 0.5);
   return survey.items;
 }
@@ -22,8 +22,8 @@ export interface RouterSurveyComponentProps
   extends RouteComponentProps<SurveyComponentProps> {}
 
 export default function SurveyComponent(props: SurveyComponentProps) {
-  //! \todo should have no items data -> items: {}
-  let history = useHistory();
+  // ! \todo should have no items data -> items: {}
+  const history = useHistory();
   const [items, setItems] = useState(setupSurvey());
   const [surveyEnded, setSurveyEnded] = useState(false);
 
@@ -33,12 +33,12 @@ export default function SurveyComponent(props: SurveyComponentProps) {
     }
   });
 
-  let nextQuestion = () => {
-    //let nextQuestion = (response: Array<number>) => {
+  const nextQuestion = () => {
+    // let nextQuestion = (response: Array<number>) => {
     //    console.log("reponse: ", response);
     //    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
     if (items.length > 1) {
-      //! \todo implement logic to select next item. for now the first item will be poped.
+      // ! \todo implement logic to select next item. for now the first item will be poped.
       setItems(items.slice(1, items.length));
       setSurveyEnded(false);
     } else {

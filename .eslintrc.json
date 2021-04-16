@@ -1,0 +1,163 @@
+{
+  "extends": [
+    "react-app",
+    "react-app/jest"
+  ],
+  "rules": {
+    "prefer-const": "warn",
+    "no-var": "error",
+    "no-new-object": "error",
+    "object-shorthand": "error",
+    "object-curly-newline": "error",
+    "quote-props": [
+      "error",
+      "as-needed"
+    ],
+    "no-prototype-builtins": "error",
+    "no-array-constructor": "error",
+    "array-callback-return": "warn",
+    "prefer-destructuring": "warn",
+    "quotes": "error",
+    "prefer-template": "warn",
+    "no-eval": "error",
+    "no-useless-escape": "error",
+    //<-- not compatible with react-style
+    "func-style": "off",
+    "wrap-iife": "error",
+    "no-loop-func": "error",
+    "prefer-rest-params": "warn",
+    "default-param-last": "error",
+    "no-new-func": "error",
+    //conflict with prettier
+    "space-before-function-paren": "off",
+    "space-before-blocks": "warn",
+    "keyword-spacing": "warn",
+    "space-infix-ops": "warn",
+    "no-param-reassign": "error",
+    //conflict with prettier
+    "function-paren-newline": "off",
+    "prefer-spread": "warn",
+    "prefer-arrow-callback": "error",
+    "arrow-spacing": "error",
+    "arrow-parens": "warn",
+    "arrow-body-style": "warn",
+    "no-confusing-arrow": "warn",
+    //conflict with prettier
+    "implicit-arrow-linebreak": "off",
+    "no-useless-constructor": "error",
+    "no-dupe-class-members": "error",
+    "class-methods-use-this": "warn",
+    "no-duplicate-imports": "error",
+    "no-iterator": "warn",
+    "no-restricted-syntax": "warn",
+    "dot-notation": "warn",
+    "no-restricted-properties": "warn",
+    "no-undef": "error",
+    "one-var": [
+      "warn",
+      "never"
+    ],
+    "no-multi-assign": "error",
+    "no-plusplus": [
+      "warn",
+      {
+        "allowForLoopAfterthoughts": true
+      }
+    ],
+    "operator-linebreak": "warn",
+    "no-unused-vars": "warn",
+    "eqeqeq": "error",
+    "no-case-declarations": "warn",
+    "no-nested-ternary": "warn",
+    "no-unneeded-ternary": "error",
+    "no-mixed-operators": "warn",
+    //conflict with prettier
+    "nonblock-statement-body-position": "off",
+    "brace-style": "warn",
+    "no-else-return": "warn",
+    "spaced-comment": "warn",
+    //conflict with prettier
+    "indent": "off",
+    "eol-last": "warn",
+    "newline-per-chained-call": "warn",
+    "no-whitespace-before-property": "warn",
+    //conflict with prettier
+    "padded-blocks": "off",
+    "no-multiple-empty-lines": "warn",
+    "space-in-parens": "warn",
+    "array-bracket-spacing": "warn",
+    //conflict with prettier
+    "object-curly-spacing": "off",
+    "max-len": [
+      "warn",
+      {
+        "code": 100,
+        "ignoreComments": true,
+        "ignoreTrailingComments": true,
+        "ignoreUrls": true,
+        "ignoreStrings": true,
+        "ignoreTemplateLiterals": true,
+        "ignoreRegExpLiterals": true
+      }
+    ],
+    "id-length": [
+      "warn",
+      {
+        "exceptions": [
+          "x",
+          "y",
+          "z",
+          "e",
+          "i"
+        ]
+      }
+    ],
+    "camelcase": "warn",
+    "new-cap": "warn",
+    "no-underscore-dangle": "warn",
+    "block-spacing": "warn",
+    "comma-spacing": "warn",
+    "comma-style": "warn",
+    //conflict with prettier
+    "comma-dangle": "off",
+    "computed-property-spacing": "warn",
+    "func-call-spacing": "warn",
+    "key-spacing": "warn",
+    "no-trailing-spaces": "warn",
+    "semi": "warn",
+    "no-new-wrappers": "warn",
+    "radix": "warn",
+    "no-restricted-globals": "warn",
+    "import/no-mutable-exports": "warn",
+    "import/prefer-default-export": "error",
+    "import/first": "error",
+    "import/no-webpack-loader-syntax": "error",
+    "import/extensions": "warn",
+    "jsx-quotes": "warn",
+    "no-multi-spaces": "warn",
+    "react/no-multi-comp": "warn",
+    "react/jsx-pascal-case": "warn",
+    "react/jsx-closing-bracket-location": "warn",
+    "react/jsx-closing-tag-location": "warn",
+    "react/jsx-tag-spacing": "warn",
+    "react/jsx-curly-spacing": "warn",
+    "react/jsx-boolean-value": "warn",
+    "jsx-a11y/alt-text": "error",
+    "jsx-a11y/img-redundant-alt": "warn",
+    "jsx-a11y/aria-role": "warn",
+    "jsx-a11y/no-access-key": "warn",
+    "react/no-array-index-key": "warn",
+    "react/no-string-refs": "warn",
+    "react/jsx-wrap-multilines": "warn",
+    "react/self-closing-comp": "warn",
+    "react/jsx-no-bind": [
+      "warn",
+      {
+        "ignoreDOMComponents": true,
+        "allowArrowFunctions": true
+      }
+    ],
+    "react/require-render-return": "warn",
+    "react/no-is-mounted": "error"
+  }
+}

@@ -9,12 +9,12 @@ type Props = {
 };
 
 export default function StartButton(props: Props) {
-  let history = useHistory();
+  const history = useHistory();
   const { text, onClick } = props;
 
-  let onClickInternal = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const onClickInternal = (e: React.MouseEvent<HTMLButtonElement>) => {
     onClick(e);
-    history.push("/test-survey/" + text);
+    history.push(`/test-survey/${text}`);
   };
 
   return (

@@ -1,16 +1,20 @@
 import { Item } from "../DataModel/Item";
 
 class SubmitAnswerService {
-  static saveSubmittedAnswer(item: Item, submittedOptions: Array<number>): void {
+
+  static saveSubmittedAnswer(
+    item: Item,
+    submittedOptions: Array<number>
+  ): void {
     localStorage.setItem(item.question.text, submittedOptions.toString());
   }
 
   static showSavedAnswers(): void {
     for (let i = 0; i < localStorage.length; i++) {
       console.log(
-          "Saved all: ",
-          localStorage.key(i),
-          localStorage.getItem(localStorage.key(i) as string)
+        "Saved all: ",
+        localStorage.key(i),
+        localStorage.getItem(localStorage.key(i) as string)
       );
     }
   }
