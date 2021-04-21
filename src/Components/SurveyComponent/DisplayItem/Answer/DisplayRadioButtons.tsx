@@ -29,11 +29,12 @@ export default class DisplayRadioButtons extends React.Component<
   render() {
     return (
       <Form className="Answer-Options">
-        <FormGroup>
+        <FormGroup data-testid="radioOptions">
           <Col sm={10}>
             {this.props.item.answerOptions.map((answer) => (
               <FormGroup check key={answer.id}>
                 <Input
+                  data-testid={answer.id.toString()}
                   type="radio"
                   name={this.props.item.question.text}
                   id={answer.id.toString()}

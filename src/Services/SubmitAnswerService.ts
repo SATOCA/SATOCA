@@ -1,6 +1,7 @@
 import { Item } from "../DataModel/Item";
 
 class SubmitAnswerService {
+
   static saveSubmittedAnswer(
     item: Item,
     submittedOptions: Array<number>

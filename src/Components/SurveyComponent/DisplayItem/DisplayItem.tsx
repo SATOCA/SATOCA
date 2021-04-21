@@ -42,6 +42,7 @@ export class DisplayItem extends React.Component<
       selected.push(changedAnswerID);
     }
     this.setState({ selectedOptions: [...selected] });
+    console.log("You changed your answer to: ", [...selected]);
   };
 
   handleFormSubmit = (
@@ -60,32 +61,39 @@ export class DisplayItem extends React.Component<
   chooseButtonType = () => {
     if (this.props.item.isMultiResponse) {
       return (
-        <DisplayCheckboxButtons
-          item={this.props.item}
-          onSelectionChange={this.handleOptionChange}
-          cSelected={this.state.selectedOptions}
-        />
+        <div data-testid="checkbox">
+          <DisplayCheckboxButtons
+            item={this.props.item}
+            onSelectionChange={this.handleOptionChange}
+            cSelected={this.state.selectedOptions}
+          />
+        </div>
       );
     }
     return (
-      <DisplayRadioButtons
-        item={this.props.item}
-        onSelectionChange={this.handleOptionChange}
-        rSelected={this.state.selectedOptions}
-      />
+      <div data-testid="radio">
+        <DisplayRadioButtons
+          item={this.props.item}
+          onSelectionChange={this.handleOptionChange}
+          rSelected={this.state.selectedOptions}
+        />
+      </div>
     );
   };
 
   render() {
     return (
       <div>
-        <div className="question">
+        <div className="question" data-testid="question">
           <h5>{this.props.item.question.text}</h5>
         </div>
-        {this.chooseButtonType()}
+        <div className="answer" data-testid="answer">
+          {this.chooseButtonType()}
+        </div>
         <p>Selected: {this.state.selectedOptions.toString()}</p>
         <div className="submitButton">
           <button
+            data-testid="submitButton"
             className="btn btn-primary mt-2"
             type="submit"
             disabled={this.state.selectedOptions.length === 0}

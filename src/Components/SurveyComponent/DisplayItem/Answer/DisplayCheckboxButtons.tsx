@@ -28,12 +28,13 @@ export default class DisplayCheckboxButtons extends React.Component<
 
   render() {
     return (
-      <Form className="Answer-Options">
-        <FormGroup>
+      <Form className="Checkbox-Options">
+        <FormGroup data-testid="checkOptions">
           <Col sm={10}>
             {this.props.item.answerOptions.map((answer) => (
               <FormGroup check key={answer.id}>
                 <Input
+                  data-testid={answer.id.toString()}
                   type="checkbox"
                   id={answer.id.toString()}
                   name={this.props.item.question.text}
