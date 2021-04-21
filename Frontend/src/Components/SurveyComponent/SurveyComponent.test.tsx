@@ -16,6 +16,6 @@ test("render a SurveyComponent", () => {
   const head2 = getByTestId("header2");
   expect(head2).toHaveTextContent("Unique Survey with id: 42-3-4");
 
-  const question = getByTestId("question");
-  expect(question).toBeInTheDocument();
+  const item = getByTestId("item");
+  expect(item).toBeInTheDocument();
 });
