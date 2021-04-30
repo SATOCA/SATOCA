@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
 import { Participant } from './Participant';
 import { Question } from './Question'
-@Entity({ name: 'survey' })
+@Entity()
 export class Survey extends BaseEntity {
 
    @PrimaryGeneratedColumn()

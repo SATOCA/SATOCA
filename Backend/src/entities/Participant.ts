@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne } from "typeorm";
 import { Survey } from "./Survey";
 
-@Entity({ name: 'participant' })
+@Entity()
 export class Participant extends BaseEntity {
 
    @PrimaryGeneratedColumn()

@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMan
 import { Survey } from "./Survey";
 import { Answer } from "./Answer";
 
-@Entity({ name: 'question' })
+@Entity()
 export class Question extends BaseEntity {
 
    @PrimaryGeneratedColumn()
