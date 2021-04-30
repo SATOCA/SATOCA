@@ -2,7 +2,7 @@ import { NextFunction, Request, Response, Router } from 'express';
 import { getRepository } from "typeorm";
 import { Survey } from '../entities/Survey';
 
-class AdminRouter {
+export class AdminRouter {
     private _router = Router();
 
     get router() {
@@ -26,5 +26,3 @@ class AdminRouter {
         });
     }
 }
-
-export = new AdminRouter().router;

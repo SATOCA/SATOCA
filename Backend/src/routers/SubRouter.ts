@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response, Router } from 'express';
-import Controller from '../controllers/Controller';
+import {Controller} from '../controllers/Controller';
 
-class SubRouter {
+export class SubRouter {
     private _router = Router();
-    private _controller = Controller;
+    private _controller = new Controller();
 
     get router() {
         return this._router;
@@ -28,5 +28,3 @@ class SubRouter {
         });
     }
 }
-
-export = new SubRouter().router;

@@ -1,10 +1,11 @@
-import { Router } from 'express';
-import SubRouter from './SubRouter';
-import AdminRouter from './AdminRouter';
-class MainRouter {
+import {Router} from 'express';
+import {SubRouter} from './SubRouter';
+import {AdminRouter} from './AdminRouter';
+
+export class MainRouter {
     private _router = Router();
-    private _subrouter = SubRouter;
-    private _adminrouter = AdminRouter;
+    private _subrouter = new SubRouter().router;
+    private _adminrouter = new AdminRouter().router;
 
     get router() {
         return this._router;
@@ -22,5 +23,3 @@ class MainRouter {
         this._router.use('/admin', this._adminrouter);
     }
 }
-
-export = new MainRouter().router;
