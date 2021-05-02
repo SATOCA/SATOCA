@@ -2,8 +2,15 @@ import "reflect-metadata";
 import { createConnection } from "typeorm";
 import dotenv from 'dotenv';
 import express, { Request, Response, NextFunction } from 'express';
-import MainRouter from './routers/MainRouter'
+import MainRouter from './routers/MainRouter';
 import ErrorHandler from './models/ErrorHandler';
+
+import { Survey } from './entities/Survey';
+import { Participant } from './entities/Participant';
+import { Question } from './entities/Question';
+import { Answer } from './entities/Answer';
+import { SurveyProgress } from './entities/SurveyProgress';
+import { FinishedQuestion } from './entities/FinishedQuestion';
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -19,17 +26,23 @@ class Server {
     public router = MainRouter;
 }
 
+
 // setup database connection
 createConnection({
     "type": "postgres",
     "host": process.env.DATABASE_HOST!,
-    "port": 5432, //! \todo convert process.env.DATABASE_PORT to number
+    "port": Number(process.env.DATABASE_PORT),
     "username": process.env.DATABASE_USERNAME!,
     "database": process.env.DATABASE_NAME!,
     "synchronize": true,
     "logging": false,
-    "entities": [
-       "src/entities/**/*.ts"
+    "entities": [ 
+        Survey, 
+        Participant, 
+        Question, 
+        Answer,
+        SurveyProgress,
+        FinishedQuestion
     ]
 }).then(async connection => {
 
