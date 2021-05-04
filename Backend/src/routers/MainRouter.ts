@@ -1,26 +1,24 @@
-import { Router } from 'express';
-import SubRouter from './SubRouter';
-import AdminRouter from './AdminRouter';
+import { Router } from "express";
+import SurveyRouter from "./SurveyRouter";
+
 class MainRouter {
-    private _router = Router();
-    private _subrouter = SubRouter;
-    private _adminrouter = AdminRouter;
+  private _router = Router();
+  private _surveyRouter = SurveyRouter;
 
-    get router() {
-        return this._router;
-    }
+  get router() {
+    return this._router;
+  }
 
-    constructor() {
-        this._configure();
-    }
+  constructor() {
+    this._configure();
+  }
 
-    /**
-     * Connect routes to their matching routers.
-     */
-    private _configure() {
-        this._router.use('/themeA', this._subrouter);
-        this._router.use('/admin', this._adminrouter);
-    }
+  /**
+   * Connect routes to their matching routers.
+   */
+  private _configure() {
+    this._router.use("/survey", this._surveyRouter);
+  }
 }
 
 export = new MainRouter().router;
