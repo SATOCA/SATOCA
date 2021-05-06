@@ -1,4 +1,5 @@
 ![Node.js CI](https://github.com/SATOCA/SATOCA/workflows/Node.js%20CI/badge.svg)
+[![Backend Node.js CI](https://github.com/SATOCA/SATOCA/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/SATOCA/SATOCA/actions/workflows/backend-ci.yml)
 
 ### Goal
 Deliver a computerized adaptive testing suite which can assess organizational capabilities fast while offering cutting-edge data privacy and security
