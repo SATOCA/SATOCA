@@ -24,6 +24,7 @@ First install [node.js](https://nodejs.org) and then continue as shown below.
 ```
 git clone https://github.com/SATOCA/SATOCA
 cd SATOCA
+cd Frontend
 npm install
 npm start
 ```
