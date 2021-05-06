@@ -24,7 +24,7 @@ class SurveyRouter {
     let surveyId = Number(req.params.surveyId);
     let uniqueId = Number(req.params.uniqueId);
 
-    if (!isNaN(surveyId) || !isNaN(uniqueId))
+    if (isNaN(surveyId) || isNaN(uniqueId))
       throw new ErrorHandler(400, "Parameters invalid");
 
     return { surveyId, uniqueId };
