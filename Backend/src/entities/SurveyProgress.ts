@@ -13,6 +13,6 @@ export class SurveyProgress extends BaseEntity {
    @Column()
    finished: boolean = false;
 
-   @OneToOne(type => Participant, participants => participants.survey)
+   @OneToOne(type => Participant, participant => participant.progress)
    participant!: Participant;
 }

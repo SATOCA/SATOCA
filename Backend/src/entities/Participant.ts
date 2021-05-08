@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToOne, JoinColumn } from "typeorm";
 import { Survey } from "./Survey";
+import { SurveyProgress } from "./SurveyProgress";
 
 @Entity()
 export class Participant extends BaseEntity {
@@ -11,5 +12,9 @@ export class Participant extends BaseEntity {
    uuid: string = "";
 
    @ManyToOne(type => Survey, survey => survey.participants)
-   survey!: Survey;   
+   survey!: Survey;
+
+   @OneToOne(type => SurveyProgress, progress => progress.participant)   
+   @JoinColumn()
+   progress!: SurveyProgress;
 }
