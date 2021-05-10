@@ -1,29 +1,35 @@
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
-import { Survey } from "../entities/Survey"
-import { getConnection } from "typeorm";
-class SurveyController 
-{
-  async getCurrentSurvey(surveyId: number, uniqueId: number) 
-  {
-    const surveys = await getConnection()
-        .getRepository(Survey)
-        .createQueryBuilder("survey")
-        .where("survey.id = :id", { id: surveyId })
-        .getOne();
+import { getConnection, getManager } from "typeorm";
+import { Question } from "../entities/Question";
 
-    console.log("selected survey: ", surveys);
-    
-    let returnValue: CurrentQuestionResponseDto = {
+class SurveyController {
+  async getCurrentSurvey(surveyId: number, uniqueId: number) {
+
+    const query = await getConnection()
+      .getRepository(Question)
+      .createQueryBuilder("question")
+      .innerJoinAndSelect("question.survey", "survey")
+      .where("survey.id = :id", { id: surveyId })
+      // 
+      .take(1)
+      .getOne();
+
+    const result = new Question;
+    result.id = query.id;
+    result.text = query.text;
+    result.multiResponse = query.multiResponse;
+    result.choices = query.choices;
+
+    const returnValue: CurrentQuestionResponseDto = {
       error: null,
-      item: null,
+      item: result,
     };
     return returnValue;
   }
 
-  postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number)
-  {
+  postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) {
     let returnValue: AnswerSurveyResponseDto = {
       error: null,
     };
