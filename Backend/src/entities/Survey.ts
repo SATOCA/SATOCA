@@ -10,9 +10,9 @@ export class Survey extends BaseEntity {
    @Column()
    title: string = "";
 
-   @OneToMany(type => Participant, participants => participants.survey)
-   participants!: Participant[];
+   @OneToMany(type => Participant, participant => participant.survey)
+   participants: Participant[];
 
-   @OneToMany(type => Question, questions => questions.survey)
-   questions!: Question[];
+   @OneToMany(type => Question, question => question.survey)
+   questions: Question[];
 }

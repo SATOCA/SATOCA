@@ -14,11 +14,9 @@ export class Question extends BaseEntity {
    @Column()
    multiResponse: boolean = false;
 
-   // unidirectional
    @OneToMany(type => Answer, answer => answer.question)
-   choices!: Answer[];   
+   choices: Answer[];
 
-   // bidirectional
-   @ManyToOne(type => Survey, survey => survey.participants)
-   survey!: Survey;
+   @ManyToOne(type => Survey, survey => survey.id)
+   survey: Survey;
 }

@@ -11,5 +11,5 @@ export class Answer extends BaseEntity {
    text: string = "";
 
    @ManyToOne(type => Question, question => question.choices)
-   question!: Question;
+   question: Question;
 }
