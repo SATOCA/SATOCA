@@ -40,8 +40,8 @@ class SurveyRouter {
         try {
           let { surveyId, uniqueId } = SurveyRouter.extractUrlParams(req);
 
-          const result = this._controller.getCurrentSurvey(surveyId, uniqueId);
-          res.status(200).json(result);
+          this._controller.getCurrentSurvey(surveyId, uniqueId).then(obj => { res.status(200).json(obj); });;
+
         } catch (error) {
           next(error);
         }
