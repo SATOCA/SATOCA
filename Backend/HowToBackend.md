@@ -1,4 +1,5 @@
 ## Backend
+[![Backend Node.js CI](https://github.com/SATOCA/SATOCA/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/SATOCA/SATOCA/actions/workflows/backend-ci.yml)
 
 ### Quick Start
 First install [node.js](https://nodejs.org) and then continue as shown below.
