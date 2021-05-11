@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMany } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { Survey } from "./Survey";
 import { Answer } from "./Answer";
+import { FinishedQuestion } from "./FinishedQuestion";
 
 @Entity()
 export class Question extends BaseEntity {
@@ -19,4 +20,7 @@ export class Question extends BaseEntity {
 
    @ManyToOne(type => Survey, survey => survey.id)
    survey: Survey;
+
+   @OneToOne(type => FinishedQuestion, finishedQuestion => finishedQuestion.question)
+   finishedQuestion: FinishedQuestion;
 }
