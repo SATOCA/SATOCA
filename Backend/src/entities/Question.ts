@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, ManyToOne, OneToMan
 import { Survey } from "./Survey";
 import { Answer } from "./Answer";
 import { FinishedQuestion } from "./FinishedQuestion";
+import { SurveyProgress } from "./SurveyProgress";
 
 @Entity()
 export class Question extends BaseEntity {
@@ -23,4 +24,7 @@ export class Question extends BaseEntity {
 
    @OneToOne(type => FinishedQuestion, finishedQuestion => finishedQuestion.question)
    finishedQuestion: FinishedQuestion;
+
+   @OneToOne(type => SurveyProgress, progress => progress.currentQuestion)
+   progress: SurveyProgress;
 }

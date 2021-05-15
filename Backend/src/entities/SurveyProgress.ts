@@ -1,5 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, OneToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, OneToOne, JoinColumn } from "typeorm";
 import { Participant } from './Participant';
+import { FinishedQuestion } from "./FinishedQuestion";
+import { Question } from "./Question";
 
 @Entity()
 export class SurveyProgress extends BaseEntity {
@@ -14,5 +16,12 @@ export class SurveyProgress extends BaseEntity {
    finished: boolean = false;
 
    @OneToOne(type => Participant, participant => participant.progress)
-   participant!: Participant;
+   participant: Participant;
+
+   @OneToMany(type => FinishedQuestion, finishedQuestion => finishedQuestion.progress)
+   finishedQuestion: FinishedQuestion[];
+
+   @OneToOne(type => Question, currentQuestion => currentQuestion.progress)
+   @JoinColumn()
+   currentQuestion: Question;
 }
