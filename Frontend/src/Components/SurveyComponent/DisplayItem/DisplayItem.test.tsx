@@ -8,7 +8,7 @@ const handleSubmit = jest.fn();
 
 test("render an item", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[0]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[0]} onAnswerSubmit={handleSubmit} />
   );
 
   const question = getByTestId("question");
@@ -21,7 +21,7 @@ test("render an item", () => {
 
 test("choose correct button type (radio)", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[0]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[0]} onAnswerSubmit={handleSubmit} />
   );
 
   const radio = getByTestId("radio");
@@ -30,7 +30,7 @@ test("choose correct button type (radio)", () => {
 
 test("choose correct button type (checkbox)", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[1]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[1]} onAnswerSubmit={handleSubmit} />
   );
 
   const checkbox = getByTestId("checkbox");
@@ -39,7 +39,7 @@ test("choose correct button type (checkbox)", () => {
 
 test("handle option change (radio)", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[0]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[0]} onAnswerSubmit={handleSubmit} />
   );
 
   const spyConsoleLogAnswerChange = jest.spyOn(console, "log");
@@ -58,7 +58,7 @@ test("handle option change (radio)", () => {
 
 test("handle option change (checkbox)", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[1]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[1]} onAnswerSubmit={handleSubmit} />
   );
 
   const spyConsoleLogAnswerChange = jest.spyOn(console, "log");
@@ -87,7 +87,7 @@ test("handle option change (checkbox)", () => {
 
 test("handle form submit", () => {
   const { getByTestId } = render(
-    <DisplayItem item={survey.items[1]} onAnswerSubmit={handleSubmit} />
+    <DisplayItem question={survey.items[1]} onAnswerSubmit={handleSubmit} />
   );
 
   const checkbox4 = getByTestId("4") as HTMLInputElement;
