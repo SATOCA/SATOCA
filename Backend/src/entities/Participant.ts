@@ -11,10 +11,12 @@ export class Participant extends BaseEntity {
    @Column({ unique: true })
    uuid: string = "";
 
+   @OneToOne(type => SurveyProgress, progress => progress.participant)
+   @JoinColumn()
+   surveyProgress: SurveyProgress;
+
    @ManyToOne(type => Survey, survey => survey.participants)
    survey: Survey;
 
-   @OneToOne(type => SurveyProgress, progress => progress.participant)
-   @JoinColumn()
-   progress!: SurveyProgress;
+
 }

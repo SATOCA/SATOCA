@@ -16,11 +16,11 @@ export class Question extends BaseEntity {
    @Column()
    multiResponse: boolean = false;
 
-   @OneToMany(type => Answer, answer => answer.question)
-   choices: Answer[];
-
    @ManyToOne(type => Survey, survey => survey.id)
    survey: Survey;
+
+   @OneToMany(type => Answer, answer => answer.question)
+   choices: Answer[];
 
    @OneToOne(type => FinishedQuestion, finishedQuestion => finishedQuestion.question)
    finishedQuestion: FinishedQuestion;

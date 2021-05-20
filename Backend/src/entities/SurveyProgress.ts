@@ -8,20 +8,21 @@ export class SurveyProgress extends BaseEntity {
 
    @PrimaryGeneratedColumn()
    id: number = 0;
-
+/*
    @Column()
    title: string = "";
-
+*/
    @Column()
    finished: boolean = false;
-
-   @OneToOne(type => Participant, participant => participant.progress)
-   participant: Participant;
-
-   @OneToMany(type => FinishedQuestion, finishedQuestion => finishedQuestion.progress)
-   finishedQuestion: FinishedQuestion[];
 
    @OneToOne(type => Question, currentQuestion => currentQuestion.progress)
    @JoinColumn()
    currentQuestion: Question;
+
+   @OneToOne(type => Participant, participant => participant.surveyProgress)
+   participant: Participant;
+
+   @OneToMany(type => FinishedQuestion, finishedQuestion => finishedQuestion.surveyProgress)
+   finishedQuestion: FinishedQuestion[];
+   
 }
