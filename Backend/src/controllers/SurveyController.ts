@@ -2,23 +2,18 @@ import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { getConnection } from "typeorm";
-import { Question } from "../entities/Question";
-<<<<<<< HEAD
 import { FinishedQuestion } from "../entities/FinishedQuestion";
 import { Participant } from "../entities/Participant";
-=======
-import { SurveyProgress } from "../entities/SurveyProgress";
 import { ErrorDto } from "../routers/dto/ErrorDto";
->>>>>>> e32aecc43e98b24b168ea8d0683477257ac9be45
 
 export class SurveyController {
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
 
     const progress = await getConnection()
-      .getRepository(SurveyProgress)
-      .createQueryBuilder("progess")
-      .leftJoinAndSelect('progess.currentQuestion', 'currentQuestion')
-      .innerJoinAndSelect("progess.participant", "participant")
+      .getRepository(Participant)
+      .createQueryBuilder("progress")
+      .leftJoinAndSelect("progress.currentQuestion", "currentQuestion")
+      .innerJoinAndSelect("progress.participant", "participant")
       .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)
       .getOne();
@@ -35,15 +30,15 @@ export class SurveyController {
     return result;
   }
 
-  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) {
+  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) { // todo: uniqueId has to be string
 
     const progressQuery = await getConnection()
         .getRepository(Participant)
         .createQueryBuilder("participant")
         .innerJoinAndSelect("participant.survey", "survey")
         .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
-        .where("survey.Id = :surveyId", { surveyId })
-        .andWhere("participant.uuid = :uniqueId", { uniqueId })
+        .where("survey.Id = :surveyId", { surveyId: surveyId })
+        .andWhere("participant.uuid = :uniqueId", { uuid: uniqueId })
         .getOneOrFail();
 
 
