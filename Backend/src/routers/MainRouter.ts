@@ -1,9 +1,11 @@
 import { Router } from "express";
-import SurveyRouter from "./SurveyRouter";
+import { ParticipantRouter } from "./ParticipantRouter";
+import { SurveyRouter } from "./SurveyRouter";
 
 class MainRouter {
   private _router = Router();
-  private _surveyRouter = SurveyRouter;
+  private _surveyRouter = new SurveyRouter().router;
+  private _participantRouter = new ParticipantRouter().router;
 
   get router() {
     return this._router;
@@ -18,6 +20,7 @@ class MainRouter {
    */
   private _configure() {
     this._router.use("/survey", this._surveyRouter);
+    this._router.use("/participant", this._participantRouter);
   }
 }
 
