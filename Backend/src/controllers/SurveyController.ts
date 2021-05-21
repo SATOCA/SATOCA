@@ -3,9 +3,18 @@ import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto"
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { getConnection, getManager } from "typeorm";
 import { Question } from "../entities/Question";
+import { SurveyProgress } from "../entities/SurveyProgress";
 
-class SurveyController {
-  async getCurrentSurvey(surveyId: number, uniqueId: number) {
+export class SurveyController {
+  async getCurrentSurvey(surveyId: number, uniqueId: string) {
+
+    const progress = await getConnection()
+      .getRepository(SurveyProgress)
+      .createQueryBuilder("progess")
+      .innerJoinAndSelect("progess.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
+      .take(1)
+      .getOne();
 
     const query = await getConnection()
       .getRepository(Question)
@@ -33,9 +42,6 @@ class SurveyController {
     let returnValue: AnswerSurveyResponseDto = {
       error: null,
     };
-
     return returnValue;
   }
 }
-
-export = new SurveyController();
