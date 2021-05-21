@@ -3,32 +3,36 @@ import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto"
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { getConnection } from "typeorm";
 import { Question } from "../entities/Question";
+<<<<<<< HEAD
 import { FinishedQuestion } from "../entities/FinishedQuestion";
 import { Participant } from "../entities/Participant";
+=======
+import { SurveyProgress } from "../entities/SurveyProgress";
+import { ErrorDto } from "../routers/dto/ErrorDto";
+>>>>>>> e32aecc43e98b24b168ea8d0683477257ac9be45
 
-class SurveyController {
-  async getCurrentSurvey(surveyId: number, uniqueId: number) {
+export class SurveyController {
+  async getCurrentSurvey(surveyId: number, uniqueId: string) {
 
-    const query = await getConnection()
-      .getRepository(Question)
-      .createQueryBuilder("question")
-      .innerJoinAndSelect("question.survey", "survey")
-      .where("survey.id = :id", { id: surveyId })
-      // 
+    const progress = await getConnection()
+      .getRepository(SurveyProgress)
+      .createQueryBuilder("progess")
+      .leftJoinAndSelect('progess.currentQuestion', 'currentQuestion')
+      .innerJoinAndSelect("progess.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)
       .getOne();
 
-    const result = new Question;
-    result.id = query.id;
-    result.text = query.text;
-    result.multiResponse = query.multiResponse;
-    result.choices = query.choices;
-
-    const returnValue: CurrentQuestionResponseDto = {
-      error: null,
-      item: result,
+    const err: ErrorDto = {
+      message: progress ? "" : "todo: error message",
+      hasError: progress ? false : true,
     };
-    return returnValue;
+
+    const result: CurrentQuestionResponseDto = {
+      error: err,
+      item: progress.currentQuestion,
+    };
+    return result;
   }
 
   async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) {
@@ -61,9 +65,6 @@ class SurveyController {
     let returnValue: AnswerSurveyResponseDto = {
       error: null,
     };
-
     return returnValue;
   }
 }
-
-export = new SurveyController();
