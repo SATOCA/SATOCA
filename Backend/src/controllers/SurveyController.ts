@@ -1,8 +1,10 @@
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
-import { getConnection, getManager } from "typeorm";
+import { getConnection } from "typeorm";
 import { Question } from "../entities/Question";
+import { FinishedQuestion } from "../entities/FinishedQuestion";
+import { Participant } from "../entities/Participant";
 
 class SurveyController {
   async getCurrentSurvey(surveyId: number, uniqueId: number) {
@@ -29,7 +31,33 @@ class SurveyController {
     return returnValue;
   }
 
-  postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) {
+  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) {
+
+    const progressQuery = await getConnection()
+        .getRepository(Participant)
+        .createQueryBuilder("participant")
+        .innerJoinAndSelect("participant.survey", "survey")
+        .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
+        .where("survey.Id = :surveyId", { surveyId })
+        .andWhere("participant.uuid = :uniqueId", { uniqueId })
+        .getOneOrFail();
+
+
+    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
+    let finishedQuestion = new FinishedQuestion();
+    finishedQuestion.id = body.itemId;
+    finishedQuestion.question = progressQuery.currentQuestion;
+    finishedQuestion.givenAnswers = body.answers;
+    await finishedQuestionRepository.save(finishedQuestion);
+    console.log("submitted item: ", finishedQuestionRepository);
+
+    // update Participant
+    let participantRepository = getConnection().getRepository(Participant);
+    // todo: replace answered currentQuestion with the next/following question
+    let progress = new Participant();
+    progress.currentQuestion = progressQuery.currentQuestion;
+    await participantRepository.save(progress);
+
     let returnValue: AnswerSurveyResponseDto = {
       error: null,
     };
