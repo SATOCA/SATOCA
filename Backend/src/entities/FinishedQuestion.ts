@@ -1,7 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, OneToOne, JoinColumn, ManyToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, BaseEntity, OneToMany, ManyToOne } from "typeorm";
 import { Question } from './Question';
 import { Answer } from './Answer';
-import { SurveyProgress } from "./SurveyProgress";
+import { Participant } from "./Participant";
 
 @Entity()
 export class FinishedQuestion extends BaseEntity {
@@ -9,12 +9,11 @@ export class FinishedQuestion extends BaseEntity {
    @PrimaryGeneratedColumn()
    id: number = 0;
 
-   @OneToOne(type => Question, question => question.finishedQuestion)
-   @JoinColumn()
+   @ManyToOne(type => Question, question => question.finishedQuestions)
    question: Question;
 
-   @ManyToOne(type => SurveyProgress, progress => progress.finishedQuestion)
-   surveyProgress: SurveyProgress;
+   @ManyToOne(type => Participant, participant => participant.finishedQuestions)
+   participant: Participant;
 
    @OneToMany(type => Answer, answer => answer.finishedQuestion)
    givenAnswers: Answer[];

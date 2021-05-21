@@ -10,10 +10,10 @@ export class Answer extends BaseEntity {
 
    @Column()
    text: string = "";
-/*
+
    @Column()
    correct: boolean = false;
-*/
+
    @ManyToOne(type => Question, question => question.choices)
    question: Question;
 

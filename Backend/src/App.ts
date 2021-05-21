@@ -9,7 +9,6 @@ import { Survey } from "./entities/Survey";
 import { Participant } from "./entities/Participant";
 import { Question } from "./entities/Question";
 import { Answer } from "./entities/Answer";
-import { SurveyProgress } from "./entities/SurveyProgress";
 import { FinishedQuestion } from "./entities/FinishedQuestion";
 
 // load the environment variables from the .env file
@@ -41,7 +40,6 @@ createConnection({
     Participant,
     Question,
     Answer,
-    SurveyProgress,
     FinishedQuestion,
   ],
 }).then(async (connection) => {
