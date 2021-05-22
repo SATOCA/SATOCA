@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { RouteComponentProps, useHistory } from "react-router-dom";
-import { getSurveyFromMock } from "../../Services/SurveyDataService";
-import { DisplayItem } from "./DisplayItem/DisplayItem";
+import React, {useEffect, useState} from "react";
+import {RouteComponentProps, useHistory} from "react-router-dom";
+import {getSurveyFromMock} from "../../Services/SurveyDataService";
+import {DisplayItem} from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import validateSurveyId from "../../Services/SurveyAPI";
-import { Container } from "reactstrap";
+import {getCurrentQuestion} from "../../Services/SurveyAPI";
+import {Container} from "reactstrap";
+import {Question} from "../../DataModel/Item";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
@@ -24,26 +25,29 @@ export interface RouterSurveyComponentProps
 export default function SurveyComponent(props: SurveyComponentProps) {
   // ! \todo should have no items data -> items: {}
   const history = useHistory();
-  const [items, setItems] = useState(setupSurvey());
+  const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>(undefined);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [surveyEnded, setSurveyEnded] = useState(false);
 
   useEffect(() => {
-    if (!validateSurveyId(props.surveyId, props.uniqueSurveyId)) {
+    getCurrentQuestion(props.surveyId, props.uniqueSurveyId).then(response => {
+      let currentQuestion = response.data.item;
+      if(currentQuestion !== null)
+        setCurrentQuestion(currentQuestion);
+    }).catch(error => {
       history.push("/404");
-    }
-  });
+    }).then(() => {
+          setIsLoading(false);
+        }
+    )
+  }, []);
 
-  const nextQuestion = () => {
-    // let nextQuestion = (response: Array<number>) => {
-    //    console.log("reponse: ", response);
-    //    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
-    if (items.length > 1) {
-      // ! \todo implement logic to select next item. for now the first item will be poped.
-      setItems(items.slice(1, items.length));
-      setSurveyEnded(false);
-    } else {
-      setSurveyEnded(true);
-    }
+  const submit = () => {
+    // todo
+
+    setSurveyEnded(false);
   };
 
   if (surveyEnded)
@@ -60,7 +64,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
         Unique Survey with id: {props.uniqueSurveyId}
       </h3>
       <span data-testid="item">
-        <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
+          { currentQuestion !== undefined ? <DisplayItem question={currentQuestion} onAnswerSubmit={submit} /> : <div/>}
       </span>
     </Container>
   );

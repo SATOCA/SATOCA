@@ -1,12 +1,12 @@
-import { Item } from "../DataModel/Item";
+import { Question } from "../DataModel/Item";
 
 class SubmitAnswerService {
 
   static saveSubmittedAnswer(
-    item: Item,
+    item: Question,
     submittedOptions: Array<number>
   ): void {
-    localStorage.setItem(item.question.text, submittedOptions.toString());
+    localStorage.setItem(item.text, submittedOptions.toString());
   }
 
   static showSavedAnswers(): void {
@@ -21,7 +21,7 @@ class SubmitAnswerService {
 }
 
 export function saveSubmittedAnswer(
-  item: Item,
+  item: Question,
   submittedOptions: Array<number>
 ) {
   return SubmitAnswerService.saveSubmittedAnswer(item, submittedOptions);

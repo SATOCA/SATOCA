@@ -1,9 +1,9 @@
 import React, { ChangeEvent } from "react";
 import { Col, Form, FormGroup, Input, Label } from "reactstrap";
-import { Item } from "../../../../DataModel/Item";
+import { Question } from "../../../../DataModel/Item";
 
 type DisplayRadioBtnProps = {
-  item: Item;
+  item: Question;
   onSelectionChange: (value: number) => void;
   rSelected: Array<number>;
 };
@@ -31,12 +31,12 @@ export default class DisplayRadioButtons extends React.Component<
       <Form className="Answer-Options">
         <FormGroup data-testid="radioOptions">
           <Col sm={10}>
-            {this.props.item.answerOptions.map((answer) => (
+            {this.props.item.choices.map((answer) => (
               <FormGroup check key={answer.id}>
                 <Input
                   data-testid={answer.id.toString()}
                   type="radio"
-                  name={this.props.item.question.text}
+                  name={this.props.item.text}
                   id={answer.id.toString()}
                   onChange={this.handleChange}
                   checked={this.props.rSelected[0] === answer.id}

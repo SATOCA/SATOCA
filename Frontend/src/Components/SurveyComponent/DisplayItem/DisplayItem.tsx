@@ -1,11 +1,11 @@
 import React, { MouseEvent } from "react";
-import { Item } from "../../../DataModel/Item";
+import { Question } from "../../../DataModel/Item";
 import DisplayCheckboxButtons from "./Answer/DisplayCheckboxButtons";
 import DisplayRadioButtons from "./Answer/DisplayRadioButtons";
 import { saveSubmittedAnswer } from "../../../Services/SubmitAnswerService";
 
 export type displayItemProps = {
-  item: Item;
+  question: Question;
   onAnswerSubmit: () => void;
   // onAnswerSubmit: (response: Array<number>) => void;
 };
@@ -30,7 +30,7 @@ export class DisplayItem extends React.Component<
 
   handleOptionChange = (changedAnswerID: number) => {
     let selected: Array<number> = this.state.selectedOptions.slice();
-    if (this.props.item.isMultiResponse) {
+    if (this.props.question.multiResponse) {
       const index = selected.indexOf(changedAnswerID);
       if (index < 0) {
         selected.push(changedAnswerID);
@@ -52,18 +52,18 @@ export class DisplayItem extends React.Component<
     submitEvent.preventDefault();
     console.log("You have submitted: ", this.state.selectedOptions);
     alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
-    saveSubmittedAnswer(this.props.item, this.state.selectedOptions);
+    saveSubmittedAnswer(this.props.question, this.state.selectedOptions);
     this.setState({ selectedOptions: [] });
     this.props.onAnswerSubmit();
     // this.props.onAnswerSubmit(this.state.selectedOptions);
   };
 
   chooseButtonType = () => {
-    if (this.props.item.isMultiResponse) {
+    if (this.props.question.multiResponse) {
       return (
         <div data-testid="checkbox">
           <DisplayCheckboxButtons
-            item={this.props.item}
+            item={this.props.question}
             onSelectionChange={this.handleOptionChange}
             cSelected={this.state.selectedOptions}
           />
@@ -73,7 +73,7 @@ export class DisplayItem extends React.Component<
     return (
       <div data-testid="radio">
         <DisplayRadioButtons
-          item={this.props.item}
+          item={this.props.question}
           onSelectionChange={this.handleOptionChange}
           rSelected={this.state.selectedOptions}
         />
@@ -85,7 +85,7 @@ export class DisplayItem extends React.Component<
     return (
       <div>
         <div className="question" data-testid="question">
-          <h5>{this.props.item.question.text}</h5>
+          <h5>{this.props.question.text}</h5>
         </div>
         <div className="answer" data-testid="answer">
           {this.chooseButtonType()}
