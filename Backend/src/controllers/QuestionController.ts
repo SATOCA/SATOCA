@@ -4,6 +4,7 @@ import { ErrorDto } from "../routers/dto/ErrorDto";
 import { Question } from "../entities/Question";
 import { QuestionDto } from "../routers/dto/QuestionDto";
 import { QuestionResponseDto } from "../routers/dto/QuestionResponseDto";
+import { Answer } from "../entities/Answer";
 
 export class QuestionController {
 
@@ -26,10 +27,17 @@ export class QuestionController {
     const survey = await getConnection().getRepository(Survey).findOne(surveyId);
     //! \todo check if survey is valid
 
+    const choices: Answer[] = await Promise.all(body.choices.map(async (item): Promise<Answer> => {
+      let obj = new Answer;
+      obj.text = item.text;
+      await getConnection().getRepository(Answer).save(obj);
+      return obj;
+    }));
+
     let obj = new Question();
     obj.text = body.text;
     obj.multiResponse = body.multiResponse;
-    //! \todo obj.choices = 
+    obj.choices = choices;
     obj.survey = survey;
 
     let result: ErrorDto = {

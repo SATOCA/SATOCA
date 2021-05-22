@@ -30,10 +30,13 @@ export class ParticipantController {
     const question = await getConnection()
       .getRepository(Question)
       .createQueryBuilder("question")
+      .leftJoinAndSelect("question.choices", "choises")
       .innerJoinAndSelect("question.survey", "survey")
       .where("survey.id = :id", { id: surveyId })
       .take(1)
       .getOne();
+
+    console.log(question)
     //! \todo handle error case
     // -> take all available questions and let the adaptation logic decide which is the first question
 

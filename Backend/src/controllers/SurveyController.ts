@@ -8,6 +8,7 @@ import { ErrorDto } from "../routers/dto/ErrorDto";
 import { Survey } from "../entities/Survey";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
+import { Question } from "../entities/Question";
 
 export class SurveyController {
 
@@ -56,15 +57,23 @@ export class SurveyController {
       .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)
       .getOne();
+    //! \todo handle error case
+
+    const question = await getConnection()
+      .getRepository(Question)
+      .createQueryBuilder("question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .where("question.id = :id", { id: query.currentQuestion.id })
+      .getOne()
+    //! \todo handle error case
 
     const err: ErrorDto = {
-      message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      message: "",
+      hasError: false,
     };
-
     const result: CurrentQuestionResponseDto = {
       error: err,
-      item: query.currentQuestion
+      item: question
     };
     return result;
   }
