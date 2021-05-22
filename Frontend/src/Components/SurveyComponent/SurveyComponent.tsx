@@ -1,11 +1,11 @@
-import React, {useEffect, useState} from "react";
-import {RouteComponentProps, useHistory} from "react-router-dom";
-import {getSurveyFromMock} from "../../Services/SurveyDataService";
-import {DisplayItem} from "./DisplayItem/DisplayItem";
+import React, { useEffect, useState } from "react";
+import { RouteComponentProps, useHistory } from "react-router-dom";
+import { getSurveyFromMock } from "../../Services/SurveyDataService";
+import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import {getCurrentQuestion} from "../../Services/SurveyAPI";
-import {Container} from "reactstrap";
-import {Question} from "../../DataModel/Item";
+import { getCurrentQuestion } from "../../Services/SurveyAPI";
+import { Container, Spinner } from "reactstrap";
+import { Question } from "../../DataModel/Item";
 
 function setupSurvey() {
   const survey = getSurveyFromMock();
@@ -20,10 +20,9 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> {}
+  extends RouteComponentProps<SurveyComponentProps> { }
 
 export default function SurveyComponent(props: SurveyComponentProps) {
-  // ! \todo should have no items data -> items: {}
   const history = useHistory();
   const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,14 +33,13 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   useEffect(() => {
     getCurrentQuestion(props.surveyId, props.uniqueSurveyId).then(response => {
       let currentQuestion = response.data.item;
-      if(currentQuestion !== null)
+      if (currentQuestion !== null)
         setCurrentQuestion(currentQuestion);
-    }).catch(error => {
+    }).catch(() => {
       history.push("/404");
     }).then(() => {
-          setIsLoading(false);
-        }
-    )
+      setIsLoading(false);
+    })
   }, []);
 
   const submit = () => {
@@ -49,6 +47,13 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
     setSurveyEnded(false);
   };
+
+  if (isLoading)
+    return (
+      <Container className="glass-card-content" fluid="lg">
+        <Spinner animation="border" role="status" />
+      </Container>
+    );
 
   if (surveyEnded)
     return (
@@ -64,7 +69,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
         Unique Survey with id: {props.uniqueSurveyId}
       </h3>
       <span data-testid="item">
-          { currentQuestion !== undefined ? <DisplayItem question={currentQuestion} onAnswerSubmit={submit} /> : <div/>}
+        {currentQuestion !== undefined ? <DisplayItem question={currentQuestion} onAnswerSubmit={submit} /> : <div />}
       </span>
     </Container>
   );
