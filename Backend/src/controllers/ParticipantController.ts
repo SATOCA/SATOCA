@@ -4,7 +4,6 @@ import { Participant } from "../entities/Participant";
 import { ErrorDto } from "../routers/dto/ErrorDto";
 import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto"
 import { v4 as uuidv4 } from "uuid";
-import { SurveyProgress } from "../entities/SurveyProgress";
 import { Question } from "../entities/Question";
 
 export class ParticipantController {
@@ -27,27 +26,24 @@ export class ParticipantController {
   async postParticipant(surveyId: number) {
 
     const survey = await getConnection().getRepository(Survey).findOne(surveyId);
-
-    const obj = new Participant();
-    obj.uuid = uuidv4();
-    obj.survey = survey;
-
+    //! \todo handle error case
     const question = await getConnection()
       .getRepository(Question)
       .createQueryBuilder("question")
       .innerJoinAndSelect("question.survey", "survey")
       .where("survey.id = :id", { id: surveyId })
-      // 
       .take(1)
       .getOne();
-
-    const progress = new SurveyProgress();
-    progress.participant = obj;
-    progress.finished = false;
-    progress.currentQuestion = question;
-
     //! \todo handle error case
-    const result: ErrorDto = {
+    // -> take all available questions and let the adaptation logic decide which is the first question
+
+    let obj = new Participant();
+    obj.uuid = uuidv4();
+    obj.survey = survey;
+    obj.finished = false;
+    obj.currentQuestion = question;
+
+    let result: ErrorDto = {
       message: "",
       hasError: false,
     };
@@ -56,17 +52,7 @@ export class ParticipantController {
       .save(obj)
       .then(() => { result.hasError = false; })
       .catch(e => {
-        result.hasError = false;
-        result.message = e;
-      });
-
-    if (result.hasError === true)
-      return result;
-
-    getConnection().getRepository(SurveyProgress).save(progress)
-      .then(() => { result.hasError = false; })
-      .catch(e => {
-        result.hasError = false;
+        result.hasError = true;
         result.message = e;
       });
 
