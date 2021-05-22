@@ -1,7 +1,5 @@
-import {ErrorDto} from "../DataModel/dto/ErrorDto";
-import axios, {AxiosPromise, AxiosResponse} from "axios";
-import {CurrentQuestionResponseDto} from "../DataModel/dto/CurrentQuestionResponseDto";
-import {Question} from "../DataModel/Item";
+import axios from "axios";
+import { CurrentQuestionResponseDto } from "../DataModel/dto/CurrentQuestionResponseDto"
 
 type surveyIdTuple = {
   surveyId: string;
@@ -29,26 +27,23 @@ export default function validateSurveyId(
   );
 }
 export async function getCurrentQuestion(
-    surveyID: string,
-    uniqueSurveyID: string
-): Promise<AxiosResponse<CurrentQuestionResponseDto>> {
-
-  let question:Question | ErrorDto;
-
-  let url = "https://83faa2e4-c29e-47ba-870b-abb1027fbf12.mock.pstmn.io/api/Survey/"+surveyID+"/"+uniqueSurveyID;
+  surveyID: string,
+  uniqueSurveyID: string
+) {
+  let url = "http://localhost:5000/api/survey/" + surveyID + "/" + uniqueSurveyID;
   return await axios.get<CurrentQuestionResponseDto>(url);
-//       .then(response=>{
-//     console.log("success");
-//
-//     let data = response.data;
-//
-//     if(data.item !== null)
-//       question = data.item;
-//     else
-//       question = {
-//         hasError: true,
-//         message: "not found"
-//       }
-//   })
-// return question;
+  //       .then(response=>{
+  //     console.log("success");
+  //
+  //     let data = response.data;
+  //
+  //     if(data.item !== null)
+  //       question = data.item;
+  //     else
+  //       question = {
+  //         hasError: true,
+  //         message: "not found"
+  //       }
+  //   })
+  // return question;
 }
