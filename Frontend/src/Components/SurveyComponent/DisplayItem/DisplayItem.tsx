@@ -2,12 +2,10 @@ import React, { MouseEvent } from "react";
 import { Question } from "../../../DataModel/Item";
 import DisplayCheckboxButtons from "./Answer/DisplayCheckboxButtons";
 import DisplayRadioButtons from "./Answer/DisplayRadioButtons";
-import { saveSubmittedAnswer } from "../../../Services/SubmitAnswerService";
 
 export type displayItemProps = {
   question: Question;
-  onAnswerSubmit: () => void;
-  // onAnswerSubmit: (response: Array<number>) => void;
+  onAnswerSubmit: (question: Question, selectedOptions: Array<number>) => void;
 };
 
 export type displayItemState = {
@@ -52,10 +50,8 @@ export class DisplayItem extends React.Component<
     submitEvent.preventDefault();
     console.log("You have submitted: ", this.state.selectedOptions);
     alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
-    saveSubmittedAnswer(this.props.question, this.state.selectedOptions);
     this.setState({ selectedOptions: [] });
-    this.props.onAnswerSubmit();
-    // this.props.onAnswerSubmit(this.state.selectedOptions);
+    this.props.onAnswerSubmit(this.props.question, this.state.selectedOptions);
   };
 
   chooseButtonType = () => {

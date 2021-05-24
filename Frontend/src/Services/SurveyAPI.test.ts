@@ -1,4 +1,4 @@
-import validateSurveyId from "./SurveyAPI";
+import { validateSurveyId } from "./SurveyAPI";
 
 test("valid Survey ID", () => {
   const result = validateSurveyId("init-survey", "äasdökfökg");
