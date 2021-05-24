@@ -49,7 +49,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
   useEffect(() => {
     updateCurrentItem();
-  }, [props.surveyId, props.uniqueSurveyId]);
+  }, [props.surveyId, props.uniqueSurveyId, updateCurrentItem]);
 
   const submit = (question: Question, selectedOptions: Array<number>) => {
     const answers = question.choices.filter((answer) =>
