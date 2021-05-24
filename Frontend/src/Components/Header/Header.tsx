@@ -1,4 +1,12 @@
-import { Collapse, Nav, Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink } from "reactstrap";
+import {
+  Collapse,
+  Nav,
+  Navbar,
+  NavbarBrand,
+  NavbarToggler,
+  NavItem,
+  NavLink,
+} from "reactstrap";
 import { Link } from "react-router-dom";
 import React, { useState } from "react";
 import "./Header.css";
@@ -19,12 +27,16 @@ export default function Header() {
           <NavItem>
             <NavLink tag={Link} to="/">
               Home
-          </NavLink>
+            </NavLink>
           </NavItem>
           <NavItem>
-            <NavLink className="NavbarText" tag={Link} to="/5/0c342361-c6f3-4af4-8d81-8e930c1a250d">
+            <NavLink
+              className="NavbarText"
+              tag={Link}
+              to="/5/0c342361-c6f3-4af4-8d81-8e930c1a250d"
+            >
               Test Survey
-          </NavLink>
+            </NavLink>
           </NavItem>
         </Nav>
       </Collapse>
