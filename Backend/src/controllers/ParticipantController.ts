@@ -1,4 +1,4 @@
-import { getConnection, getManager } from "typeorm";
+import { getConnection } from "typeorm";
 import { Survey } from "../entities/Survey";
 import { Participant } from "../entities/Participant";
 import { ErrorDto } from "../routers/dto/ErrorDto";
@@ -58,6 +58,47 @@ export class ParticipantController {
         result.hasError = true;
         result.message = e;
       });
+
+    return result;
+  }
+
+  async updateParticipant(surveyId: number, uniqueId: string) {
+
+    const progressQuery = await getConnection()
+        .getRepository(Participant)
+        .createQueryBuilder("participant")
+        .innerJoinAndSelect("participant.survey", "survey")
+        .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
+        .where("survey.Id = :surveyId", { surveyId: surveyId })
+        .andWhere("participant.uuid = :uuid", { uuid: uniqueId })
+        .getOneOrFail();
+
+    let participantRepository = getConnection().getRepository(Participant);
+    let progress = await participantRepository.findOne({ id: progressQuery.id });
+
+    // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
+    /*
+    nextQuestion = getNextQuestion();
+
+     if(nextQuestion == null) {
+       progress.finished = true;
+     }
+
+    progress.currentQuestion = nextQuestion;
+    */
+
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    await participantRepository
+        .save(progress)
+        .then(() => { result.hasError = false; })
+        .catch(e => {
+          result.hasError = true;
+          result.message = e;
+        });
 
     return result;
   }

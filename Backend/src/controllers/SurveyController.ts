@@ -9,7 +9,7 @@ import { Survey } from "../entities/Survey";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { Question } from "../entities/Question";
-import {ParticipantController} from "./ParticipantController";
+import { ParticipantController } from "./ParticipantController";
 
 export class SurveyController {
 
@@ -79,7 +79,7 @@ export class SurveyController {
     return result;
   }
 
-  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: number) { // todo: uniqueId has to be string
+  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: string) {
 
     const progressQuery = await getConnection()
       .getRepository(Participant)
@@ -97,7 +97,7 @@ export class SurveyController {
         .where("question.id = :id", { id: progressQuery.currentQuestion.id })
         .getOne()
 
-    // update FinishedQuestion
+    // add to FinishedQuestion table
     let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
 
     let finishedQuestion = new FinishedQuestion();
@@ -105,50 +105,25 @@ export class SurveyController {
     finishedQuestion.question = question;
     finishedQuestion.givenAnswers = body.answers;
 
-    let finishedQuestionResult: ErrorDto = {
+    let result: ErrorDto = {
       message: "",
       hasError: false,
     };
 
     await finishedQuestionRepository
         .save(finishedQuestion)
-        .then(() => { finishedQuestionResult.hasError = false; })
+        .then(() => { result.hasError = false; })
         .catch(e => {
-          finishedQuestionResult.hasError = true;
-          finishedQuestionResult.message = e;
+          result.hasError = true;
+          result.message = e;
         });
 
     // update Participant
-    let participantRepository = getConnection().getRepository(Participant);
+    const participantController = new ParticipantController();
+    await participantController.updateParticipant(surveyId, uniqueId);
 
-    let progress = await participantRepository.findOne({ id: progressQuery.id });
-    // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
-    /*
-    nextQuestion = getNextQuestion();
-
-     if(nextQuestion == null) {
-       progress.finished = true;
-     }
-
-    progress.currentQuestion = nextQuestion;
-
-
-    let progressResult: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    await participantRepository
-        .save(progress)
-        .then(() => { progressResult.hasError = false; })
-        .catch(e => {
-          progressResult.hasError = true;
-          progressResult.message = e;
-        });
-    */
-    
     let returnValue: AnswerSurveyResponseDto = {
-      error: finishedQuestionResult,
+      error: result,
     };
     return returnValue;
   }
