@@ -9,6 +9,7 @@ import { Survey } from "../entities/Survey";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { Question } from "../entities/Question";
+import {ParticipantController} from "./ParticipantController";
 
 export class SurveyController {
 
@@ -86,27 +87,68 @@ export class SurveyController {
       .innerJoinAndSelect("participant.survey", "survey")
       .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
       .where("survey.Id = :surveyId", { surveyId: surveyId })
-      .andWhere("participant.uuid = :uniqueId", { uuid: uniqueId })
+      .andWhere("participant.uuid = :uuid", { uuid: uniqueId })
       .getOneOrFail();
 
+    const question = await getConnection()
+        .getRepository(Question)
+        .createQueryBuilder("question")
+        .leftJoinAndSelect("question.choices", "choices")
+        .where("question.id = :id", { id: progressQuery.currentQuestion.id })
+        .getOne()
 
+    // update FinishedQuestion
     let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
+
     let finishedQuestion = new FinishedQuestion();
     finishedQuestion.id = body.itemId;
-    // todo: finishedQuestion.question = progressQuery.currentQuestion;
+    finishedQuestion.question = question;
     finishedQuestion.givenAnswers = body.answers;
-    await finishedQuestionRepository.save(finishedQuestion);
-    console.log("submitted item: ", finishedQuestionRepository);
+
+    let finishedQuestionResult: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    await finishedQuestionRepository
+        .save(finishedQuestion)
+        .then(() => { finishedQuestionResult.hasError = false; })
+        .catch(e => {
+          finishedQuestionResult.hasError = true;
+          finishedQuestionResult.message = e;
+        });
 
     // update Participant
     let participantRepository = getConnection().getRepository(Participant);
-    // todo: replace answered currentQuestion with the next/following question
-    let progress = new Participant();
-    // progress.currentQuestion = progressQuery.currentQuestion;
-    await participantRepository.save(progress);
 
+    let progress = await participantRepository.findOne({ id: progressQuery.id });
+    // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
+    /*
+    nextQuestion = getNextQuestion();
+
+     if(nextQuestion == null) {
+       progress.finished = true;
+     }
+
+    progress.currentQuestion = nextQuestion;
+
+
+    let progressResult: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    await participantRepository
+        .save(progress)
+        .then(() => { progressResult.hasError = false; })
+        .catch(e => {
+          progressResult.hasError = true;
+          progressResult.message = e;
+        });
+    */
+    
     let returnValue: AnswerSurveyResponseDto = {
-      error: null,
+      error: finishedQuestionResult,
     };
     return returnValue;
   }
