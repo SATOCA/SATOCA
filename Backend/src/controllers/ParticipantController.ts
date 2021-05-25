@@ -30,7 +30,7 @@ export class ParticipantController {
     const question = await getConnection()
       .getRepository(Question)
       .createQueryBuilder("question")
-      .leftJoinAndSelect("question.choices", "choises")
+      .leftJoinAndSelect("question.choices", "choices")
       .innerJoinAndSelect("question.survey", "survey")
       .where("survey.id = :id", { id: surveyId })
       .take(1)
