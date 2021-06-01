@@ -97,33 +97,53 @@ export class SurveyController {
         .where("question.id = :id", { id: progressQuery.currentQuestion.id })
         .getOne()
 
-    // add to FinishedQuestion table
-    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
-
-    let finishedQuestion = new FinishedQuestion();
-    finishedQuestion.id = body.itemId;
-    finishedQuestion.question = question;
-    finishedQuestion.givenAnswers = body.answers;
-
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
 
-    await finishedQuestionRepository
-        .save(finishedQuestion)
-        .then(() => { result.hasError = false; })
-        .catch(e => {
-          result.hasError = true;
-          result.message = e;
-        });
+    // add to FinishedQuestion table
+    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
 
-    // update Participant
-    const participantController = new ParticipantController();
-    await participantController.updateParticipant(surveyId, uniqueId);
+    const count = await finishedQuestionRepository.count({ where: { question: question } })
+
+    if(count > 0) {
+
+      result.hasError = true
+      result.message = "The question with the id: " + question.id  + " was already answered";
+
+    } else { // if question was not already answered 
+
+      let finishedQuestion = new FinishedQuestion();
+      finishedQuestion.id = body.itemId;
+      finishedQuestion.question = question;
+      finishedQuestion.givenAnswers = body.answers;
+
+      await finishedQuestionRepository
+          .save(finishedQuestion)
+          .then(() => { result.hasError = false; })
+          .catch(e => {
+            result.hasError = true;
+            result.message = e;
+          });
+
+      // update Participant
+      const participantController = new ParticipantController();
+
+      if(!result.hasError){
+        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+        let updateParticipantReturn = await participantController.updateParticipant(surveyId, uniqueId);
+
+        if(updateParticipantReturn.hasError) {
+          result.hasError = true;
+          result.message = updateParticipantReturn.message;
+        }
+      }
+
+    }
 
     let returnValue: AnswerSurveyResponseDto = {
-      error: result,
+      error: result
     };
     return returnValue;
   }
