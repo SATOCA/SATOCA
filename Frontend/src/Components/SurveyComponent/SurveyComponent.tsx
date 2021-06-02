@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
@@ -13,7 +13,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> {}
+  extends RouteComponentProps<SurveyComponentProps> { }
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();
@@ -27,12 +27,12 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
   const surveyApi = SurveyApi.getInstance();
 
-  const updateCurrentItem = () => {
+  const updateCurrentItem = useCallback(() => {
     setIsLoading(true);
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
-      .then((response) => {
-        const responseQuestion = response.data.item;
+      .then(async (response) => {
+        const responseQuestion = (await response).item;
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
       })
       .catch((error: AxiosError) => {
@@ -45,7 +45,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       .then(() => {
         setIsLoading(false);
       });
-  };
+  }, [history, props.surveyId, props.uniqueSurveyId, surveyApi]);
 
   useEffect(() => {
     updateCurrentItem();
