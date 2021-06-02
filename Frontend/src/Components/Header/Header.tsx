@@ -18,7 +18,7 @@ export default function Header() {
 
   return (
     <Navbar data-testid="navbar" className="App-header" dark>
-      <NavbarBrand href="/" className="mr-auto">
+      <NavbarBrand href="/" className="mr-auto" data-testid="navbarBrand">
         Secure Adaptive Testing for Organized Capability Assessment
       </NavbarBrand>
       <NavbarToggler onClick={toggleNavbar} className="mr-2" />

@@ -12,8 +12,8 @@ test("render a SurveyComponent", () => {
   const head = getByTestId("navbar");
   expect(head).toBeInTheDocument();
 
-  const question = getByTestId("navbarBrand");
-  expect(question).toHaveTextContent(
+  const brand = getByTestId("navbarBrand");
+  expect(brand).toHaveTextContent(
     "Secure Adaptive Testing for Organized Capability Assessment"
   );
 });
