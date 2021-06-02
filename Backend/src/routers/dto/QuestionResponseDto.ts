@@ -1,7 +1,8 @@
 import { ErrorDto } from "./ErrorDto";
 import { Question } from "../../entities/Question";
 
-export interface CurrentQuestionResponseDto {
+
+export interface QuestionResponseDto {
   error: ErrorDto;
-  item: Question | null;
+  questions: Question[];
 }

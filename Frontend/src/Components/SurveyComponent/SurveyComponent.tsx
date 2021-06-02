@@ -1,17 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
-import { getSurveyFromMock } from "../../Services/SurveyDataService";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
-import validateSurveyId from "../../Services/SurveyAPI";
+import SurveyApi from "../../Services/SurveyAPI";
 import { Container } from "reactstrap";
-
-function setupSurvey() {
-  const survey = getSurveyFromMock();
-  // ! \todo implement logic. for now it is a random shuffle
-  survey.items.sort(() => Math.random() - 0.5);
-  return survey.items;
-}
+import { Question } from "../../DataModel/Item";
+import { AxiosError } from "axios";
 
 type SurveyComponentProps = {
   surveyId: string;
@@ -22,28 +16,64 @@ export interface RouterSurveyComponentProps
   extends RouteComponentProps<SurveyComponentProps> {}
 
 export default function SurveyComponent(props: SurveyComponentProps) {
-  // ! \todo should have no items data -> items: {}
   const history = useHistory();
-  const [items, setItems] = useState(setupSurvey());
+  const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>(
+    undefined
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [surveyEnded, setSurveyEnded] = useState(false);
 
-  useEffect(() => {
-    if (!validateSurveyId(props.surveyId, props.uniqueSurveyId)) {
-      history.push("/404");
-    }
-  });
+  const surveyApi = SurveyApi.getInstance();
 
-  const nextQuestion = () => {
-    // let nextQuestion = (response: Array<number>) => {
-    //    console.log("reponse: ", response);
-    //    //! \todo store response from user. possible to map with item(id) or concat all answer.id's
-    if (items.length > 1) {
-      // ! \todo implement logic to select next item. for now the first item will be poped.
-      setItems(items.slice(1, items.length));
-      setSurveyEnded(false);
-    } else {
-      setSurveyEnded(true);
-    }
+  const updateCurrentItem = () => {
+    setIsLoading(true);
+    surveyApi
+      .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
+      .then((response) => {
+        const responseQuestion = response.data.item;
+        if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
+      })
+      .catch((error: AxiosError) => {
+        if (error.code === "404") history.push("/404");
+        else {
+          setHasError(true);
+          setErrorMessage(error.message);
+        }
+      })
+      .then(() => {
+        setIsLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    updateCurrentItem();
+  }, [props.surveyId, props.uniqueSurveyId, updateCurrentItem]);
+
+  const submit = (question: Question, selectedOptions: Array<number>) => {
+    const answers = question.choices.filter((answer) =>
+      selectedOptions.includes(answer.id)
+    );
+
+    const answerDto = {
+      itemId: question.id,
+      answers,
+    };
+
+    surveyApi
+      .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
+      .then(() => updateCurrentItem());
+
+    setSurveyEnded(false);
+  };
+
+  const getContent = () => {
+    if (isLoading) return <div>loading...</div>;
+    if (hasError) return <div>{errorMessage}</div>;
+    if (currentQuestion === undefined) return <div>no data</div>;
+
+    return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
 
   if (surveyEnded)
@@ -59,9 +89,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       <h3 data-testid="header2">
         Unique Survey with id: {props.uniqueSurveyId}
       </h3>
-      <span data-testid="item">
-        <DisplayItem item={items[0]} onAnswerSubmit={nextQuestion} />
-      </span>
+      <span data-testid="item">{getContent()}</span>
     </Container>
   );
 }

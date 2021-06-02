@@ -1,6 +1,7 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany, OneToOne } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, BaseEntity, OneToMany, ManyToOne } from "typeorm";
 import { Question } from './Question';
 import { Answer } from './Answer';
+import { Participant } from "./Participant";
 
 @Entity()
 export class FinishedQuestion extends BaseEntity {
@@ -8,9 +9,14 @@ export class FinishedQuestion extends BaseEntity {
    @PrimaryGeneratedColumn()
    id: number = 0;
 
-   // @OneToOne(type => Question, participants => participants.survey)
-   // question!: Question;
+   @ManyToOne(type => Question, question => question.finishedQuestions)
+   question: Question;
 
-   // @OneToMany(type => Answer, answer => answer.question)
-   // givenAnswers!: Answer[];   
+   @ManyToOne(type => Participant, participant => participant.finishedQuestions)
+   participant: Participant;
+
+   @OneToMany(type => Answer, answer => answer.finishedQuestion)
+   givenAnswers: Answer[];
+
+
 }

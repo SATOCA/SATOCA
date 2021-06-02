@@ -1,9 +1,9 @@
 import React, { ChangeEvent } from "react";
 import { Col, Form, FormGroup, Input, Label } from "reactstrap";
-import { Item } from "../../../../DataModel/Item";
+import { Question } from "../../../../DataModel/Item";
 
 type DisplayCheckboxBtnProps = {
-  item: Item;
+  item: Question;
   onSelectionChange: (value: number) => void;
   cSelected: Array<number>;
 };
@@ -31,13 +31,13 @@ export default class DisplayCheckboxButtons extends React.Component<
       <Form className="Checkbox-Options">
         <FormGroup data-testid="checkOptions">
           <Col sm={10}>
-            {this.props.item.answerOptions.map((answer) => (
+            {this.props.item.choices.map((answer) => (
               <FormGroup check key={answer.id}>
                 <Input
                   data-testid={answer.id.toString()}
                   type="checkbox"
                   id={answer.id.toString()}
-                  name={this.props.item.question.text}
+                  name={this.props.item.text}
                   onChange={this.handleChange}
                   checked={this.props.cSelected.includes(answer.id)}
                   value={answer.id}

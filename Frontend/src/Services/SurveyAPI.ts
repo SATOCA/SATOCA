@@ -1,9 +1,15 @@
+import { CurrentQuestionResponseDto } from "../DataModel/dto/CurrentQuestionResponseDto";
+import HttpClient from "./HttpClient";
+import { AnswerSurveyDto } from "../DataModel/dto/AnswerSurveyDto";
+import { AnswerSurveyResponseDto } from "../DataModel/dto/AnswerSurveyResponseDto";
+import { AxiosResponse } from "axios";
+
 type surveyIdTuple = {
   surveyId: string;
   uniqueSurveyId: string;
 };
 
-export default function validateSurveyId(
+export function validateSurveyId(
   surveyId: string,
   uniqueSurveyId: string
 ): boolean {
@@ -22,4 +28,39 @@ export default function validateSurveyId(
     (tuple) =>
       tuple.surveyId === surveyId && tuple.uniqueSurveyId === uniqueSurveyId
   );
+}
+
+// s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
+export default class SurveyApi extends HttpClient {
+  private static classInstance?: SurveyApi;
+
+  private constructor() {
+    super("http://localhost:5000/api");
+  }
+
+  public static getInstance() {
+    if (!this.classInstance) {
+      this.classInstance = new SurveyApi();
+    }
+
+    return this.classInstance;
+  }
+
+  public getCurrentQuestion = async (
+    surveyID: string,
+    uniqueSurveyID: string
+  ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
+    await this.instance.get<CurrentQuestionResponseDto>(
+      `/Survey/${surveyID}/${uniqueSurveyID}`
+    );
+
+  public submitAnswer = async (
+    surveyID: string,
+    uniqueSurveyID: string,
+    answer: AnswerSurveyDto
+  ): Promise<AxiosResponse<AnswerSurveyResponseDto>> =>
+    await this.instance.post<AnswerSurveyResponseDto>(
+      `/Survey/${surveyID}/${uniqueSurveyID}`,
+      answer
+    );
 }

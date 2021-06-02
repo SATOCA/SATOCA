@@ -1,5 +1,5 @@
-import { Item } from "./Item";
+import { Question } from "./Item";
 
 export interface Survey {
-  items: Item[];
+  items: Question[];
 }
