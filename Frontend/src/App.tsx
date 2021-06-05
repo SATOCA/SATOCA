@@ -8,6 +8,7 @@ import SurveyComponent, {
 import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
 import Frontpage from "./Components/Frontpage/Frontpage";
+import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLoginPage";
 
 function App() {
   return (
@@ -30,6 +31,9 @@ function App() {
           />
           <Route exact path="/">
             <Frontpage />
+          </Route>
+          <Route exact path="/login">
+            <TrusteeLogin />
           </Route>
           <Redirect to="/404" />
         </Switch>

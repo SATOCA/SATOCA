@@ -38,6 +38,15 @@ export default function Header() {
               Test Survey
             </NavLink>
           </NavItem>
+          <NavItem>
+            <NavLink
+                className="NavbarText"
+                tag={Link}
+                to="/login"
+            >
+              Trustee Login
+            </NavLink>
+          </NavItem>
         </Nav>
       </Collapse>
     </Navbar>
