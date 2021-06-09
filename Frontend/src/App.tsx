@@ -8,7 +8,7 @@ import SurveyComponent, {
 import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
 import Frontpage from "./Components/Frontpage/Frontpage";
-import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLoginPage";
+import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLogin";
 
 function App() {
   return (
