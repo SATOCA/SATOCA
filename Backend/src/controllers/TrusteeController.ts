@@ -1,4 +1,4 @@
-import {Equal, getConnection} from "typeorm";
+import { getConnection} from "typeorm";
 import { Trustee } from "../entities/Trustee";
 import { ErrorDto } from "../routers/dto/ErrorDto";
 import { TrusteeResponseDto } from "../routers/dto/TrusteeResponseDto";
@@ -13,7 +13,7 @@ export class TrusteeController {
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      hasError: !query
     };
     const result: TrusteeResponseDto = {
       error: err,
@@ -54,9 +54,9 @@ export class TrusteeController {
     };
     const result: LoginTrusteeResponseDto = {
       error: err,
-      success: query ===1?true:false,
+      success: query===1
     };
     return result;
   };
-};
+}
 

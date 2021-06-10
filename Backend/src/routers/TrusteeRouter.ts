@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { TrusteeController } from "../controllers/TrusteeController";
-import {Trustee} from "../entities/Trustee";
 import {TrusteeDto} from "./dto/TrusteeDto";
 
 export class TrusteeRouter {
