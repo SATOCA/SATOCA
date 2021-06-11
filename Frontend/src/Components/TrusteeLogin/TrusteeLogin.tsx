@@ -1,14 +1,20 @@
 import React from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
+import SurveyApi from "../../Services/SurveyAPI";
+import {TrusteeLoginDto} from "../../DataModel/dto/TrusteeLoginDto";
 
 export default function TrusteeLogin() {
     const [login, setLogin] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [validLogin, setValidLogin] = React.useState(false);
     const [validPassword, setValidPassword] = React.useState(false);
+    const [loginSuccessful, setLoginSuccessful] = React.useState(false);
+    const surveyApi = SurveyApi.getInstance();
+
     const handleSubmit = (event: { currentTarget: any; preventDefault: () => void; stopPropagation: () => void; }) => {
         event.preventDefault();
-        console.log(login, password);
+        const data : TrusteeLoginDto = { login, password};
+        surveyApi.trusteeLogin(data).then(async(e) => {setLoginSuccessful((await e).success);});
     };
     const handleLoginInputChange = (e: { target: { name: any; value: any; }; }) => {
         setLogin(e.target.value);

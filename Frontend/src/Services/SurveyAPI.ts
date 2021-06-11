@@ -3,6 +3,8 @@ import HttpClient from "./HttpClient";
 import { AnswerSurveyDto } from "../DataModel/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../DataModel/dto/AnswerSurveyResponseDto";
 import { AxiosResponse } from "axios";
+import {TrusteeLoginDto} from "../DataModel/dto/TrusteeLoginDto";
+import {TrusteeLoginResponseDto} from "../DataModel/dto/TrusteeLoginResponseDto";
 
 type surveyIdTuple = {
   surveyId: string;
@@ -63,4 +65,10 @@ export default class SurveyApi extends HttpClient {
       `/Survey/${surveyID}/${uniqueSurveyID}`,
       answer
     );
+  public trusteeLogin = async (
+      data:TrusteeLoginDto
+  ): Promise<AxiosResponse<TrusteeLoginResponseDto>> =>
+      await this.instance.post<TrusteeLoginResponseDto>(
+          "/trustee/login/", data
+      );
 }
