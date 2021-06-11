@@ -63,4 +63,11 @@ export default class SurveyApi extends HttpClient {
       `/Survey/${surveyID}/${uniqueSurveyID}`,
       answer
     );
+
+  public uploadSurveyFile = async (file: File): Promise<AxiosResponse> => {
+    const data = new FormData();
+    data.append("file", file);
+
+    await this.instance.post("/Survey", data);
+  };
 }
