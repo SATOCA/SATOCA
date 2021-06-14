@@ -20,18 +20,9 @@ export class SurveyRouter {
       "/all",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.getSurveys().then(obj => { res.status(200).json(obj); });
-        } catch (error) {
-          next(error);
-        }
-      }
-    );
-
-    this._router.post(
-      "",
-      (req: Request, res: Response, next: NextFunction) => {
-        try {
-          this._controller.addSurvey(req.body as SurveyDto).then(obj => { res.status(200).json(obj); });
+          this._controller.getSurveys().then((obj) => {
+            res.status(200).json(obj);
+          });
         } catch (error) {
           next(error);
         }
@@ -42,7 +33,40 @@ export class SurveyRouter {
       "/:surveyId/:uniqueId",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.getCurrentSurvey(Number(req.params.surveyId), req.params.uniqueId).then(obj => { res.status(200).json(obj); });
+          this._controller
+            .getCurrentSurvey(Number(req.params.surveyId), req.params.uniqueId)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
+
+    this._router.post("", (req: Request, res: Response, next: NextFunction) => {
+      try {
+        this._controller.addSurvey(req.body as SurveyDto).then((obj) => {
+          res.status(200).json(obj);
+        });
+      } catch (error) {
+        next(error);
+      }
+    });
+
+    this._router.post(
+      "/:surveyId/:uniqueId",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .postCurrentSurvey(
+              req.body as AnswerSurveyDto,
+              Number(req.params.surveyId),
+              req.params.uniqueId
+            )
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
         } catch (error) {
           next(error);
         }
@@ -50,11 +74,12 @@ export class SurveyRouter {
     );
 
     this._router.post(
-      "/:surveyId/:uniqueId",
+      "/file",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.postCurrentSurvey(req.body as AnswerSurveyDto, Number(req.params.surveyId), req.params.uniqueId)
-              .then(obj => { res.status(200).json(obj); });
+          this._controller.createSurveyFromFile(req.files).then(() => {
+            res.status(200);
+          });
         } catch (error) {
           next(error);
         }
