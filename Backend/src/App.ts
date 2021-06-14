@@ -9,6 +9,7 @@ import { Survey } from "./entities/Survey";
 import { Participant } from "./entities/Participant";
 import { Question } from "./entities/Question";
 import { Answer } from "./entities/Answer";
+import { Trustee } from "./entities/Trustee";
 import { FinishedQuestion } from "./entities/FinishedQuestion";
 
 const bodyParser = require('body-parser')
@@ -34,6 +35,7 @@ createConnection({
     Question,
     Answer,
     FinishedQuestion,
+    Trustee,
   ],
 }).then(async (connection) => {
 
