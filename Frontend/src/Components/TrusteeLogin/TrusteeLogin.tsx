@@ -2,6 +2,7 @@ import React from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../Services/SurveyAPI";
 import {TrusteeLoginDto} from "../../DataModel/dto/TrusteeLoginDto";
+import UploadSurveyFile from "./UploadSurveyFile/UploadSurveyFile";
 
 export default function TrusteeLogin() {
     const [login, setLogin] = React.useState("");
@@ -16,6 +17,8 @@ export default function TrusteeLogin() {
         const data : TrusteeLoginDto = { login, password};
         surveyApi.trusteeLogin(data).then(async(e) => {setLoginSuccessful((await e).success);});
     };
+
+
     const handleLoginInputChange = (e: { target: { name: any; value: any; }; }) => {
         setLogin(e.target.value);
         setValidLogin(e.target.value.length > 0);
@@ -24,19 +27,29 @@ export default function TrusteeLogin() {
         setPassword(e.target.value);
         setValidPassword(e.target.value.length > 0);
     };
-    return (
-        <div className="centered front-page-alignment">
-            <Form onSubmit={handleSubmit}>
-                <FormGroup>
-                    <Label>Login</Label>
-                    <Input data-testid="input-login" type="text" value={login} onChange={handleLoginInputChange} valid={validLogin} />
-                </FormGroup>
-                <FormGroup>
-                    <Label>Password</Label>
-                    <Input data-testid="input-password" type="text" value={password} onChange={handlePasswordInputChange} valid={validPassword} />
-                </FormGroup>
-                <Button data-testid="btn-submit" disabled={validLogin === false || validPassword === false}>Submit</Button>
-            </Form>
-        </div>
-    );
+
+    if(loginSuccessful){
+        return(
+            <div className="centered front-page-alignment">
+                <UploadSurveyFile login={login} password={password} />
+            </div>
+        )
+    }
+    else{
+        return (
+            <div className="centered front-page-alignment">
+                <Form onSubmit={handleSubmit}>
+                    <FormGroup>
+                        <Label>Login</Label>
+                        <Input data-testid="input-login" type="text" value={login} onChange={handleLoginInputChange} valid={validLogin} />
+                    </FormGroup>
+                    <FormGroup>
+                        <Label>Password</Label>
+                        <Input data-testid="input-password" type="text" value={password} onChange={handlePasswordInputChange} valid={validPassword} />
+                    </FormGroup>
+                    <Button data-testid="btn-submit" disabled={validLogin === false || validPassword === false}>Submit</Button>
+                </Form>
+            </div>
+        );
+    }
 }

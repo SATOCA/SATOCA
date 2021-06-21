@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
 
-export default function UploadSurveyFile() {
+type UploadSurveyFileProps = {
+  login: string;
+  password: string;
+};
+
+export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   const [file, setFile] = useState<File | undefined>(undefined);
 
   const surveyApi = SurveyApi.getInstance();
@@ -17,7 +22,7 @@ export default function UploadSurveyFile() {
   const upload = () => {
     if (file !== undefined)
       surveyApi
-        .uploadSurveyFile(file)
+        .uploadSurveyFile(file, props.login, props.password)
         .then((response) => console.log(response));
   };
 

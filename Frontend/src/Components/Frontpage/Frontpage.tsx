@@ -1,7 +1,7 @@
 import React from "react";
 import "./Frontpage.css";
 import StartButton from "./StartButton";
-import UploadSurveyFile from "./UploadSurveyFile/UploadSurveyFile";
+import UploadSurveyFile from "../TrusteeLogin/UploadSurveyFile/UploadSurveyFile";
 import { Container, Row } from "reactstrap";
 
 export default function Frontpage() {

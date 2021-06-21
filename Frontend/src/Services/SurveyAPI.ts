@@ -66,12 +66,15 @@ export default class SurveyApi extends HttpClient {
       answer
     );
 
-  public uploadSurveyFile = async (file: File): Promise<AxiosResponse> => {
+  public uploadSurveyFile = async (file: File, login: string, password: string): Promise<AxiosResponse> => {
     const data = new FormData();
     data.append("file", file);
-   };
+    data.append("login", login);
+    data.append("pwd", password);
 
     await this.instance.post("/Survey", data);
+  };
+
   public trusteeLogin = async (
       data:TrusteeLoginDto
   ): Promise<AxiosResponse<TrusteeLoginResponseDto>> =>
