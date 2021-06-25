@@ -5,8 +5,36 @@ import { ErrorDto } from "../routers/dto/ErrorDto";
 import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto"
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
+import {ParticipantDto} from "../routers/dto/ParticipantDto";
 
 export class ParticipantController {
+
+
+  //todo add survey ID and call postParticipant n-times
+  //todo export user links
+  async addParticipant(body: ParticipantDto) {
+    const obj = new Participant();
+    //! \todo title cannot be empty
+    obj.uuid = body.uuid;
+
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    getConnection()
+        .getRepository(Participant)
+        .save(obj)
+        .then(() => {
+          result.hasError = false;
+        })
+        .catch((e) => {
+          result.hasError = true;
+          result.message = e;
+        });
+
+    return result;
+  }
 
   async getParticipants(surveyId: number) {
 

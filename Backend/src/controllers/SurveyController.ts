@@ -26,7 +26,7 @@ export class SurveyController {
     return result;
   }
 
-    await getConnection().getRepository(Survey)
+    //await getConnection().getRepository(Survey)
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()

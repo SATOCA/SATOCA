@@ -77,7 +77,7 @@ export class SurveyRouter {
       "/file",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.createSurveyFromFile(req.files).then(() => {
+          this._controller.createSurveyFromFile(/*req.files*/).then(() => {
             res.status(200);
           });
         } catch (error) {
