@@ -12,7 +12,6 @@ import { Question } from "../entities/Question";
 import { ParticipantController } from "./ParticipantController";
 
 export class SurveyController {
-
   async getSurveys() {
     const query = await getConnection().getRepository(Survey).find();
 
@@ -27,30 +26,9 @@ export class SurveyController {
     return result;
   }
 
-  async addSurvey(body: SurveyDto) {
-    const obj = new Survey();
-    //! \todo title cannot be empty
-    obj.title = body.title;
-
-    let result: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    getConnection().getRepository(Survey)
-      .save(obj)
-      .then(() => { result.hasError = false; })
-      .catch(e => {
-        result.hasError = true;
-        result.message = e;
-      });
-
-    return result;
-  }
-
+    await getConnection().getRepository(Survey)
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
-
     const query = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
@@ -65,7 +43,7 @@ export class SurveyController {
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
       .where("question.id = :id", { id: query.currentQuestion.id })
-      .getOne()
+      .getOne();
     //! \todo handle error case
 
     const err: ErrorDto = {
@@ -74,13 +52,40 @@ export class SurveyController {
     };
     const result: CurrentQuestionResponseDto = {
       error: err,
-      item: question
+      item: question,
     };
     return result;
   }
 
-  async postCurrentSurvey(body: AnswerSurveyDto, surveyId: number, uniqueId: string) {
+  async addSurvey(body: SurveyDto) {
+    const obj = new Survey();
+    //! \todo title cannot be empty
+    obj.title = body.title;
 
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    getConnection()
+      .getRepository(Survey)
+      .save(obj)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+
+    return result;
+  }
+
+  async postCurrentSurvey(
+    body: AnswerSurveyDto,
+    surveyId: number,
+    uniqueId: string
+  ) {
     const progressQuery = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
@@ -91,11 +96,11 @@ export class SurveyController {
       .getOneOrFail();
 
     const question = await getConnection()
-        .getRepository(Question)
-        .createQueryBuilder("question")
-        .leftJoinAndSelect("question.choices", "choices")
-        .where("question.id = :id", { id: progressQuery.currentQuestion.id })
-        .getOne()
+      .getRepository(Question)
+      .createQueryBuilder("question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .where("question.id = :id", { id: progressQuery.currentQuestion.id })
+      .getOne();
 
     let result: ErrorDto = {
       message: "",
@@ -103,16 +108,20 @@ export class SurveyController {
     };
 
     // add to FinishedQuestion table
-    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
+    let finishedQuestionRepository = getConnection().getRepository(
+      FinishedQuestion
+    );
 
-    const count = await finishedQuestionRepository.count({ where: { question: question } })
+    const count = await finishedQuestionRepository.count({
+      where: { question: question },
+    });
 
-    if(count > 0) {
-
-      result.hasError = true
-      result.message = "The question with the id: " + question.id  + " was already answered";
-
-    } else { // if question was not already answered 
+    if (count > 0) {
+      result.hasError = true;
+      result.message =
+        "The question with the id: " + question.id + " was already answered";
+    } else {
+      // if question was not already answered
 
       let finishedQuestion = new FinishedQuestion();
       finishedQuestion.id = body.itemId;
@@ -120,31 +129,41 @@ export class SurveyController {
       finishedQuestion.givenAnswers = body.answers;
 
       await finishedQuestionRepository
-          .save(finishedQuestion)
-          .then(() => { result.hasError = false; })
-          .catch(e => {
-            result.hasError = true;
-            result.message = e;
-          });
+        .save(finishedQuestion)
+        .then(() => {
+          result.hasError = false;
+        })
+        .catch((e) => {
+          result.hasError = true;
+          result.message = e;
+        });
 
       // update Participant
       const participantController = new ParticipantController();
 
-      if(!result.hasError){
+      if (!result.hasError) {
         // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-        let updateParticipantReturn = await participantController.updateParticipant(surveyId, uniqueId);
+        let updateParticipantReturn = await participantController.updateParticipant(
+          surveyId,
+          uniqueId
+        );
 
-        if(updateParticipantReturn.hasError) {
+        if (updateParticipantReturn.hasError) {
           result.hasError = true;
           result.message = updateParticipantReturn.message;
         }
       }
-
     }
 
     let returnValue: AnswerSurveyResponseDto = {
-      error: result
+      error: result,
     };
     return returnValue;
+  }
+
+  async createSurveyFromFile(){
+    // file extract
+
+    // save to database
   }
 }

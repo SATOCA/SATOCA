@@ -35,7 +35,7 @@ export default class SurveyApi extends HttpClient {
   private static classInstance?: SurveyApi;
 
   private constructor() {
-    super("http://localhost:5000/api");
+    super("http://localhost:5001/api");
   }
 
   public static getInstance() {
@@ -63,4 +63,11 @@ export default class SurveyApi extends HttpClient {
       `/Survey/${surveyID}/${uniqueSurveyID}`,
       answer
     );
+
+  public uploadSurveyFile = async (file: File): Promise<AxiosResponse> => {
+    const data = new FormData();
+    data.append("file", file);
+
+    await this.instance.post("/Survey", data);
+  };
 }
