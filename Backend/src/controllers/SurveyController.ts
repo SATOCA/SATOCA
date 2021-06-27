@@ -11,6 +11,8 @@ import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { Question } from "../entities/Question";
 import { ParticipantController } from "./ParticipantController";
 import fileUpload from "express-fileupload";
+import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
+import { TrusteeController } from "./TrusteeController";
 
 export class SurveyController {
   async getSurveys() {
@@ -162,10 +164,23 @@ export class SurveyController {
   }
 
   async createSurveyFromFile(
-    file: fileUpload.UploadedFile | fileUpload.UploadedFile[]
+    file: fileUpload.UploadedFile,
+    body: UploadSurveyFileDto
   ) {
-    // file extract
+    //check User rights
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
 
+    if (!trusteeLogin.success) {
+      let result: ErrorDto = {
+        message: "Login unsuccessful",
+        hasError: true,
+      };
+      return result;
+    }
+
+    // file extract
+    file.tempFilePath;
     // save to database
 
     let result: ErrorDto = {

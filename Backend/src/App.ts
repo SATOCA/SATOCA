@@ -44,6 +44,9 @@ createConnection({
   app.use(
     fileUpload({
       createParentPath: true,
+      useTempFiles : true,
+      tempFileDir : '/tmp/',
+      debug: true //todo remove this after dev
     })
   );
 
