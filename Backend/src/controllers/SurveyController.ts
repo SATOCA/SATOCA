@@ -1,18 +1,22 @@
+import { getConnection } from "typeorm";
+import fileUpload from "express-fileupload";
+import readXlsxFile from "read-excel-file/node";
+
+import { ParticipantController } from "./ParticipantController";
+import { TrusteeController } from "./TrusteeController";
+
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
-import { getConnection } from "typeorm";
-import { FinishedQuestion } from "../entities/FinishedQuestion";
-import { Participant } from "../entities/Participant";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { Survey } from "../entities/Survey";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
-import { Question } from "../entities/Question";
-import { ParticipantController } from "./ParticipantController";
-import fileUpload from "express-fileupload";
 import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
-import { TrusteeController } from "./TrusteeController";
+
+import { FinishedQuestion } from "../entities/FinishedQuestion";
+import { Participant } from "../entities/Participant";
+import { Survey } from "../entities/Survey";
+import { Question } from "../entities/Question";
 
 export class SurveyController {
   async getSurveys() {
@@ -171,16 +175,23 @@ export class SurveyController {
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
 
-    if (!trusteeLogin.success) {
-      let result: ErrorDto = {
-        message: "Login unsuccessful",
-        hasError: true,
-      };
-      return result;
-    }
+    //todo reinsert
+    // if (!trusteeLogin.success) {
+    //   let result: ErrorDto = {
+    //     message: "Login unsuccessful",
+    //     hasError: true,
+    //   };
+    //   return result;
+    // }
+
+    let filePath = "./uploads/" + file.name;
+    await file.mv(filePath);
 
     // file extract
-    file.tempFilePath;
+    readXlsxFile(filePath).then((rows) => {
+      rows.forEach((row) => console.log(row[0]));
+    });
+
     // save to database
 
     let result: ErrorDto = {

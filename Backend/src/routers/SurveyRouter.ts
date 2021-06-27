@@ -88,8 +88,6 @@ export class SurveyRouter {
             res.status(400).json(noFileResponse);
           } else {
             const file = req.files.file as fileUpload.UploadedFile;
-            // just for traceability
-            file.mv("./uploads/" + file.name);
 
             this._controller
               .createSurveyFromFile(file, req.body as UploadSurveyFileDto)
