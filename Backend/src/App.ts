@@ -2,6 +2,9 @@ import "reflect-metadata";
 import { createConnection } from "typeorm";
 import dotenv from "dotenv";
 import express, { Request, Response, NextFunction } from "express";
+import fileUpload from "express-fileupload";
+import bodyParser from "body-parser";
+
 import { MainRouter } from "./routers/MainRouter";
 import ErrorHandler from "./models/ErrorHandler";
 
@@ -11,8 +14,6 @@ import { Question } from "./entities/Question";
 import { Answer } from "./entities/Answer";
 import { Trustee } from "./entities/Trustee";
 import { FinishedQuestion } from "./entities/FinishedQuestion";
-
-const bodyParser = require('body-parser')
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -38,9 +39,14 @@ createConnection({
     Trustee,
   ],
 }).then(async (connection) => {
-
   const app = express();
   app.use(bodyParser.json());
+  app.use(
+    fileUpload({
+      createParentPath: true,
+    })
+  );
+
   const router = new MainRouter().router;
 
   app.use(function (req, res, next) {

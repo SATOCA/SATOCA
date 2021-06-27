@@ -10,6 +10,7 @@ import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { Question } from "../entities/Question";
 import { ParticipantController } from "./ParticipantController";
+import fileUpload from "express-fileupload";
 
 export class SurveyController {
   async getSurveys() {
@@ -26,7 +27,6 @@ export class SurveyController {
     return result;
   }
 
-    await getConnection().getRepository(Survey)
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()
@@ -161,9 +161,17 @@ export class SurveyController {
     return returnValue;
   }
 
-  async createSurveyFromFile(){
+  async createSurveyFromFile(
+    file: fileUpload.UploadedFile | fileUpload.UploadedFile[]
+  ) {
     // file extract
 
     // save to database
+
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    return result;
   }
 }
