@@ -17,6 +17,7 @@ import { FinishedQuestion } from "../entities/FinishedQuestion";
 import { Participant } from "../entities/Participant";
 import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
+import {Answer} from "../entities/Answer";
 
 export class SurveyController {
   async getSurveys() {
@@ -188,8 +189,12 @@ export class SurveyController {
     await file.mv(filePath);
 
     // file extract
+
+    //todo Create new Survey!!!
+    const survey = await getConnection().getRepository(Survey).findOne(0);
+
     readXlsxFile(filePath, { sheet: 'Survey' }).then((rows) => {
-      rows.forEach((row) => console.log(row[0]));
+      rows.forEach((row) => this.extractXLSXQuestion(row, survey));
     });
 
     readXlsxFile(filePath, { sheet: 'Options' }).then((rows) => {
@@ -203,5 +208,36 @@ export class SurveyController {
       hasError: false,
     };
     return result;
+  }
+
+  private async extractXLSXQuestion(row, survey: Survey) {
+    console.log(row[0]);
+
+    let correctAnswerIndexes : string[] = row[6].split(';');
+
+    let question = new Question();
+    question.text = row[0];
+    question.multiResponse = correctAnswerIndexes.length > 1 ;
+    question.survey = survey;
+
+    await getConnection().getRepository(Question)
+        .save(question)
+        .catch(e => {
+          //todo errorhandling
+        })
+
+    for(let i=1;i<6;i++){
+
+      let answer = new Answer;
+      answer.text = row[i];
+      answer.correct = correctAnswerIndexes.includes(i.toString(10)) ;
+      answer.question = question
+
+      await getConnection().getRepository(Answer)
+          .save(answer)
+          .catch(e => {
+            //todo errorhandling
+          });
+    }
   }
 }
