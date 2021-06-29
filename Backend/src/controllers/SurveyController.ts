@@ -188,7 +188,11 @@ export class SurveyController {
     await file.mv(filePath);
 
     // file extract
-    readXlsxFile(filePath).then((rows) => {
+    readXlsxFile(filePath, { sheet: 'Survey' }).then((rows) => {
+      rows.forEach((row) => console.log(row[0]));
+    });
+
+    readXlsxFile(filePath, { sheet: 'Options' }).then((rows) => {
       rows.forEach((row) => console.log(row[0]));
     });
 
