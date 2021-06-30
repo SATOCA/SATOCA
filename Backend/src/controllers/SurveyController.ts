@@ -17,7 +17,7 @@ import { FinishedQuestion } from "../entities/FinishedQuestion";
 import { Participant } from "../entities/Participant";
 import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
-import {Answer} from "../entities/Answer";
+import { Answer } from "../entities/Answer";
 
 export class SurveyController {
   async getSurveys() {
@@ -189,19 +189,17 @@ export class SurveyController {
     await file.mv(filePath);
 
     // file extract
+    // todo check if this is possible! (readXlsxFile has very limited typing)
+    const optionsRows = await readXlsxFile(filePath, { sheet: "Options" });
+    const survey = this.createNewSurveyFromXLSXOptions(optionsRows);
 
-    //todo Create new Survey!!!
-    const survey = await getConnection().getRepository(Survey).findOne(0);
-
-    readXlsxFile(filePath, { sheet: 'Survey' }).then((rows) => {
+    await readXlsxFile(filePath, { sheet: "Survey" }).then((rows) => {
       rows.forEach((row) => this.extractXLSXQuestion(row, survey));
     });
 
-    readXlsxFile(filePath, { sheet: 'Options' }).then((rows) => {
-      rows.forEach((row) => console.log(row[0]));
+    await readXlsxFile(filePath, { sheet: "Options" }).then((rows) => {
+      this.extractXLSXOptions(rows);
     });
-
-    // save to database
 
     let result: ErrorDto = {
       message: "",
@@ -210,34 +208,60 @@ export class SurveyController {
     return result;
   }
 
+  private createNewSurveyFromXLSXOptions(rows): Survey | undefined {
+    rows.forEach((row) => {
+      if (row[0] == "Title") {
+        const survey = new Survey();
+        //! \todo title cannot be empty!!!
+        survey.title = row[0];
+
+        getConnection()
+          .getRepository(Survey)
+          .save(survey)
+          .catch((e) => {
+            // todo Error-Management
+          });
+
+        return survey;
+      }
+    });
+
+    return undefined;
+  }
+
   private async extractXLSXQuestion(row, survey: Survey) {
     console.log(row[0]);
 
-    let correctAnswerIndexes : string[] = row[6].split(';');
+    let correctAnswerIndexes: string[] = row[6].split(";");
 
     let question = new Question();
     question.text = row[0];
-    question.multiResponse = correctAnswerIndexes.length > 1 ;
+    question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
 
-    await getConnection().getRepository(Question)
-        .save(question)
-        .catch(e => {
-          //todo errorhandling
-        })
+    await getConnection()
+      .getRepository(Question)
+      .save(question)
+      .catch((e) => {
+        //todo errorhandling
+      });
 
-    for(let i=1;i<6;i++){
-
-      let answer = new Answer;
+    for (let i = 1; i < 6; i++) {
+      let answer = new Answer();
       answer.text = row[i];
-      answer.correct = correctAnswerIndexes.includes(i.toString(10)) ;
-      answer.question = question
+      answer.correct = correctAnswerIndexes.includes(i.toString(10));
+      answer.question = question;
 
-      await getConnection().getRepository(Answer)
-          .save(answer)
-          .catch(e => {
-            //todo errorhandling
-          });
+      await getConnection()
+        .getRepository(Answer)
+        .save(answer)
+        .catch((e) => {
+          //todo errorhandling
+        });
     }
+  }
+
+  private extractXLSXOptions(rows) {
+    //todo @Phillip @Max
   }
 }
