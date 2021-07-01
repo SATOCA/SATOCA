@@ -3,8 +3,8 @@ import HttpClient from "./HttpClient";
 import { AnswerSurveyDto } from "../DataModel/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../DataModel/dto/AnswerSurveyResponseDto";
 import { AxiosResponse } from "axios";
-import {TrusteeLoginDto} from "../DataModel/dto/TrusteeLoginDto";
-import {TrusteeLoginResponseDto} from "../DataModel/dto/TrusteeLoginResponseDto";
+import { TrusteeLoginDto } from "../DataModel/dto/TrusteeLoginDto";
+import { TrusteeLoginResponseDto } from "../DataModel/dto/TrusteeLoginResponseDto";
 
 type surveyIdTuple = {
   surveyId: string;
@@ -66,19 +66,21 @@ export default class SurveyApi extends HttpClient {
       answer
     );
 
-  public uploadSurveyFile = async (file: File, login: string, password: string): Promise<AxiosResponse> => {
+  public uploadSurveyFile = async (
+    file: File,
+    login: string,
+    password: string
+  ): Promise<AxiosResponse> => {
     const data = new FormData();
     data.append("file", file);
     data.append("login", login);
     data.append("pwd", password);
 
-    await this.instance.post("/Survey", data);
+    await this.instance.post("/Survey/file", data);
   };
 
   public trusteeLogin = async (
-      data:TrusteeLoginDto
+    data: TrusteeLoginDto
   ): Promise<AxiosResponse<TrusteeLoginResponseDto>> =>
-      await this.instance.post<TrusteeLoginResponseDto>(
-          "/trustee/login/", data
-      );
+    await this.instance.post<TrusteeLoginResponseDto>("/trustee/login/", data);
 }

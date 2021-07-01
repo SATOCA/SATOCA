@@ -213,7 +213,7 @@ export class SurveyController {
       if (row[0] == "Title") {
         const survey = new Survey();
         //! \todo title cannot be empty!!!
-        survey.title = row[0];
+        survey.title = row[1];
 
         getConnection()
           .getRepository(Survey)
@@ -232,10 +232,10 @@ export class SurveyController {
   private async extractXLSXQuestion(row, survey: Survey) {
     console.log(row[0]);
 
-    let correctAnswerIndexes: string[] = row[6].split(";");
+    let correctAnswerIndexes: string[] = row[7].split(";");
 
     let question = new Question();
-    question.text = row[0];
+    question.text = row[1];
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
 
@@ -246,7 +246,7 @@ export class SurveyController {
         //todo errorhandling
       });
 
-    for (let i = 1; i < 6; i++) {
+    for (let i = 2; i < 7; i++) {
       let answer = new Answer();
       answer.text = row[i];
       answer.correct = correctAnswerIndexes.includes(i.toString(10));
