@@ -193,7 +193,12 @@ export class SurveyController {
     const optionsRows = await readXlsxFile(filePath, { sheet: "Options" });
     const survey = this.createNewSurveyFromXLSXOptions(optionsRows);
 
-    await readXlsxFile(filePath, { sheet: "Survey" }).then((rows) => {
+    // todo survey undefined!!!
+
+    await readXlsxFile(filePath, {
+      sheet: "Survey",
+      schema: this.fileSchema,
+    }).then(({ rows, errors }) => {
       rows.forEach((row) => this.extractXLSXQuestion(row, survey));
     });
 
@@ -218,33 +223,29 @@ export class SurveyController {
   }
 
   private createNewSurveyFromXLSXOptions(rows): Survey | undefined {
-    rows.forEach((row) => {
-      if (row[0] == "Title") {
-        const survey = new Survey();
-        //! \todo title cannot be empty!!!
-        survey.title = row[1];
+    let targetRow = rows.filter((row) => row[0] == "Title")[0];
 
-        getConnection()
-          .getRepository(Survey)
-          .save(survey)
-          .catch((e) => {
-            // todo Error-Management
-          });
+    if (targetRow == undefined) return undefined;
 
-        return survey;
-      }
-    });
+    const survey = new Survey();
+    //todo title cannot be empty!!!
+    survey.title = targetRow[1];
 
-    return undefined;
+    getConnection()
+      .getRepository(Survey)
+      .save(survey)
+      .catch((e) => {
+        // todo Error-Management
+      });
+
+    return survey;
   }
 
   private async extractXLSXQuestion(row, survey: Survey) {
-    console.log(row[0]);
-
-    let correctAnswerIndexes: string[] = row[7].toString().split(";");
+    let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
 
     let question = new Question();
-    question.text = row[1];
+    question.text = row.question;
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
 
@@ -255,19 +256,26 @@ export class SurveyController {
         //todo errorhandling
       });
 
-    for (let i = 2; i < 7; i++) {
+    let answers = [
+      row.answers.answer1,
+      row.answers.answer2,
+      row.answers.answer3,
+      row.answers.answer4,
+      row.answers.answer5,
+    ];
+
+    const answersRepository = await getConnection().getRepository(Answer);
+
+    answers.forEach((element, index) => {
       let answer = new Answer();
-      answer.text = row[i];
-      answer.correct = correctAnswerIndexes.includes(i.toString(10));
+      answer.text = element;
+      answer.correct = correctAnswerIndexes.includes(index.toString(10));
       answer.question = question;
 
-      await getConnection()
-        .getRepository(Answer)
-        .save(answer)
-        .catch((e) => {
-          //todo errorhandling
-        });
-    }
+      answersRepository.save(answer).catch((e) => {
+        //todo errorhandling
+      });
+    });
   }
 
   private extractXLSXOptions(rows): number | undefined {
@@ -278,4 +286,65 @@ export class SurveyController {
     });
     return undefined;
   }
+
+  // | ID | Question | A1 | A2 | A3 | A4 | A5 | Solution |
+  private fileSchema = {
+    ID: {
+      // JSON object property name.
+      prop: "id",
+      type: Number,
+      required: true,
+    },
+    Question: {
+      prop: "question",
+      type: String,
+      required: true,
+    },
+    // Nested object.
+    // 'Answers' here is not a real Excel file column name,
+    // it can be any string — it's just for code readability.
+    Answers: {
+      prop: "answers",
+      type: {
+        A1: {
+          prop: "answer1",
+          type: String,
+        },
+        A2: {
+          prop: "answer2",
+          type: String,
+        },
+        A3: {
+          prop: "answer3",
+          type: String,
+        },
+        A4: {
+          prop: "answer4",
+          type: String,
+        },
+        A5: {
+          prop: "answer5",
+          type: String,
+        },
+      },
+    },
+    Solution: {
+      prop: "solutions",
+      type: String,
+      required: true,
+    },
+  };
 }
+
+type fileSchema = {
+  id: number;
+  question: string;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
+  solutions: string;
+};
