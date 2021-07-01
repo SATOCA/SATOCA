@@ -36,5 +36,14 @@ export class ParticipantRouter {
         }
       }
     );
+    this._router.post("", (req: Request, res: Response, next: NextFunction) => {
+        try {
+            this._controller.addParticipants(req.params.surveyTitle, Number(req.params.numberOfParticipants)).then((obj) => {
+                res.status(200).json(obj);
+            });
+        } catch (error) {
+            next(error);
+        }
+    });
   }
 }

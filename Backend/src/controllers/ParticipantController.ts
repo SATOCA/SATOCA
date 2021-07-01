@@ -7,6 +7,33 @@ import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
 
 export class ParticipantController {
+  
+  //todo export user links
+  async addParticipants(surveyTitle: string, numberOfParticipants: number) {
+
+    const query = await getConnection()
+        .getRepository(Survey)
+        .createQueryBuilder("survey")
+        .where("survey.title = :title", { title: surveyTitle })
+        .getOne();
+
+    // todo errorhandling
+
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    for(let i = 0; i < numberOfParticipants; i++) {
+      let postParticipantResult = await this.postParticipant(query.id);
+      if (postParticipantResult.hasError){
+        result = postParticipantResult;
+        break;
+      }
+    }
+
+    return result;
+  }
 
   async getParticipants(surveyId: number) {
 
