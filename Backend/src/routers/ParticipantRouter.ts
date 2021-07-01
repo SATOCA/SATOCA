@@ -18,7 +18,7 @@ export class ParticipantRouter {
       "/:surveyId",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.getParticipants(Number(req.params.surveyId)).then(obj => { res.status(200).json(obj); });;
+          this._controller.getParticipants(Number(req.params.surveyId)).then(obj => { res.status(200).json(obj); });
 
         } catch (error) {
           next(error);
@@ -29,7 +29,7 @@ export class ParticipantRouter {
       "/:surveyId",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.postParticipant(Number(req.params.surveyId)).then(obj => { res.status(200).json(obj); });;
+          this._controller.postParticipant(Number(req.params.surveyId)).then(obj => { res.status(200).json(obj); });
 
         } catch (error) {
           next(error);
@@ -38,7 +38,7 @@ export class ParticipantRouter {
     );
     this._router.post("", (req: Request, res: Response, next: NextFunction) => {
         try {
-            this._controller.addParticipants(req.params.surveyTitle, Number(req.params.numberOfParticipants)).then((obj) => {
+            this._controller.addParticipants(Number(req.params.surveyId), Number(req.params.numberOfParticipants)).then((obj) => {
                 res.status(200).json(obj);
             });
         } catch (error) {

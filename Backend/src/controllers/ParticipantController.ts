@@ -2,21 +2,13 @@ import { getConnection } from "typeorm";
 import { Survey } from "../entities/Survey";
 import { Participant } from "../entities/Participant";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto"
+import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto";
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
 
 export class ParticipantController {
-  
   //todo export user links
-  async addParticipants(surveyTitle: string, numberOfParticipants: number) {
-
-    const query = await getConnection()
-        .getRepository(Survey)
-        .createQueryBuilder("survey")
-        .where("survey.title = :title", { title: surveyTitle })
-        .getOne();
-
+  async addParticipants(surveyId: number, numberOfParticipants: number) {
     // todo errorhandling
 
     let result: ErrorDto = {
@@ -24,9 +16,9 @@ export class ParticipantController {
       hasError: false,
     };
 
-    for(let i = 0; i < numberOfParticipants; i++) {
-      let postParticipantResult = await this.postParticipant(query.id);
-      if (postParticipantResult.hasError){
+    for (let i = 0; i < numberOfParticipants; i++) {
+      let postParticipantResult = await this.postParticipant(surveyId);
+      if (postParticipantResult.hasError) {
         result = postParticipantResult;
         break;
       }
@@ -35,13 +27,14 @@ export class ParticipantController {
     return result;
   }
 
-  async getParticipants(surveyId: number) {
-
-    const query = await getConnection().getRepository(Participant).find({ where: { survey: surveyId } });
+  async getParticipants(surveyId: number): Promise<ParticipantResponseDto> {
+    const query = await getConnection()
+      .getRepository(Participant)
+      .find({ where: { survey: surveyId } });
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      hasError: !query,
     };
     const result: ParticipantResponseDto = {
       error: err,
@@ -51,8 +44,9 @@ export class ParticipantController {
   }
 
   async postParticipant(surveyId: number) {
-
-    const survey = await getConnection().getRepository(Survey).findOne(surveyId);
+    const survey = await getConnection()
+      .getRepository(Survey)
+      .findOne(surveyId);
     //! \todo handle error case
     const question = await getConnection()
       .getRepository(Question)
@@ -63,7 +57,7 @@ export class ParticipantController {
       .take(1)
       .getOne();
 
-    console.log(question)
+    console.log(question);
     //! \todo handle error case
     // -> take all available questions and let the adaptation logic decide which is the first question
 
@@ -78,10 +72,13 @@ export class ParticipantController {
       hasError: false,
     };
 
-    getConnection().getRepository(Participant)
+    getConnection()
+      .getRepository(Participant)
       .save(obj)
-      .then(() => { result.hasError = false; })
-      .catch(e => {
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
         result.hasError = true;
         result.message = e;
       });
@@ -90,18 +87,19 @@ export class ParticipantController {
   }
 
   async updateParticipant(surveyId: number, uniqueId: string) {
-
     const progressQuery = await getConnection()
-        .getRepository(Participant)
-        .createQueryBuilder("participant")
-        .innerJoinAndSelect("participant.survey", "survey")
-        .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
-        .where("survey.Id = :surveyId", { surveyId: surveyId })
-        .andWhere("participant.uuid = :uuid", { uuid: uniqueId })
-        .getOneOrFail();
+      .getRepository(Participant)
+      .createQueryBuilder("participant")
+      .innerJoinAndSelect("participant.survey", "survey")
+      .innerJoinAndSelect("participant.currentQuestion", "currentQuestion")
+      .where("survey.Id = :surveyId", { surveyId: surveyId })
+      .andWhere("participant.uuid = :uuid", { uuid: uniqueId })
+      .getOneOrFail();
 
     let participantRepository = getConnection().getRepository(Participant);
-    let progress = await participantRepository.findOne({ id: progressQuery.id });
+    let progress = await participantRepository.findOne({
+      id: progressQuery.id,
+    });
 
     // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
     /*
@@ -120,14 +118,24 @@ export class ParticipantController {
     };
 
     await participantRepository
-        .save(progress)
-        .then(() => { result.hasError = false; })
-        .catch(e => {
-          result.hasError = true;
-          result.message = e;
-        });
+      .save(progress)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
 
     return result;
   }
-}
 
+  async createSurveyLinks(surveyId: number) {
+    let participants = (await this.getParticipants(surveyId)).participants;
+    let links: Array<string>;
+    participants.forEach((participant) => {
+      links.push("/" + surveyId + "/" + participant[1] + "/");
+    });
+    return links;
+  }
+}

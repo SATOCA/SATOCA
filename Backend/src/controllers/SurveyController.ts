@@ -18,6 +18,7 @@ import { Participant } from "../entities/Participant";
 import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
+import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
 
 export class SurveyController {
   async getSurveys() {
@@ -25,7 +26,7 @@ export class SurveyController {
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      hasError: !query,
     };
     const result: SurveyResponseDto = {
       error: err,
@@ -171,7 +172,7 @@ export class SurveyController {
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
     body: UploadSurveyFileDto
-  ) {
+  ): Promise<UploadSurveyFileResponseDto> {
     //check User rights
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
@@ -189,7 +190,6 @@ export class SurveyController {
     await file.mv(filePath);
 
     // file extract
-    // todo check if this is possible! (readXlsxFile has very limited typing)
     const optionsRows = await readXlsxFile(filePath, { sheet: "Options" });
     const survey = this.createNewSurveyFromXLSXOptions(optionsRows);
 
@@ -197,14 +197,23 @@ export class SurveyController {
       rows.forEach((row) => this.extractXLSXQuestion(row, survey));
     });
 
-    await readXlsxFile(filePath, { sheet: "Options" }).then((rows) => {
-      this.extractXLSXOptions(rows);
-    });
+    let numParticipants = this.extractXLSXOptions(optionsRows);
+    let pController = new ParticipantController();
 
-    let result: ErrorDto = {
+    await pController.addParticipants(survey.id, numParticipants);
+
+    let links = await pController.createSurveyLinks(survey.id);
+
+    let error: ErrorDto = {
       message: "",
       hasError: false,
     };
+
+    let result: UploadSurveyFileResponseDto = {
+      links: links,
+      error: error,
+    };
+
     return result;
   }
 
@@ -232,7 +241,7 @@ export class SurveyController {
   private async extractXLSXQuestion(row, survey: Survey) {
     console.log(row[0]);
 
-    let correctAnswerIndexes: string[] = row[7].split(";");
+    let correctAnswerIndexes: string[] = row[7].toString().split(";");
 
     let question = new Question();
     question.text = row[1];
@@ -261,7 +270,12 @@ export class SurveyController {
     }
   }
 
-  private extractXLSXOptions(rows) {
-    //todo @Phillip @Max
+  private extractXLSXOptions(rows): number | undefined {
+    rows.forEach((row) => {
+      if (row[0] == "Number of Participants") {
+        return row[1];
+      }
+    });
+    return undefined;
   }
 }

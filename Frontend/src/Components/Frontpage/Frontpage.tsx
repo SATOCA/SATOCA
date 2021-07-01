@@ -18,7 +18,7 @@ export default function Frontpage() {
           </StartButton>
         </Row>
         <Row>
-          <UploadSurveyFile />
+          <UploadSurveyFile password="" login="" />
         </Row>
       </Container>
     </div>

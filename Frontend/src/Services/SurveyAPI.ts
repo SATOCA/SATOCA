@@ -5,6 +5,7 @@ import { AnswerSurveyResponseDto } from "../DataModel/dto/AnswerSurveyResponseDt
 import { AxiosResponse } from "axios";
 import { TrusteeLoginDto } from "../DataModel/dto/TrusteeLoginDto";
 import { TrusteeLoginResponseDto } from "../DataModel/dto/TrusteeLoginResponseDto";
+import { UploadSurveyFileResponseDto } from "../DataModel/dto/UploadSurveyFileResponseDto";
 
 type surveyIdTuple = {
   surveyId: string;
@@ -70,13 +71,13 @@ export default class SurveyApi extends HttpClient {
     file: File,
     login: string,
     password: string
-  ): Promise<AxiosResponse> => {
+  ): Promise<AxiosResponse<UploadSurveyFileResponseDto>> => {
     const data = new FormData();
     data.append("file", file);
     data.append("login", login);
     data.append("pwd", password);
 
-    await this.instance.post("/Survey/file", data);
+    return await this.instance.post("/Survey/file", data);
   };
 
   public trusteeLogin = async (
