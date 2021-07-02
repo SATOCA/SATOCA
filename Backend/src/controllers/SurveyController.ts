@@ -37,7 +37,7 @@ export class SurveyController {
       hasError: false,
     };
 
-    getConnection().getRepository(Survey)
+    await getConnection().getRepository(Survey)
       .save(obj)
       .then(() => { result.hasError = false; })
       .catch(e => {
