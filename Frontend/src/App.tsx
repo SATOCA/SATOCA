@@ -1,6 +1,7 @@
 import React from "react";
 import { Container } from "reactstrap";
 import "./App.css";
+import dotenv from "dotenv";
 import { Redirect, Route, Switch } from "react-router-dom";
 import SurveyComponent, {
   RouterSurveyComponentProps,
@@ -9,6 +10,10 @@ import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
 import Frontpage from "./Components/Frontpage/Frontpage";
 import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLogin";
+
+dotenv.config({
+  path: ".env",
+});
 
 function App() {
   return (

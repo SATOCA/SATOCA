@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
+import ReactDOM from "react-dom";
+import { UploadSurveyFileResponseDto } from "../../../DataModel/dto/UploadSurveyFileResponseDto";
+import { UploadSurveyFileDto } from "../../../../../Backend/src/routers/dto/UploadSurveyFileDto";
 
 type UploadSurveyFileProps = {
   login: string;
@@ -19,11 +22,20 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
     setFile(event.target.files[0]);
   };
 
-  const upload = () => {
+  const upload = async () => {
     if (file !== undefined)
-      surveyApi
+      await surveyApi
         .uploadSurveyFile(file, props.login, props.password)
-        .then((response) => console.log(response));
+        .then((response) => {
+          console.log(response);
+          /*let listItems = response.data.links.map((links) => <li>{links}</li>);
+
+          ReactDOM.render(
+            <ol>{listItems}</ol>,
+            document.getElementById("root")
+          );*/
+        })
+        .catch();
   };
 
   return (

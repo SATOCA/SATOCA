@@ -130,11 +130,11 @@ export class ParticipantController {
     return result;
   }
 
-  async createSurveyLinks(surveyId: number) {
+  async createSurveyLinks(surveyId: number): Promise<string[]> {
     let participants = (await this.getParticipants(surveyId)).participants;
-    let links: Array<string>;
+    let links: string[] = [];
     participants.forEach((participant) => {
-      links.push("/" + surveyId + "/" + participant[1] + "/");
+      links.push("/" + surveyId + "/" + participant.uuid + "/");
     });
     return links;
   }

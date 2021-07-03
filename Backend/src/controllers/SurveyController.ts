@@ -207,10 +207,10 @@ export class SurveyController {
 
     await pController.addParticipants(survey.id, numParticipants);
 
-    let links = await pController.createSurveyLinks(survey.id);
+    let links: string[] = await pController.createSurveyLinks(survey.id);
 
     let error: ErrorDto = {
-      message: "",
+      message: "no Error",
       hasError: false,
     };
 
@@ -279,12 +279,13 @@ export class SurveyController {
   }
 
   private extractXLSXOptions(rows): number | undefined {
+    let result: number | undefined = undefined;
     rows.forEach((row) => {
-      if (row[0] == "Number of Participants") {
-        return row[1];
+      if ("Number participants" === row[0]) {
+        result = row[1];
       }
     });
-    return undefined;
+    return result;
   }
 
   // | ID | Question | A1 | A2 | A3 | A4 | A5 | Solution |
