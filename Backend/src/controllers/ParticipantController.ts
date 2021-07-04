@@ -36,11 +36,10 @@ export class ParticipantController {
       message: query ? "" : "todo: error message",
       hasError: !query,
     };
-    const result: ParticipantResponseDto = {
+    return {
       error: err,
       participants: query,
     };
-    return result;
   }
 
   async postParticipant(surveyId: number, numParticipants: number) {
@@ -139,5 +138,29 @@ export class ParticipantController {
       links.push("/" + surveyId + "/" + participant.uuid + "/");
     });
     return links;
+  }
+
+  async resetParticipant(uniqueId: string) {
+    let participantRepository = getConnection().getRepository(Participant);
+    let participant = await participantRepository.findOne({ uuid: uniqueId });
+
+    participant.finished = false;
+
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    await participantRepository
+      .save(participant)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+
+    return result;
   }
 }
