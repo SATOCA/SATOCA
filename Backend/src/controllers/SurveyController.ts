@@ -184,7 +184,7 @@ export class SurveyController {
     //check User rights
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
-
+    console.log(trusteeLogin);
     //todo reinsert
     // if (!trusteeLogin.success) {
     //   let result: ErrorDto = {
@@ -271,9 +271,12 @@ export class SurveyController {
     rows
   ): Promise<Survey | ErrorDto> {
     let targetRow = rows.filter((row) => row[0] == "Title")[0];
-
+    let error: ErrorDto = {
+      message: "no Error",
+      hasError: false,
+    };
     if (targetRow == undefined) {
-      let error: ErrorDto = {
+      error = {
         message: "Survey-title in options not found",
         hasError: true,
       };
@@ -282,7 +285,7 @@ export class SurveyController {
     }
 
     if (targetRow[1] === "") {
-      let error: ErrorDto = {
+      error = {
         message: "Survey-title can't be empty",
         hasError: true,
       };
@@ -293,8 +296,6 @@ export class SurveyController {
     const survey = new Survey();
 
     survey.title = targetRow[1];
-
-    let error: ErrorDto;
 
     await getConnection()
       .getRepository(Survey)

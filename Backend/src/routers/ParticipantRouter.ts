@@ -33,7 +33,10 @@ export class ParticipantRouter {
       (req: Request, res: Response, next: NextFunction) => {
         try {
           this._controller
-            .postParticipant(Number(req.params.surveyId))
+            .postParticipant(
+              Number(req.params.surveyId),
+              Number(req.params.NumParticipants)
+            )
             .then((obj) => {
               res.status(200).json(obj);
             });
