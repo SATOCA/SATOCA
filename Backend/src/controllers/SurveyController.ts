@@ -12,7 +12,6 @@ import { ErrorDto } from "../routers/dto/ErrorDto";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
-
 import { FinishedQuestion } from "../entities/FinishedQuestion";
 import { Participant } from "../entities/Participant";
 import { Survey } from "../entities/Survey";
@@ -61,6 +60,7 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
+      finished: query.finished
     };
     return result;
   }

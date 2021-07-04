@@ -11,11 +11,11 @@ Deliver a computerized adaptive testing suite which can assess organizational ca
 |Product Owner  | Scrum Master  | DevTeam |
 |--|--|--|
 |Robert Guggenberger  | Robert Pöhlmann | Max Wojtkow  |
-|Bogumil Dreliszak  |Bogumil Dreliszak  | Enrico Greßer  |
+||  | Enrico Greßer  |
 |  |  | Florian Hammerl |
 |  |  | Philipp Weiß |
 |  |  |  Michael Miller |
-
+|  |  | Bogumil Dreliszak |
 ### Technologies
 
 We are using Differential Privacy and Computerized Adaptive Testing.

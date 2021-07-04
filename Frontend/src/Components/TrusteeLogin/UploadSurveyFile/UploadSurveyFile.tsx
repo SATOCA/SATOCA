@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
-import ReactDOM from "react-dom";
-import { UploadSurveyFileResponseDto } from "../../../DataModel/dto/UploadSurveyFileResponseDto";
-import { UploadSurveyFileDto } from "../../../../../Backend/src/routers/dto/UploadSurveyFileDto";
 
 type UploadSurveyFileProps = {
   login: string;

@@ -38,7 +38,7 @@ export default class SurveyApi extends HttpClient {
   private static classInstance?: SurveyApi;
 
   private constructor() {
-    super("http://localhost:5001/api");
+    super(process.env.REACT_APP_BACKEND!);
   }
 
   public static getInstance() {
