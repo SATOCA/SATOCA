@@ -92,11 +92,11 @@ export class SurveyController {
       .getOneOrFail();
 
     const question = await getConnection()
-        .getRepository(Question)
-        .createQueryBuilder("question")
-        .leftJoinAndSelect("question.choices", "choices")
-        .where("question.id = :id", { id: progressQuery.currentQuestion.id })
-        .getOne()
+      .getRepository(Question)
+      .createQueryBuilder("question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .where("question.id = :id", { id: progressQuery.currentQuestion.id })
+      .getOne()
 
     let result: ErrorDto = {
       message: "",
@@ -106,36 +106,35 @@ export class SurveyController {
     // add to FinishedQuestion table
     let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
 
-    const count = await finishedQuestionRepository.count({ where: { question: question } })
+    const count = await finishedQuestionRepository.count({ where: { id: question.id } })
 
-    if(count > 0) {
+    if (count > 0) {
 
       result.hasError = true
-      result.message = "The question with the id: " + question.id  + " was already answered";
+      result.message = "The question with the id: " + question.id + " was already answered";
 
     } else { // if question was not already answered 
-
       let finishedQuestion = new FinishedQuestion();
       finishedQuestion.id = body.itemId;
       finishedQuestion.question = question;
       finishedQuestion.givenAnswers = body.answers;
 
       await finishedQuestionRepository
-          .save(finishedQuestion)
-          .then(() => { result.hasError = false; })
-          .catch(e => {
-            result.hasError = true;
-            result.message = e;
-          });
+        .save(finishedQuestion)
+        .then(() => { result.hasError = false; })
+        .catch(e => {
+          result.hasError = true;
+          result.message = e;
+        });
 
       // update Participant
       const participantController = new ParticipantController();
 
-      if(!result.hasError){
+      if (!result.hasError) {
         // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
         let updateParticipantReturn = await participantController.updateParticipant(surveyId, uniqueId);
 
-        if(updateParticipantReturn.hasError) {
+        if (updateParticipantReturn.hasError) {
           result.hasError = true;
           result.message = updateParticipantReturn.message;
         }
