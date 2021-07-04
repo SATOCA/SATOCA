@@ -173,6 +173,14 @@ export class SurveyController {
     file: fileUpload.UploadedFile,
     body: UploadSurveyFileDto
   ): Promise<UploadSurveyFileResponseDto> {
+    let result: UploadSurveyFileResponseDto = {
+      links: [],
+      error: {
+        hasError: false,
+        message: "",
+      },
+    };
+
     //check User rights
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
@@ -191,16 +199,40 @@ export class SurveyController {
 
     // file extract
     const optionsRows = await readXlsxFile(filePath, { sheet: "Options" });
-    const survey = this.createNewSurveyFromXLSXOptions(optionsRows);
+    const survey = await this.createNewSurveyFromXLSXOptions(optionsRows);
 
-    // todo survey undefined!!!
+    if ("hasError" in survey) {
+      result.error = survey;
+      return result;
+    }
 
-    await readXlsxFile(filePath, {
+    const { rows, errors } = await readXlsxFile(filePath, {
       sheet: "Survey",
       schema: this.fileSchema,
-    }).then(({ rows, errors }) => {
-      rows.forEach((row) => this.extractXLSXQuestion(row, survey));
     });
+
+    if (errors.length > 0) {
+      let errorString = this.formatReadExcelFileErrors(errors);
+      result.error = {
+        hasError: true,
+        message: errorString,
+      };
+      return result;
+    }
+
+    for (const row of rows) {
+      let error = await this.extractXLSXQuestion(row, survey);
+      if (error.hasError) {
+        result.error = {
+          hasError: true,
+          message: result.error.message + "\n" + error.message,
+        };
+      }
+    }
+
+    if (result.error.hasError) {
+      return result;
+    }
 
     let numParticipants = this.extractXLSXOptions(optionsRows);
     let pController = new ParticipantController();
@@ -214,7 +246,7 @@ export class SurveyController {
       hasError: false,
     };
 
-    let result: UploadSurveyFileResponseDto = {
+    result = {
       links: links,
       error: error,
     };
@@ -222,26 +254,69 @@ export class SurveyController {
     return result;
   }
 
-  private createNewSurveyFromXLSXOptions(rows): Survey | undefined {
+  private formatReadExcelFileErrors(errors): string {
+    let errorInfo: string;
+
+    // `errors` list items have shape: `{ row, column, error, value }`.
+    errors.forEach((error) => {
+      let errorString = `Error in Row ${error.row} and Column ${error.column}. (Value: ${error.value}) -> ${error.error}`;
+
+      errorInfo += errorString + "\n";
+    });
+
+    return errorInfo;
+  }
+
+  private async createNewSurveyFromXLSXOptions(
+    rows
+  ): Promise<Survey | ErrorDto> {
     let targetRow = rows.filter((row) => row[0] == "Title")[0];
 
-    if (targetRow == undefined) return undefined;
+    if (targetRow == undefined) {
+      let error: ErrorDto = {
+        message: "Survey-title in options not found",
+        hasError: true,
+      };
+
+      return error;
+    }
+
+    if (targetRow[1] === "") {
+      let error: ErrorDto = {
+        message: "Survey-title can't be empty",
+        hasError: true,
+      };
+
+      return error;
+    }
 
     const survey = new Survey();
-    //todo title cannot be empty!!!
+
     survey.title = targetRow[1];
 
-    getConnection()
+    let error: ErrorDto;
+
+    await getConnection()
       .getRepository(Survey)
       .save(survey)
       .catch((e) => {
-        // todo Error-Management
+        error = {
+          message: e,
+          hasError: true,
+        };
       });
+
+    if (error.hasError) return error;
 
     return survey;
   }
 
-  private async extractXLSXQuestion(row, survey: Survey) {
+  private async extractXLSXQuestion(row, survey: Survey): Promise<ErrorDto> {
+    let error: ErrorDto = {
+      hasError: false,
+      message: "",
+    };
+
     let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
 
     let question = new Question();
@@ -253,8 +328,15 @@ export class SurveyController {
       .getRepository(Question)
       .save(question)
       .catch((e) => {
-        //todo errorhandling
+        error = {
+          message: e,
+          hasError: true,
+        };
       });
+
+    if (error.hasError) {
+      return error;
+    }
 
     let answers = [
       row.answers.answer1,
@@ -273,9 +355,14 @@ export class SurveyController {
       answer.question = question;
 
       answersRepository.save(answer).catch((e) => {
-        //todo errorhandling
+        error = {
+          message: error.message + "\n Error at answer (" + index + "): " + e,
+          hasError: true,
+        };
       });
     });
+
+    return error;
   }
 
   private extractXLSXOptions(rows): number | undefined {
@@ -310,6 +397,7 @@ export class SurveyController {
         A1: {
           prop: "answer1",
           type: String,
+          required: true,
         },
         A2: {
           prop: "answer2",
@@ -336,16 +424,3 @@ export class SurveyController {
     },
   };
 }
-
-type fileSchema = {
-  id: number;
-  question: string;
-  answers: {
-    answer1: string;
-    answer2: string;
-    answer3: string;
-    answer4: string;
-    answer5: string;
-  };
-  solutions: string;
-};
