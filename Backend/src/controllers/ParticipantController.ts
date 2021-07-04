@@ -86,6 +86,7 @@ export class ParticipantController {
 
     progress.currentQuestion = nextQuestion;
     */
+    progress.finished = true;
 
     let result: ErrorDto = {
       message: "",

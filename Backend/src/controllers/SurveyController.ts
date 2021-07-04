@@ -74,7 +74,8 @@ export class SurveyController {
     };
     const result: CurrentQuestionResponseDto = {
       error: err,
-      item: question
+      item: question,
+      finished: query.finished
     };
     return result;
   }
