@@ -33,6 +33,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
       .then(async (response) => {
         const responseQuestion = (await response).item;
+        setSurveyEnded((await response).finished);
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
       })
       .catch((error: AxiosError) => {

@@ -54,7 +54,7 @@ export class SurveyRouter {
       (req: Request, res: Response, next: NextFunction) => {
         try {
           this._controller.postCurrentSurvey(req.body as AnswerSurveyDto, Number(req.params.surveyId), req.params.uniqueId)
-              .then(obj => { res.status(200).json(obj); });
+            .then(obj => { res.status(200).json(obj); });
         } catch (error) {
           next(error);
         }

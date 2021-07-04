@@ -36,5 +36,15 @@ export class ParticipantRouter {
         }
       }
     );
+    this._router.get(
+      "/reset/:uniqueId",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller.resetParticipant(req.params.uniqueId).then(obj => { res.status(200).json(obj); });;
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
   }
 }

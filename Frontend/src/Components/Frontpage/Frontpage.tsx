@@ -1,15 +1,20 @@
 import React from "react";
 import "./Frontpage.css";
-import StartButton from "./StartButton";
+import { useHistory } from "react-router-dom";
+import { Button } from "reactstrap";
 
 export default function Frontpage() {
+  const history = useHistory();
+
   const clickMe = () => {
-    console.log("Survey Started");
+    history.push("/login");
   };
 
   return (
     <div className="centered front-page-alignment">
-      <StartButton onClick={clickMe} text="42">Exemplary Survey</StartButton>
+      <Button color="success" size="lg" onClick={() => clickMe()}>
+        Trustee Login
+      </Button>
     </div>
   );
 }
