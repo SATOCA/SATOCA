@@ -8,7 +8,7 @@ type UploadSurveyFileProps = {
 };
 
 export default function UploadSurveyFile(props: UploadSurveyFileProps) {
-  const [listItems, setListItems] = useState(<div></div>);
+  const [listItems, setListItems] = useState(<div />);
   const [file, setFile] = useState<File | undefined>(undefined);
 
   const surveyApi = SurveyApi.getInstance();
@@ -28,11 +28,9 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
           console.log(response);
           setListItems(
             <ol>
-              {response.links.map((link) => {
-                return (
-                  <li key={link}>{process.env.REACT_APP_SERVER_HOST + link}</li>
-                );
-              })}
+              {response.links.map((link) => (
+                <li key={link}>{process.env.REACT_APP_SERVER_HOST + link}</li>
+              ))}
             </ol>
           );
           console.log(listItems);

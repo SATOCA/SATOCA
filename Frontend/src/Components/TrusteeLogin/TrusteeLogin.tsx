@@ -41,38 +41,38 @@ export default function TrusteeLogin() {
         <UploadSurveyFile login={login} password={password} />
       </div>
     );
-  } else {
-    return (
-      <div className="centered front-page-alignment">
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label>Login</Label>
-            <Input
-              data-testid="input-login"
-              type="text"
-              value={login}
-              onChange={handleLoginInputChange}
-              valid={validLogin}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Password</Label>
-            <Input
-              data-testid="input-password"
-              type="text"
-              value={password}
-              onChange={handlePasswordInputChange}
-              valid={validPassword}
-            />
-          </FormGroup>
-          <Button
-            data-testid="btn-submit"
-            disabled={!validLogin || !validPassword}
-          >
-            Submit
-          </Button>
-        </Form>
-      </div>
-    );
   }
+
+  return (
+    <div className="centered front-page-alignment">
+      <Form onSubmit={handleSubmit}>
+        <FormGroup>
+          <Label>Login</Label>
+          <Input
+            data-testid="input-login"
+            type="text"
+            value={login}
+            onChange={handleLoginInputChange}
+            valid={validLogin}
+          />
+        </FormGroup>
+        <FormGroup>
+          <Label>Password</Label>
+          <Input
+            data-testid="input-password"
+            type="text"
+            value={password}
+            onChange={handlePasswordInputChange}
+            valid={validPassword}
+          />
+        </FormGroup>
+        <Button
+          data-testid="btn-submit"
+          disabled={!validLogin || !validPassword}
+        >
+          Submit
+        </Button>
+      </Form>
+    </div>
+  );
 }
