@@ -7,7 +7,7 @@ export default function Frontpage() {
   const history = useHistory();
 
   const clickMe = () => {
-    history.push(`/login`);
+    history.push("/login");
   };
 
   return (
