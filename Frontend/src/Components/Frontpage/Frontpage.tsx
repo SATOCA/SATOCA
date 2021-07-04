@@ -9,7 +9,7 @@ export default function Frontpage() {
 
   return (
     <div className="centered front-page-alignment">
-      <StartButton onClick={clickMe} text="42">Exemplary Survey</StartButton>
+      {/* <StartButton onClick={clickMe} text="42">Exemplary Survey</StartButton> */}
     </div>
   );
 }
