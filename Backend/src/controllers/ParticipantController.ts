@@ -16,12 +16,12 @@ export class ParticipantController {
       hasError: false,
     };
 
-    for (let i = 0; i < numberOfParticipants; i++) {
-      let postParticipantResult = await this.postParticipant(surveyId);
-      if (postParticipantResult.hasError) {
-        result = postParticipantResult;
-        break;
-      }
+    let postParticipantResult = await this.postParticipant(
+      surveyId,
+      numberOfParticipants
+    );
+    if (postParticipantResult.hasError) {
+      result = postParticipantResult;
     }
 
     return result;
@@ -43,7 +43,7 @@ export class ParticipantController {
     return result;
   }
 
-  async postParticipant(surveyId: number) {
+  async postParticipant(surveyId: number, numParticipants: number) {
     const survey = await getConnection()
       .getRepository(Survey)
       .findOne(surveyId);
@@ -61,18 +61,20 @@ export class ParticipantController {
     //! \todo handle error case
     // -> take all available questions and let the adaptation logic decide which is the first question
 
-    let obj = new Participant();
-    obj.uuid = uuidv4();
-    obj.survey = survey;
-    obj.finished = false;
-    obj.currentQuestion = question;
-
+    let obj: Participant[] = [];
+    for (let i = 0; i < numParticipants; i++) {
+      obj.push(new Participant());
+      obj[i].uuid = uuidv4();
+      obj[i].survey = survey;
+      obj[i].finished = false;
+      obj[i].currentQuestion = question;
+    }
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
 
-    getConnection()
+    await getConnection()
       .getRepository(Participant)
       .save(obj)
       .then(() => {

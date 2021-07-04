@@ -45,7 +45,7 @@ export default class SurveyApi extends HttpClient {
     file: File,
     login: string,
     password: string
-  ): Promise<AxiosResponse<UploadSurveyFileResponseDto>> => {
+  ): Promise<UploadSurveyFileResponseDto> => {
     const data = new FormData();
     data.append("file", file);
     data.append("login", login);
