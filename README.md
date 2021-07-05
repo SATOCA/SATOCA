@@ -22,7 +22,7 @@ We are using Differential Privacy and Computerized Adaptive Testing.
 
 ### Quick Start 
 To run the frontend follow:
-[Frontend](Backend/HowToBackend.md)
+[Frontend](Frontend/HowToFrontend.md)
 
 To run the backend locally follow:
-[Backend](Frontend/HowToFrontend.md)
+[Backend](Backend/HowToBackend.md)
