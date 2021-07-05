@@ -58,7 +58,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
         Submit
       </Button>
       {listItems}
-      {hasError ? <div>error</div> : <div />}
+      {hasError ? <div>{error}</div> : <div />}
     </Form>
   );
 }
