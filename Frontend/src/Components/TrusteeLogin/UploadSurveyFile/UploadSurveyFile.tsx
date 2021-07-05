@@ -10,6 +10,8 @@ type UploadSurveyFileProps = {
 export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   const [listItems, setListItems] = useState(<div />);
   const [file, setFile] = useState<File | undefined>(undefined);
+  const [error, setError] = useState("");
+  const [hasError, setHasError] = useState(false);
 
   const surveyApi = SurveyApi.getInstance();
 
@@ -33,7 +35,9 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
               ))}
             </ol>
           );
-          console.log(listItems);
+
+          setHasError(response.error.hasError);
+          setError(response.error.message);
         })
         .catch();
   };
@@ -54,6 +58,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
         Submit
       </Button>
       {listItems}
+      {hasError ? <div>error</div> : <div />}
     </Form>
   );
 }

@@ -177,7 +177,7 @@ export class SurveyController {
       links: [],
       error: {
         hasError: false,
-        message: "",
+        message: "no Error",
       },
     };
 
@@ -239,17 +239,7 @@ export class SurveyController {
 
     await pController.addParticipants(survey.id, numParticipants);
 
-    let links: string[] = await pController.createSurveyLinks(survey.id);
-
-    let error: ErrorDto = {
-      message: "no Error",
-      hasError: false,
-    };
-
-    result = {
-      links: links,
-      error: error,
-    };
+    result.links = await pController.createSurveyLinks(survey.id);
 
     return result;
   }
