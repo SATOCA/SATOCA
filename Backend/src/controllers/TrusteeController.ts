@@ -1,19 +1,17 @@
-import { getConnection} from "typeorm";
+import { getConnection } from "typeorm";
 import { Trustee } from "../entities/Trustee";
 import { ErrorDto } from "../routers/dto/ErrorDto";
 import { TrusteeResponseDto } from "../routers/dto/TrusteeResponseDto";
-import {TrusteeDto} from "../routers/dto/TrusteeDto";
-import {LoginTrusteeResponseDto} from "../routers/dto/LoginTrusteeResponseDto";
+import { TrusteeDto } from "../routers/dto/TrusteeDto";
+import { LoginTrusteeResponseDto } from "../routers/dto/LoginTrusteeResponseDto";
 
 export class TrusteeController {
-
   async getTrustees() {
-
     const query = await getConnection().getRepository(Trustee).find();
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: !query
+      hasError: !query,
     };
     const result: TrusteeResponseDto = {
       error: err,
@@ -31,32 +29,36 @@ export class TrusteeController {
       hasError: false,
     };
 
-    await getConnection().getRepository(Trustee)
+    await getConnection()
+      .getRepository(Trustee)
       .save(obj)
-      .then(() => { result.hasError = false; })
-      .catch(e => {
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
         result.hasError = true;
         result.message = e;
       });
     return result;
   }
+
   async loginTrustee(body: TrusteeDto) {
     const query = await getConnection()
-        .getRepository(Trustee)
-        .createQueryBuilder("trustee")
-        .where("trustee.login = :login", { login: body.login })
-        .andWhere('trustee.password = :password', { password: body.password })
-        .getCount();
+      .getRepository(Trustee)
+      .createQueryBuilder("trustee")
+      .where("trustee.login = :login", { login: body.login })
+      .andWhere("trustee.password = :password", { password: body.password })
+      .getCount();
 
-      const err: ErrorDto = {
+    const err: ErrorDto = {
       message: "",
       hasError: false,
     };
     const result: LoginTrusteeResponseDto = {
       error: err,
-      success: query===1
+      success: query === 1,
     };
     return result;
-  };
+  }
 }
 

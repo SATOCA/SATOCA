@@ -53,7 +53,6 @@ export default function TrusteeLogin() {
             type="text"
             value={login}
             onChange={handleLoginInputChange}
-            valid={validLogin}
           />
         </FormGroup>
         <FormGroup>
@@ -63,11 +62,11 @@ export default function TrusteeLogin() {
             type="text"
             value={password}
             onChange={handlePasswordInputChange}
-            valid={validPassword}
           />
         </FormGroup>
         <Button
           data-testid="btn-submit"
+          type="submit"
           disabled={!validLogin || !validPassword}
         >
           Submit

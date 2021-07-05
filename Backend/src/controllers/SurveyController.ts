@@ -60,7 +60,7 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
-      finished: query.finished
+      finished: query.finished,
     };
     return result;
   }
@@ -185,14 +185,14 @@ export class SurveyController {
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
     console.log(trusteeLogin);
-    //todo reinsert
-    // if (!trusteeLogin.success) {
-    //   let result: ErrorDto = {
-    //     message: "Login unsuccessful",
-    //     hasError: true,
-    //   };
-    //   return result;
-    // }
+
+    if (!trusteeLogin.success) {
+      result.error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+      return result;
+    }
 
     let filePath = "./uploads/" + file.name;
     await file.mv(filePath);

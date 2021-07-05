@@ -49,7 +49,7 @@ export default class SurveyApi extends HttpClient {
     const data = new FormData();
     data.append("file", file);
     data.append("login", login);
-    data.append("pwd", password);
+    data.append("password", password);
 
     return await this.instance.post("/Survey/file", data);
   };
