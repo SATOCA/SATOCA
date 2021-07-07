@@ -121,7 +121,7 @@ export class SurveyController {
     );
 
     const count = await finishedQuestionRepository.count({
-      where: { question: question },
+      where: { id: question.id },
     });
 
     if (count > 0) {
