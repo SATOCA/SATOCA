@@ -90,6 +90,8 @@ test("handle form submit", () => {
     <DisplayItem question={survey.items[1]} onAnswerSubmit={handleSubmit} />
   );
 
+  window.alert = jest.fn(); // the virtual browser prohibited by jest doesn't implement window.alert!
+
   const checkbox4 = getByTestId("4") as HTMLInputElement;
   const submitBtn = getByTestId("submitButton");
   const consoleLogSpy = jest.spyOn(console, "log");

@@ -11,10 +11,10 @@ export default function Frontpage() {
   };
 
   return (
-    <div className="centered front-page-alignment">
-      <Button color="success" size="lg" onClick={() => clickMe()}>
-        Trustee Login
-      </Button>
-    </div>
+      <div className="centered front-page-alignment">
+        <Button color="success" size="lg" onClick={() => clickMe()}>
+          Trustee Login
+        </Button>
+      </div>
   );
 }

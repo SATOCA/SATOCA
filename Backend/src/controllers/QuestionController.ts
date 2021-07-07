@@ -13,7 +13,7 @@ export class QuestionController {
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      hasError: !query,
     };
     const result: QuestionResponseDto = {
       error: err,

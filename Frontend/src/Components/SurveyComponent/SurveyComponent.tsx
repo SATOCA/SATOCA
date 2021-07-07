@@ -13,7 +13,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> { }
+  extends RouteComponentProps<SurveyComponentProps> {}
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();

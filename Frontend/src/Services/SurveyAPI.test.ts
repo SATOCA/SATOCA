@@ -1,19 +1,7 @@
-import { validateSurveyId } from "./SurveyAPI";
+import SurveyApi from "./SurveyAPI";
 
-test("valid Survey ID", () => {
-  const result = validateSurveyId("init-survey", "äasdökfökg");
+test("to be done", () => {
+  let surveyAPI = SurveyApi.getInstance();
 
-  expect(result).toBe(true);
-});
-
-test("wrong Survey ID", () => {
-  const result = validateSurveyId("wrong", "äasdökfökg");
-
-  expect(result).toBe(false);
-});
-
-test("wrong unique Survey ID", () => {
-  const result = validateSurveyId("init-survey", "wrong");
-
-  expect(result).toBe(false);
+  expect(true).toBe(true);
 });
