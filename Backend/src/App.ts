@@ -1,37 +1,16 @@
 import "reflect-metadata";
 import { createConnection } from "typeorm";
-import dotenv from "dotenv";
 import express, { Request, Response } from "express";
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
 
+import * as connectionOptions from "./ormconfig";
+
 import { MainRouter } from "./routers/MainRouter";
 import ErrorHandler from "./models/ErrorHandler";
 
-import { Survey } from "./entities/Survey";
-import { Participant } from "./entities/Participant";
-import { Question } from "./entities/Question";
-import { Answer } from "./entities/Answer";
-import { Trustee } from "./entities/Trustee";
-import { FinishedQuestion } from "./entities/FinishedQuestion";
-
-// load the environment variables from the .env file
-dotenv.config({
-  path: ".env",
-});
-
 // setup database connection
-createConnection({
-  type: "postgres",
-  host: process.env.DATABASE_HOST!,
-  port: Number(process.env.DATABASE_PORT),
-  username: process.env.DATABASE_USERNAME!,
-  password: process.env.DATABASE_PASSWORD!,
-  database: process.env.DATABASE_NAME!,
-  synchronize: true,
-  logging: false,
-  entities: [Survey, Participant, Question, Answer, FinishedQuestion, Trustee],
-}).then(async () => {
+createConnection(connectionOptions).then(async () => {
   const app = express();
   app.use(bodyParser.json());
   app.use(

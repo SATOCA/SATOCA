@@ -302,18 +302,26 @@ export class SurveyController {
     return survey;
   }
 
-  private async extractXLSXQuestion(row, survey: Survey): Promise<ErrorDto> {
+  private async extractXLSXQuestion(
+    row: surveyFormat,
+    survey: Survey
+  ): Promise<ErrorDto> {
     let error: ErrorDto = {
       hasError: false,
       message: "",
     };
 
     let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
+    //todo
+    let partOfStartSet: boolean = row.startSet.toString().length > 0;
 
     let question = new Question();
     question.text = row.question;
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
+    //todo
+    row.slope;
+    row.difficulty;
 
     await getConnection()
       .getRepository(Question)
@@ -329,13 +337,7 @@ export class SurveyController {
       return error;
     }
 
-    let answers = [
-      row.answers.answer1,
-      row.answers.answer2,
-      row.answers.answer3,
-      row.answers.answer4,
-      row.answers.answer5,
-    ];
+    let answers = [row.answers.answer1, row.answers.answer2];
 
     const answersRepository = await getConnection().getRepository(Answer);
 
@@ -394,18 +396,6 @@ export class SurveyController {
           prop: "answer2",
           type: String,
         },
-        A3: {
-          prop: "answer3",
-          type: String,
-        },
-        A4: {
-          prop: "answer4",
-          type: String,
-        },
-        A5: {
-          prop: "answer5",
-          type: String,
-        },
       },
     },
     Solution: {
@@ -413,5 +403,33 @@ export class SurveyController {
       type: String,
       required: true,
     },
+    StartSet: {
+      prop: "startSet",
+      type: String,
+      required: true,
+    },
+    Difficulty: {
+      prop: "difficulty",
+      type: Number,
+      required: true,
+    },
+    Slope: {
+      prop: "slope",
+      type: Number,
+      required: true,
+    },
   };
 }
+
+type surveyFormat = {
+  id: number;
+  question: string;
+  answers: {
+    answer1: string;
+    answer2: string;
+  };
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+};

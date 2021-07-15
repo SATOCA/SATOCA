@@ -16,6 +16,15 @@ export class Question extends BaseEntity {
    @Column()
    multiResponse: boolean = false;
 
+   @Column()
+   startSet: boolean = false;
+
+   @Column("real")
+   slope: number;
+
+   @Column("real")
+   difficulty: number;
+
    @ManyToOne(type => Survey, survey => survey.questions)
    survey: Survey;
 
