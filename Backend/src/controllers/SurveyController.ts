@@ -313,7 +313,7 @@ export class SurveyController {
 
     let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
 
-    let partOfStartSet: boolean = row.startSet.toString().toUpperCase() == "X";
+    let partOfStartSet: boolean = row.startSet ? row.startSet.toString().toUpperCase() == "X" : false;
 
     let question = new Question();
     question.text = row.question;
@@ -337,7 +337,13 @@ export class SurveyController {
       return error;
     }
 
-    let answers = [row.answers.answer1, row.answers.answer2];
+    let answers = [
+      row.answers.answer1,
+      row.answers.answer2,
+      row.answers.answer3,
+      row.answers.answer4,
+      row.answers.answer5,
+    ];
 
     const answersRepository = await getConnection().getRepository(Answer);
 
@@ -381,6 +387,25 @@ export class SurveyController {
       type: String,
       required: true,
     },
+    Solution: {
+      prop: "solutions",
+      type: String,
+      required: true,
+    },
+    StartSet: {
+      prop: "startSet",
+      type: String,
+    },
+    Difficulty: {
+      prop: "difficulty",
+      type: Number,
+      required: true,
+    },
+    Slope: {
+      prop: "slope",
+      type: Number,
+      required: true,
+    },
     // Nested object.
     // 'Answers' here is not a real Excel file column name,
     // it can be any string — it's just for code readability.
@@ -395,28 +420,21 @@ export class SurveyController {
         A2: {
           prop: "answer2",
           type: String,
+          required: true,
+        },
+        A3: {
+          prop: "answer3",
+          type: String,
+        },
+        A4: {
+          prop: "answer4",
+          type: String,
+        },
+        A5: {
+          prop: "answer5",
+          type: String,
         },
       },
-    },
-    Solution: {
-      prop: "solutions",
-      type: String,
-      required: true,
-    },
-    StartSet: {
-      prop: "startSet",
-      type: String,
-      required: true,
-    },
-    Difficulty: {
-      prop: "difficulty",
-      type: Number,
-      required: true,
-    },
-    Slope: {
-      prop: "slope",
-      type: Number,
-      required: true,
     },
   };
 }
@@ -424,12 +442,15 @@ export class SurveyController {
 type surveyFormat = {
   id: number;
   question: string;
-  answers: {
-    answer1: string;
-    answer2: string;
-  };
   solutions: string;
   startSet: string;
   difficulty: number;
   slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
 };
