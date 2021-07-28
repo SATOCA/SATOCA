@@ -312,16 +312,16 @@ export class SurveyController {
     };
 
     let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
-    //todo
-    let partOfStartSet: boolean = row.startSet.toString().length > 0;
+
+    let partOfStartSet: boolean = row.startSet.toString().toUpperCase() == "X";
 
     let question = new Question();
     question.text = row.question;
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
-    //todo
-    row.slope;
-    row.difficulty;
+    question.startSet = partOfStartSet;
+    question.difficulty = row.difficulty;
+    question.slope = row.slope;
 
     await getConnection()
       .getRepository(Question)
