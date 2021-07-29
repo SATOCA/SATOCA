@@ -54,7 +54,7 @@ export class ParticipantController {
       .leftJoinAndSelect("question.choices", "choices")
       .innerJoinAndSelect("question.survey", "survey")
       .where("survey.id = :id", { id: surveyId })
-      .where("question.startSet = TRUE")
+      .andWhere("question.startSet = true")
       .getMany();
 
     //todo handle Error "no start question"
