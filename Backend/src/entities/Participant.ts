@@ -21,6 +21,9 @@ export class Participant extends BaseEntity {
   @Column()
   finished: boolean = false;
 
+  @Column("real")
+  scoring: number = 0;
+
   @ManyToOne((type) => Survey, (survey) => survey.participants)
   survey: Survey;
 

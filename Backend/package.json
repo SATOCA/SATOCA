@@ -6,7 +6,12 @@
     "dev": "nodemon src/App.ts",
     "test": "jest",
     "coverage": "jest --coverage",
-    "build": "webpack --mode production"
+    "build": "webpack --mode production",
+    "typeorm": "ts-node ./node_modules/typeorm/cli.js -f src/ormconfig.ts",
+    "migration": "npm run typeorm migration:run",
+    "migration:generate": "npm run typeorm migration:generate -- -n",
+    "migration:create": "npm run typeorm migration:create -- -n",
+    "migration:revert": "npm run typeorm migration:revert"
   },
   "keywords": [],
   "author": "",
