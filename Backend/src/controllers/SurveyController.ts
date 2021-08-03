@@ -163,12 +163,10 @@ export class SurveyController {
       hasError: false,
     };
 
-    console.log(body);
-
     let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
 
     const count = await finishedQuestionRepository.count({
-      where: { id: question.id },
+      where: { id: question.id, participant: participant }
     });
 
     if (count > 0) {
@@ -181,6 +179,7 @@ export class SurveyController {
       finishedQuestion.id = body.itemId;
       finishedQuestion.question = question;
       finishedQuestion.givenAnswers = body.answers;
+      finishedQuestion.participant = participant;
 
       await finishedQuestionRepository
         .save(finishedQuestion)
@@ -196,28 +195,26 @@ export class SurveyController {
       const finishedQuestions = await getConnection()
         .getRepository(FinishedQuestion)
         .createQueryBuilder("finishedquestion")
-        .leftJoinAndSelect("finishedquestion.questions", "questions")
+        .leftJoinAndSelect("finishedquestion.question", "question")
+        .leftJoinAndSelect("question.choices", "choices")
+        .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
         .leftJoinAndSelect("finishedquestion.participant", "participant")
         .where("participant.uuid = :uuid", { uuid: uniqueId })
         .getMany();
 
-      const zeta = finishedQuestions.map((fq) => {
-        const currentZeta: Zeta = { 
+      const zeta = finishedQuestions.map(fq => {
+        const currentZeta: Zeta = {
           a: fq.question.slope,
           b: fq.question.difficulty,
           c: 1 / fq.question.choices.length,
         };
         return currentZeta;
       });
-      console.log("zeta: ", zeta);
-
-      let answers: Array<0 | 1> = new Array[question.choices.length];
-      // TODO:
-      // body.answers.map((answer, index) => {
-        // answers[index] = answer.correct ? 1 : 0;
-      // });
-
-      const new_ability = estimateAbilityEAP(answers, zeta);
+      const responseVector = finishedQuestions.map(fq => {
+        // only one anwers is submitted, therefore select the first one
+        return fq.givenAnswers[0].correct ? 1 : 0
+      })
+      const ability = estimateAbilityEAP(responseVector, zeta);
 
       // update Participant
       const participantController = new ParticipantController();
@@ -227,7 +224,7 @@ export class SurveyController {
         let updateParticipantReturn = await participantController.updateParticipant(
           surveyId,
           uniqueId,
-          new_ability
+          ability
         );
 
         if (updateParticipantReturn.hasError) {
