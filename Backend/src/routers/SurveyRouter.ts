@@ -2,6 +2,9 @@ import { NextFunction, Request, Response, Router } from "express";
 import { SurveyController } from "../controllers/SurveyController";
 import { SurveyDto } from "./dto/SurveyDto";
 import { AnswerSurveyDto } from "./dto/AnswerSurveyDto";
+import { ErrorDto } from "./dto/ErrorDto";
+import fileUpload from "express-fileupload";
+import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
 
 export class SurveyRouter {
   private _router = Router();
@@ -77,9 +80,21 @@ export class SurveyRouter {
       "/file",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller.createSurveyFromFile(req.files).then(() => {
-            res.status(200);
-          });
+          if (!req.files) {
+            const noFileResponse: ErrorDto = {
+              message: "There is no file",
+              hasError: true,
+            };
+            res.status(400).json(noFileResponse);
+          } else {
+            const file = req.files.file as fileUpload.UploadedFile;
+
+            this._controller
+              .createSurveyFromFile(file, req.body as UploadSurveyFileDto)
+              .then((obj) => {
+                res.status(200).json(obj);
+              });
+          }
         } catch (error) {
           next(error);
         }

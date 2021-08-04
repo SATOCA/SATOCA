@@ -2,8 +2,16 @@ import React, { useState } from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
 
-export default function UploadSurveyFile() {
+type UploadSurveyFileProps = {
+  login: string;
+  password: string;
+};
+
+export default function UploadSurveyFile(props: UploadSurveyFileProps) {
+  const [listItems, setListItems] = useState(<div />);
   const [file, setFile] = useState<File | undefined>(undefined);
+  const [error, setError] = useState("");
+  const [hasError, setHasError] = useState(false);
 
   const surveyApi = SurveyApi.getInstance();
 
@@ -14,11 +22,24 @@ export default function UploadSurveyFile() {
     setFile(event.target.files[0]);
   };
 
-  const upload = () => {
+  const upload = async () => {
     if (file !== undefined)
-      surveyApi
-        .uploadSurveyFile(file)
-        .then((response) => console.log(response));
+      await surveyApi
+        .uploadSurveyFile(file, props.login, props.password)
+        .then((response) => {
+          console.log(response);
+          setListItems(
+            <ol>
+              {response.links.map((link) => (
+                <li key={link}>{process.env.REACT_APP_FRONTEND + link}</li>
+              ))}
+            </ol>
+          );
+
+          setHasError(response.error.hasError);
+          setError(response.error.message);
+        })
+        .catch();
   };
 
   return (
@@ -36,6 +57,8 @@ export default function UploadSurveyFile() {
       <Button disabled={file === undefined} onClick={upload}>
         Submit
       </Button>
+      {listItems}
+      {hasError ? <div>{error}</div> : <div />}
     </Form>
   );
 }

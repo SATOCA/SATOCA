@@ -1,15 +1,23 @@
+import { getConnection } from "typeorm";
+import fileUpload from "express-fileupload";
+import readXlsxFile from "read-excel-file/node";
+
+import { ParticipantController } from "./ParticipantController";
+import { TrusteeController } from "./TrusteeController";
+
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
-import { getConnection } from "typeorm";
-import { FinishedQuestion } from "../entities/FinishedQuestion";
-import { Participant } from "../entities/Participant";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { Survey } from "../entities/Survey";
 import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
+import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
+import { FinishedQuestion } from "../entities/FinishedQuestion";
+import { Participant } from "../entities/Participant";
+import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
-import { ParticipantController } from "./ParticipantController";
+import { Answer } from "../entities/Answer";
+import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
 
 export class SurveyController {
   async getSurveys() {
@@ -17,7 +25,7 @@ export class SurveyController {
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
-      hasError: query ? false : true,
+      hasError: !query,
     };
     const result: SurveyResponseDto = {
       error: err,
@@ -26,7 +34,6 @@ export class SurveyController {
     return result;
   }
 
-    await getConnection().getRepository(Survey)
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()
@@ -53,6 +60,7 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
+      finished: query.finished,
     };
     return result;
   }
@@ -113,7 +121,7 @@ export class SurveyController {
     );
 
     const count = await finishedQuestionRepository.count({
-      where: { question: question },
+      where: { id: question.id },
     });
 
     if (count > 0) {
@@ -161,9 +169,288 @@ export class SurveyController {
     return returnValue;
   }
 
-  async createSurveyFromFile(){
-    // file extract
+  async createSurveyFromFile(
+    file: fileUpload.UploadedFile,
+    body: UploadSurveyFileDto
+  ): Promise<UploadSurveyFileResponseDto> {
+    let result: UploadSurveyFileResponseDto = {
+      links: [],
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
 
-    // save to database
+    //check User rights
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+    console.log(trusteeLogin);
+
+    if (!trusteeLogin.success) {
+      result.error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+      return result;
+    }
+
+    let filePath = "./uploads/" + file.name;
+    await file.mv(filePath);
+
+    // file extract
+    const optionsRows = await readXlsxFile(filePath, { sheet: "Options" });
+    const survey = await this.createNewSurveyFromXLSXOptions(optionsRows);
+
+    if ("hasError" in survey) {
+      result.error = survey;
+      return result;
+    }
+
+    const { rows, errors } = await readXlsxFile(filePath, {
+      sheet: "Survey",
+      schema: this.fileSchema,
+    });
+
+    if (errors.length > 0) {
+      let errorString = this.formatReadExcelFileErrors(errors);
+      result.error = {
+        hasError: true,
+        message: errorString,
+      };
+      return result;
+    }
+
+    for (const row of rows) {
+      let error = await this.extractXLSXQuestion(row, survey);
+      if (error.hasError) {
+        result.error = {
+          hasError: true,
+          message: result.error.message + "\n" + error.message,
+        };
+      }
+    }
+
+    if (result.error.hasError) {
+      return result;
+    }
+
+    let numParticipants = this.extractXLSXOptions(optionsRows);
+    let pController = new ParticipantController();
+
+    await pController.addParticipants(survey.id, numParticipants);
+
+    result.links = await pController.createSurveyLinks(survey.id);
+
+    return result;
   }
+
+  private formatReadExcelFileErrors(errors): string {
+    let errorInfo: string;
+
+    // `errors` list items have shape: `{ row, column, error, value }`.
+    errors.forEach((error) => {
+      let errorString = `Error in Row ${error.row} and Column ${error.column}. (Value: ${error.value}) -> ${error.error}`;
+
+      errorInfo += errorString + "\n";
+    });
+
+    return errorInfo;
+  }
+
+  private async createNewSurveyFromXLSXOptions(
+    rows
+  ): Promise<Survey | ErrorDto> {
+    let targetRow = rows.filter((row) => row[0] == "Title")[0];
+    let error: ErrorDto = {
+      message: "no Error",
+      hasError: false,
+    };
+    if (targetRow == undefined) {
+      error = {
+        message: "Survey-title in options not found",
+        hasError: true,
+      };
+
+      return error;
+    }
+
+    if (targetRow[1] === "") {
+      error = {
+        message: "Survey-title can't be empty",
+        hasError: true,
+      };
+
+      return error;
+    }
+
+    const survey = new Survey();
+
+    survey.title = targetRow[1];
+
+    await getConnection()
+      .getRepository(Survey)
+      .save(survey)
+      .catch((e) => {
+        error = {
+          message: e,
+          hasError: true,
+        };
+      });
+
+    if (error.hasError) return error;
+
+    return survey;
+  }
+
+  private async extractXLSXQuestion(
+    row: surveyFormat,
+    survey: Survey
+  ): Promise<ErrorDto> {
+    let error: ErrorDto = {
+      hasError: false,
+      message: "",
+    };
+
+    let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
+
+    let partOfStartSet: boolean = row.startSet ? row.startSet.toString().toUpperCase() == "X" : false;
+
+    let question = new Question();
+    question.text = row.question;
+    question.multiResponse = correctAnswerIndexes.length > 1;
+    question.survey = survey;
+    question.startSet = partOfStartSet;
+    question.difficulty = row.difficulty;
+    question.slope = row.slope;
+
+    await getConnection()
+      .getRepository(Question)
+      .save(question)
+      .catch((e) => {
+        error = {
+          message: e,
+          hasError: true,
+        };
+      });
+
+    if (error.hasError) {
+      return error;
+    }
+
+    let answers = [
+      row.answers.answer1,
+      row.answers.answer2,
+      row.answers.answer3,
+      row.answers.answer4,
+      row.answers.answer5,
+    ];
+
+    const answersRepository = await getConnection().getRepository(Answer);
+
+    answers.forEach((element, index) => {
+      let answer = new Answer();
+      answer.text = element;
+      answer.correct = correctAnswerIndexes.includes(index.toString(10));
+      answer.question = question;
+
+      answersRepository.save(answer).catch((e) => {
+        error = {
+          message: error.message + "\n Error at answer (" + index + "): " + e,
+          hasError: true,
+        };
+      });
+    });
+
+    return error;
+  }
+
+  private extractXLSXOptions(rows): number | undefined {
+    let result: number | undefined = undefined;
+    rows.forEach((row) => {
+      if ("Number participants" === row[0]) {
+        result = row[1];
+      }
+    });
+    return result;
+  }
+
+  // | ID | Question | A1 | A2 | A3 | A4 | A5 | Solution |
+  private fileSchema = {
+    ID: {
+      // JSON object property name.
+      prop: "id",
+      type: Number,
+      required: true,
+    },
+    Question: {
+      prop: "question",
+      type: String,
+      required: true,
+    },
+    Solution: {
+      prop: "solutions",
+      type: String,
+      required: true,
+    },
+    StartSet: {
+      prop: "startSet",
+      type: String,
+    },
+    Difficulty: {
+      prop: "difficulty",
+      type: Number,
+      required: true,
+    },
+    Slope: {
+      prop: "slope",
+      type: Number,
+      required: true,
+    },
+    // Nested object.
+    // 'Answers' here is not a real Excel file column name,
+    // it can be any string — it's just for code readability.
+    Answers: {
+      prop: "answers",
+      type: {
+        A1: {
+          prop: "answer1",
+          type: String,
+          required: true,
+        },
+        A2: {
+          prop: "answer2",
+          type: String,
+          required: true,
+        },
+        A3: {
+          prop: "answer3",
+          type: String,
+        },
+        A4: {
+          prop: "answer4",
+          type: String,
+        },
+        A5: {
+          prop: "answer5",
+          type: String,
+        },
+      },
+    },
+  };
 }
+
+type surveyFormat = {
+  id: number;
+  question: string;
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
+};
