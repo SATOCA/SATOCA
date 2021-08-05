@@ -19,6 +19,54 @@ import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
 
+function normal(mean: number, stdDev: number): Array<[number, number]> {
+  function f(x) {
+    return (
+      (1 / (Math.sqrt(2 * Math.PI) * stdDev)) *
+      Math.exp(-Math.pow(x - mean, 2) / (2 * Math.pow(stdDev, 2)))
+    );
+  }
+
+  let result = [];
+  for (let i = -5; i <= 5; i += 0.2) {
+    result.push([i, f(i)]);
+  }
+  return result;
+}
+
+const likelihoodFunction = normal(0, 1);
+
+// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item. 
+// Uses the 3 parameters logistic model (a, b, c).
+export function itemResponseFunction(a: number, b: number, c: number, theta: number) {
+  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+}
+
+export type Zeta = { a: number, b: number, c: number };
+
+// Estimate ability using the EAP method.
+// Reference: "Marginal Maximum Likelihood estimation of item parameters: application of
+// an EM algorithm" Bock & Aitkin 1981 --- equation 14.
+export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
+  function likelihood(theta) {
+    return zeta.reduce((total, currentValue, currentIndex) => {
+      const irf = itemResponseFunction(currentValue.a, currentValue.b, currentValue.c, theta);
+      return answers[currentIndex] === 1 ? total * irf : total * (1 - irf);
+    }, 1);
+  }
+
+  let num = 0;
+  let nf = 0;
+  for (let i = 0; i < likelihoodFunction.length; i++) {
+    let theta = likelihoodFunction[i][0];
+    let probability = likelihoodFunction[i][1];
+    let like = likelihood(theta);
+    num += theta * like * probability;
+    nf += like * probability;
+  }
+  return num / nf;
+}
+
 export class SurveyController {
   async getSurveys() {
     const query = await getConnection().getRepository(Survey).find();
@@ -94,7 +142,7 @@ export class SurveyController {
     surveyId: number,
     uniqueId: string
   ) {
-    const progressQuery = await getConnection()
+    const participant = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
       .innerJoinAndSelect("participant.survey", "survey")
@@ -107,7 +155,7 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: progressQuery.currentQuestion.id })
+      .where("question.id = :id", { id: participant.currentQuestion.id })
       .getOne();
 
     let result: ErrorDto = {
@@ -115,13 +163,10 @@ export class SurveyController {
       hasError: false,
     };
 
-    // add to FinishedQuestion table
-    let finishedQuestionRepository = getConnection().getRepository(
-      FinishedQuestion
-    );
+    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
 
     const count = await finishedQuestionRepository.count({
-      where: { id: question.id },
+      where: { id: question.id, participant: participant }
     });
 
     if (count > 0) {
@@ -130,11 +175,11 @@ export class SurveyController {
         "The question with the id: " + question.id + " was already answered";
     } else {
       // if question was not already answered
-
       let finishedQuestion = new FinishedQuestion();
       finishedQuestion.id = body.itemId;
       finishedQuestion.question = question;
       finishedQuestion.givenAnswers = body.answers;
+      finishedQuestion.participant = participant;
 
       await finishedQuestionRepository
         .save(finishedQuestion)
@@ -146,6 +191,31 @@ export class SurveyController {
           result.message = e;
         });
 
+      // retrieve all finished questions
+      const finishedQuestions = await getConnection()
+        .getRepository(FinishedQuestion)
+        .createQueryBuilder("finishedquestion")
+        .leftJoinAndSelect("finishedquestion.question", "question")
+        .leftJoinAndSelect("question.choices", "choices")
+        .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+        .leftJoinAndSelect("finishedquestion.participant", "participant")
+        .where("participant.uuid = :uuid", { uuid: uniqueId })
+        .getMany();
+
+      const zeta = finishedQuestions.map(fq => {
+        const currentZeta: Zeta = {
+          a: fq.question.slope,
+          b: fq.question.difficulty,
+          c: 1 / fq.question.choices.length,
+        };
+        return currentZeta;
+      });
+      const responseVector = finishedQuestions.map(fq => {
+        // only one anwers is submitted, therefore select the first one
+        return fq.givenAnswers[0].correct ? 1 : 0
+      })
+      const ability = estimateAbilityEAP(responseVector, zeta);
+
       // update Participant
       const participantController = new ParticipantController();
 
@@ -153,7 +223,8 @@ export class SurveyController {
         // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
         let updateParticipantReturn = await participantController.updateParticipant(
           surveyId,
-          uniqueId
+          uniqueId,
+          ability
         );
 
         if (updateParticipantReturn.hasError) {
