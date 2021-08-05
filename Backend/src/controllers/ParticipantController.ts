@@ -93,7 +93,7 @@ export class ParticipantController {
     return result;
   }
 
-  async updateParticipant(surveyId: number, uniqueId: string) {
+  async updateParticipant(surveyId: number, uniqueId: string, ability: number) {
     const progressQuery = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
@@ -119,6 +119,8 @@ export class ParticipantController {
     progress.currentQuestion = nextQuestion;
     */
 
+    // TODO: rename
+    progress.scoring = ability;
     progress.finished = true;
 
     let result: ErrorDto = {
