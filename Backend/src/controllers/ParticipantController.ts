@@ -46,17 +46,21 @@ export class ParticipantController {
     const survey = await getConnection()
       .getRepository(Survey)
       .findOne(surveyId);
+
     //! \todo handle error case
-    const question = await getConnection()
+    const startQuestions = await getConnection()
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
       .innerJoinAndSelect("question.survey", "survey")
       .where("survey.id = :id", { id: surveyId })
-      .take(1)
-      .getOne();
+      .andWhere("question.startSet = true")
+      .getMany();
 
-    console.log(question);
+    //todo handle Error "no start question"
+    const numberOfFirstQuestions = startQuestions.length;
+
+    console.log(startQuestions);
     //! \todo handle error case
     // -> take all available questions and let the adaptation logic decide which is the first question
 
@@ -66,8 +70,10 @@ export class ParticipantController {
       obj[i].uuid = uuidv4();
       obj[i].survey = survey;
       obj[i].finished = false;
-      obj[i].currentQuestion = question;
+      obj[i].currentQuestion =
+        startQuestions[Math.floor(Math.random() * numberOfFirstQuestions)];
     }
+
     let result: ErrorDto = {
       message: "",
       hasError: false,
