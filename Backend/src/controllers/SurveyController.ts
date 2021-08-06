@@ -36,13 +36,18 @@ function normal(mean: number, stdDev: number): Array<[number, number]> {
 
 const likelihoodFunction = normal(0, 1);
 
-// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item. 
+// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item.
 // Uses the 3 parameters logistic model (a, b, c).
-export function itemResponseFunction(a: number, b: number, c: number, theta: number) {
+export function itemResponseFunction(
+  a: number,
+  b: number,
+  c: number,
+  theta: number
+) {
   return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
 }
 
-export type Zeta = { a: number, b: number, c: number };
+export type Zeta = { a: number; b: number; c: number };
 
 // Estimate ability using the EAP method.
 // Reference: "Marginal Maximum Likelihood estimation of item parameters: application of
@@ -50,7 +55,12 @@ export type Zeta = { a: number, b: number, c: number };
 export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
   function likelihood(theta) {
     return zeta.reduce((total, currentValue, currentIndex) => {
-      const irf = itemResponseFunction(currentValue.a, currentValue.b, currentValue.c, theta);
+      const irf = itemResponseFunction(
+        currentValue.a,
+        currentValue.b,
+        currentValue.c,
+        theta
+      );
       return answers[currentIndex] === 1 ? total * irf : total * (1 - irf);
     }, 1);
   }
@@ -163,10 +173,12 @@ export class SurveyController {
       hasError: false,
     };
 
-    let finishedQuestionRepository = getConnection().getRepository(FinishedQuestion);
+    let finishedQuestionRepository = await getConnection().getRepository(
+      FinishedQuestion
+    );
 
     const count = await finishedQuestionRepository.count({
-      where: { id: question.id, participant: participant }
+      where: { question: question, participant: participant },
     });
 
     if (count > 0) {
@@ -176,7 +188,7 @@ export class SurveyController {
     } else {
       // if question was not already answered
       let finishedQuestion = new FinishedQuestion();
-      finishedQuestion.id = body.itemId;
+      //finishedQuestion.id = body.itemId;
       finishedQuestion.question = question;
       finishedQuestion.givenAnswers = body.answers;
       finishedQuestion.participant = participant;
@@ -192,17 +204,19 @@ export class SurveyController {
         });
 
       // retrieve all finished questions
-      const finishedQuestions = await getConnection()
-        .getRepository(FinishedQuestion)
-        .createQueryBuilder("finishedquestion")
-        .leftJoinAndSelect("finishedquestion.question", "question")
-        .leftJoinAndSelect("question.choices", "choices")
-        .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-        .leftJoinAndSelect("finishedquestion.participant", "participant")
-        .where("participant.uuid = :uuid", { uuid: uniqueId })
-        .getMany();
+      const finishedQuestions =
+        /*await getConnection()
+        .getRepository(FinishedQuestion)*/
+        await finishedQuestionRepository
+          .createQueryBuilder("finishedquestion")
+          .leftJoinAndSelect("finishedquestion.question", "question")
+          .leftJoinAndSelect("question.choices", "choices")
+          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+          .leftJoinAndSelect("finishedquestion.participant", "participant")
+          .where("participant.uuid = :uuid", { uuid: uniqueId })
+          .getMany();
 
-      const zeta = finishedQuestions.map(fq => {
+      const zeta = finishedQuestions.map((fq) => {
         const currentZeta: Zeta = {
           a: fq.question.slope,
           b: fq.question.difficulty,
@@ -210,10 +224,10 @@ export class SurveyController {
         };
         return currentZeta;
       });
-      const responseVector = finishedQuestions.map(fq => {
+      const responseVector = finishedQuestions.map((fq) => {
         // only one anwers is submitted, therefore select the first one
-        return fq.givenAnswers[0].correct ? 1 : 0
-      })
+        return fq.givenAnswers[0].correct ? 1 : 0;
+      });
       const ability = estimateAbilityEAP(responseVector, zeta);
 
       // update Participant
@@ -384,7 +398,9 @@ export class SurveyController {
 
     let correctAnswerIndexes: string[] = row.solutions.toString().split(";");
 
-    let partOfStartSet: boolean = row.startSet ? row.startSet.toString().toUpperCase() == "X" : false;
+    let partOfStartSet: boolean = row.startSet
+      ? row.startSet.toString().toUpperCase() == "X"
+      : false;
 
     let question = new Question();
     question.text = row.question;
