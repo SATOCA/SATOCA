@@ -469,12 +469,10 @@ export class SurveyController {
     },
     Difficulty: {
       prop: "difficulty",
-      type: Number,
       required: true,
     },
     Slope: {
       prop: "slope",
-      type: Number,
       required: true,
     },
     // Nested object.
@@ -485,25 +483,20 @@ export class SurveyController {
       type: {
         A1: {
           prop: "answer1",
-          type: String,
           required: true,
         },
         A2: {
           prop: "answer2",
-          type: String,
           required: true,
         },
         A3: {
-          prop: "answer3",
-          type: String,
+          prop: "answer3"
         },
         A4: {
-          prop: "answer4",
-          type: String,
+          prop: "answer4"
         },
         A5: {
-          prop: "answer5",
-          type: String,
+          prop: "answer5"
         },
       },
     },
