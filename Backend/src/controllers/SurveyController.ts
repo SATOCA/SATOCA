@@ -36,7 +36,7 @@ function normal(mean: number, stdDev: number): Array<[number, number]> {
 
 const likelihoodFunction = normal(0, 1);
 
-// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item. 
+// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item.
 // Uses the 3 parameters logistic model (a, b, c).
 export function itemResponseFunction(a: number, b: number, c: number, theta: number) {
   return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
@@ -391,6 +391,21 @@ export class SurveyController {
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
     question.startSet = partOfStartSet;
+
+    if (isNaN(row.difficulty))
+    {
+      error = { hasError : true,
+      message: `difficulty of question with id ${row.id} is not a valid number!`}
+      return error;
+    }
+
+    if (isNaN(row.slope))
+    {
+      error = { hasError : true,
+        message: `slope of question with id ${row.id} is not a valid number!`}
+      return error;
+    }
+
     question.difficulty = row.difficulty;
     question.slope = row.slope;
 
