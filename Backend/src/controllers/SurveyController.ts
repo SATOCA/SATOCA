@@ -392,17 +392,19 @@ export class SurveyController {
     question.survey = survey;
     question.startSet = partOfStartSet;
 
-    if (isNaN(row.difficulty))
-    {
-      error = { hasError : true,
-      message: `difficulty of question with id ${row.id} is not a valid number!`}
+    if (isNaN(row.difficulty)) {
+      error = {
+        hasError: true,
+        message: `difficulty of question with id ${row.id} is not a valid number!`,
+      };
       return error;
     }
 
-    if (isNaN(row.slope))
-    {
-      error = { hasError : true,
-        message: `slope of question with id ${row.id} is not a valid number!`}
+    if (isNaN(row.slope)) {
+      error = {
+        hasError: true,
+        message: `slope of question with id ${row.id} is not a valid number!`,
+      };
       return error;
     }
 
@@ -433,19 +435,23 @@ export class SurveyController {
 
     const answersRepository = await getConnection().getRepository(Answer);
 
-    answers.forEach((element, index) => {
+    for (let i = 0; i < answers.length; i++) {
+      const element = answers[i];
+
+      if (element === undefined) continue;
+
       let answer = new Answer();
       answer.text = element.toString();
-      answer.correct = correctAnswerIndexes.includes(index.toString(10));
+      answer.correct = correctAnswerIndexes.includes(i.toString(10));
       answer.question = question;
 
       answersRepository.save(answer).catch((e) => {
         error = {
-          message: error.message + "\n Error at answer (" + index + "): " + e,
+          message: error.message + "\n Error at answer (" + i + "): " + e,
           hasError: true,
         };
       });
-    });
+    }
 
     return error;
   }
@@ -505,13 +511,13 @@ export class SurveyController {
           required: true,
         },
         A3: {
-          prop: "answer3"
+          prop: "answer3",
         },
         A4: {
-          prop: "answer4"
+          prop: "answer4",
         },
         A5: {
-          prop: "answer5"
+          prop: "answer5",
         },
       },
     },
