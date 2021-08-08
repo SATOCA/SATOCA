@@ -387,7 +387,7 @@ export class SurveyController {
     let partOfStartSet: boolean = row.startSet ? row.startSet.toString().toUpperCase() == "X" : false;
 
     let question = new Question();
-    question.text = row.question;
+    question.text = row.question.toString();
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
     question.startSet = partOfStartSet;
@@ -435,7 +435,7 @@ export class SurveyController {
 
     answers.forEach((element, index) => {
       let answer = new Answer();
-      answer.text = element;
+      answer.text = element.toString();
       answer.correct = correctAnswerIndexes.includes(index.toString(10));
       answer.question = question;
 
