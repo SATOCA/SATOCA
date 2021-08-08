@@ -306,6 +306,14 @@ export class SurveyController {
       return result;
     }
 
+    if (!SurveyController.hasStartSetElements(rows)) {
+      result.error = {
+        hasError: true,
+        message: "No question was marked as starting question!",
+      };
+      return result;
+    }
+
     for (const row of rows) {
       let error = await this.extractXLSXQuestion(row, survey);
       if (error.hasError) {
@@ -388,6 +396,10 @@ export class SurveyController {
     return survey;
   }
 
+  private static hasStartSetElements(rows: surveyFormat[]) {
+    return rows.some(row => row.startSet && row.startSet.toString().toUpperCase() == "X");
+  }
+
   private async extractXLSXQuestion(
     row: surveyFormat,
     survey: Survey
@@ -404,10 +416,27 @@ export class SurveyController {
       : false;
 
     let question = new Question();
-    question.text = row.question;
+    question.text = row.question.toString();
     question.multiResponse = correctAnswerIndexes.length > 1;
     question.survey = survey;
     question.startSet = partOfStartSet;
+
+    if (isNaN(row.difficulty)) {
+      error = {
+        hasError: true,
+        message: `difficulty of question with id ${row.id} is not a valid number!`,
+      };
+      return error;
+    }
+
+    if (isNaN(row.slope)) {
+      error = {
+        hasError: true,
+        message: `slope of question with id ${row.id} is not a valid number!`,
+      };
+      return error;
+    }
+
     question.difficulty = row.difficulty;
     question.slope = row.slope;
 
@@ -435,19 +464,23 @@ export class SurveyController {
 
     const answersRepository = await getConnection().getRepository(Answer);
 
-    answers.forEach((element, index) => {
+    for (let i = 0; i < answers.length; i++) {
+      const element = answers[i];
+
+      if (element === undefined) continue;
+
       let answer = new Answer();
-      answer.text = element;
-      answer.correct = correctAnswerIndexes.includes(index.toString(10));
+      answer.text = element.toString();
+      answer.correct = correctAnswerIndexes.includes(i.toString(10));
       answer.question = question;
 
       answersRepository.save(answer).catch((e) => {
         error = {
-          message: error.message + "\n Error at answer (" + index + "): " + e,
+          message: error.message + "\n Error at answer (" + i + "): " + e,
           hasError: true,
         };
       });
-    });
+    }
 
     return error;
   }
@@ -507,13 +540,13 @@ export class SurveyController {
           required: true,
         },
         A3: {
-          prop: "answer3"
+          prop: "answer3",
         },
         A4: {
-          prop: "answer4"
+          prop: "answer4",
         },
         A5: {
-          prop: "answer5"
+          prop: "answer5",
         },
       },
     },
