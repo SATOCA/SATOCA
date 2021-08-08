@@ -119,6 +119,7 @@ export class SurveyController {
       error: err,
       item: question,
       finished: query.finished,
+      ability: query.scoring,
     };
     return result;
   }
@@ -173,12 +174,12 @@ export class SurveyController {
       hasError: false,
     };
 
-    let finishedQuestionRepository = getConnection().getRepository(
+    let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
     );
 
     const count = await finishedQuestionRepository.count({
-      where: { id: question.id, participant: participant },
+      where: { question: question, participant: participant },
     });
 
     if (count > 0) {
@@ -188,7 +189,7 @@ export class SurveyController {
     } else {
       // if question was not already answered
       let finishedQuestion = new FinishedQuestion();
-      finishedQuestion.id = body.itemId;
+      //finishedQuestion.id = body.itemId;
       finishedQuestion.question = question;
       finishedQuestion.givenAnswers = body.answers;
       finishedQuestion.participant = participant;
@@ -204,15 +205,17 @@ export class SurveyController {
         });
 
       // retrieve all finished questions
-      const finishedQuestions = await getConnection()
-        .getRepository(FinishedQuestion)
-        .createQueryBuilder("finishedquestion")
-        .leftJoinAndSelect("finishedquestion.question", "question")
-        .leftJoinAndSelect("question.choices", "choices")
-        .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-        .leftJoinAndSelect("finishedquestion.participant", "participant")
-        .where("participant.uuid = :uuid", { uuid: uniqueId })
-        .getMany();
+      const finishedQuestions =
+        /*await getConnection()
+        .getRepository(FinishedQuestion)*/
+        await finishedQuestionRepository
+          .createQueryBuilder("finishedquestion")
+          .leftJoinAndSelect("finishedquestion.question", "question")
+          .leftJoinAndSelect("question.choices", "choices")
+          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+          .leftJoinAndSelect("finishedquestion.participant", "participant")
+          .where("participant.uuid = :uuid", { uuid: uniqueId })
+          .getMany();
 
       const zeta = finishedQuestions.map((fq) => {
         const currentZeta: Zeta = {
