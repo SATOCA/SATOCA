@@ -9,6 +9,6 @@ test("smoke test frontpage", () => {
       <Frontpage />
     </MemoryRouter>
   );
-  const startButton = screen.getByText(/Exemplary Survey/i);
-  expect(startButton).toBeInTheDocument();
+  const centerButton = screen.getByText(/Trustee Login/i);
+  expect(centerButton).toBeInTheDocument();
 });

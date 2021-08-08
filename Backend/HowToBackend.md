@@ -16,7 +16,7 @@ Generate a .env File with following parameters:
 
 ```
 NODE_ENV = 'dev'
-APP_PORT = 3000
+APP_PORT = 5000
 DATABASE_HOST = 127.0.0.1
 DATABASE_PORT = 5432
 DATABASE_USERNAME = postgres

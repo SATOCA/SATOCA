@@ -22,7 +22,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "REACT_APP_BACKEND='https://static.68.115.119.168.clients.your-server.de:8443/api' react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

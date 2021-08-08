@@ -2,13 +2,14 @@ import React from "react";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../Services/SurveyAPI";
 import { TrusteeLoginDto } from "../../DataModel/dto/TrusteeLoginDto";
+import UploadSurveyFile from "./UploadSurveyFile/UploadSurveyFile";
 
 export default function TrusteeLogin() {
   const [login, setLogin] = React.useState("");
   const [password, setPassword] = React.useState("");
   const [validLogin, setValidLogin] = React.useState(false);
   const [validPassword, setValidPassword] = React.useState(false);
-  const [, setLoginSuccessful] = React.useState(false);
+  const [loginSuccessful, setLoginSuccessful] = React.useState(false);
   const surveyApi = SurveyApi.getInstance();
 
   const handleSubmit = (event: {
@@ -27,13 +28,20 @@ export default function TrusteeLogin() {
     setLogin(e.target.value);
     setValidLogin(e.target.value.length > 0);
   };
-
   const handlePasswordInputChange = (e: {
     target: { name: any; value: any };
   }) => {
     setPassword(e.target.value);
     setValidPassword(e.target.value.length > 0);
   };
+
+  if (loginSuccessful) {
+    return (
+      <div className="centered front-page-alignment">
+        <UploadSurveyFile login={login} password={password} />
+      </div>
+    );
+  }
 
   return (
     <div className="centered front-page-alignment">
@@ -45,7 +53,6 @@ export default function TrusteeLogin() {
             type="text"
             value={login}
             onChange={handleLoginInputChange}
-            valid={validLogin}
           />
         </FormGroup>
         <FormGroup>
@@ -55,12 +62,12 @@ export default function TrusteeLogin() {
             type="text"
             value={password}
             onChange={handlePasswordInputChange}
-            valid={validPassword}
           />
         </FormGroup>
         <Button
           data-testid="btn-submit"
-          disabled={validLogin === false || validPassword === false}
+          type="submit"
+          disabled={!validLogin || !validPassword}
         >
           Submit
         </Button>
