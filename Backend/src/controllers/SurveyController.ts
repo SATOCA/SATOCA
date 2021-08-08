@@ -119,6 +119,7 @@ export class SurveyController {
       error: err,
       item: question,
       finished: query.finished,
+      ability: query.scoring,
     };
     return result;
   }

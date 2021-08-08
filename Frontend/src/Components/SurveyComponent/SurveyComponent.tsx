@@ -13,7 +13,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> {}
+  extends RouteComponentProps<SurveyComponentProps> { }
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();
@@ -33,6 +33,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
       .then(async (response) => {
         const responseQuestion = (await response).item;
+        console.log("current ability: ", (await response).ability);
         setSurveyEnded((await response).finished);
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
       })
