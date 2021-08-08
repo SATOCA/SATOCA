@@ -77,7 +77,7 @@ export class SurveyRouter {
     );
 
     this._router.post(
-      "/file",
+      "/upload",
       (req: Request, res: Response, next: NextFunction) => {
         try {
           if (!req.files) {
