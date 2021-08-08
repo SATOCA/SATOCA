@@ -5,6 +5,7 @@ import { ErrorDto } from "../routers/dto/ErrorDto";
 import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto";
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
+import { QuestionController } from "./QuestionController";
 
 export class ParticipantController {
   //todo export user links
@@ -109,20 +110,15 @@ export class ParticipantController {
     });
 
     // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
-    /*
-    nextQuestion = getNextQuestion();
-
-     if(nextQuestion == null) {
-       progress.finished = true;
-     }
-
-    progress.currentQuestion = nextQuestion;
-    */
+    let qController = new QuestionController();
 
     // TODO: rename
     progress.scoring = ability;
-    progress.finished = true;
-
+    //progress.finished = true;
+    progress.currentQuestion = await qController.getNextQuestion(
+      progress,
+      surveyId
+    );
     let result: ErrorDto = {
       message: "",
       hasError: false,
