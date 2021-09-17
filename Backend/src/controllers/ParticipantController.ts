@@ -105,7 +105,7 @@ export class ParticipantController {
       .getOneOrFail();
 
     let participantRepository = getConnection().getRepository(Participant);
-    let progress = await participantRepository.findOne({
+    let targetUser = await participantRepository.findOne({
       id: progressQuery.id,
     });
 
@@ -113,19 +113,29 @@ export class ParticipantController {
     let qController = new QuestionController();
 
     // TODO: rename
-    progress.scoring = ability;
-    //progress.finished = true;
-    progress.currentQuestion = await qController.getNextQuestion(
-      progress,
+    targetUser.scoring = ability;
+
+    let bestNextQuestion = await qController.getNextQuestion(
+      targetUser,
       surveyId
     );
+
+    //todo Flo und Enrico: StopLogic abhängig von ???
+    if (false) {
+      // abbruch Bedingung erfüllt
+      targetUser.finished = true;
+      targetUser.currentQuestion = null;
+    } else {
+      targetUser.currentQuestion = bestNextQuestion;
+    }
+
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
 
     await participantRepository
-      .save(progress)
+      .save(targetUser)
       .then(() => {
         result.hasError = false;
       })

@@ -43,15 +43,16 @@ export class QuestionController {
       .getMany();
 
     let bestElement: Question;
-    let bestScore = 0, score;
+    let bestScore = 0,
+      score;
     for (const q of remainingQuestions) {
-      if (
-        (score = await this.calculateItemInformationValue(
-          q.slope,
-          1,
-          participant.scoring - q.difficulty
-        )) > bestScore
-      ) {
+      score = await this.calculateItemInformationValue(
+        q.slope,
+        1,
+        participant.scoring - q.difficulty
+      );
+
+      if (score > bestScore) {
         bestElement = q;
         bestScore = score;
       }
