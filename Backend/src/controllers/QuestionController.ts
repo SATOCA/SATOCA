@@ -43,13 +43,14 @@ export class QuestionController {
       .getMany();
 
     let bestElement: Question;
-    let bestScore = 0, score;
+    let bestScore = 0,
+      score;
     for (const q of remainingQuestions) {
       if (
         (score = await this.calculateItemInformationValue(
           q.slope,
-          1,
-          participant.scoring - q.difficulty
+          participant.scoring - q.difficulty,
+          1 / q.choices.length
         )) > bestScore
       ) {
         bestElement = q;
@@ -61,13 +62,16 @@ export class QuestionController {
 
   async calculateItemInformationValue(
     a: number, //slope
-    k: number, // = 1
-    x: number //Scoring - Difficulty
+    //k: number, // = 1
+    x: number, //Scoring - Difficulty
+    c: number //guessing parameter
   ): Promise<number> {
-    return (
+    /* 2PL-Model
+   return (
       (a * ((k - 1) * Math.exp(a * x) + k) * Math.exp(a * k * x)) /
       Math.pow(Math.exp(a * x) + 1, 2)
-    );
+    );*/
+    return -(a * (c - 1) * Math.exp(a * x)) / Math.pow(Math.exp(a * x) + 1, 2); //3PL-Model, k=1
   }
 
   async postQuestion(surveyId: number, body: QuestionDto) {
