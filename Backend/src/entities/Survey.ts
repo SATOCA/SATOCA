@@ -10,6 +10,9 @@ export class Survey extends BaseEntity {
    @Column()
    title: string = "";
 
+   @Column("real")
+   minimalInformationGain: number = 0;
+
    @OneToMany(type => Participant, participant => participant.survey)
    participants: Participant[];
 
