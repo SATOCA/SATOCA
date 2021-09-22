@@ -121,7 +121,7 @@ export class ParticipantController {
     );
 
     //todo Flo und Enrico: StopLogic abhängig von ???
-    if (false) {
+    if (ParticipantController.doesNextQuestionProvideProgress(bestNextQuestion, ability)) {
       // abbruch Bedingung erfüllt
       targetUser.finished = true;
       targetUser.currentQuestion = null;
@@ -145,6 +145,29 @@ export class ParticipantController {
       });
 
     return result;
+  }
+
+  private static doesNextQuestionProvideProgress(
+    bestNextQuestion: Question,
+    ability: number
+  ): boolean {
+    let probability: number;
+
+    let answerPossibilities = bestNextQuestion.choices.length;
+    let slope = bestNextQuestion.slope;
+
+    let difficulty = bestNextQuestion.difficulty;
+    let diffAbilityDifficulty = ability - difficulty;
+
+    let x_vi = 1;
+
+    probability =
+      answerPossibilities +
+      (1 - answerPossibilities) *
+        (Math.exp(x_vi * slope * diffAbilityDifficulty) /
+          (1 + Math.exp(slope * diffAbilityDifficulty)));
+
+    return probability < 0.95 && probability > 0.05;
   }
 
   async createSurveyLinks(surveyId: number): Promise<string[]> {
