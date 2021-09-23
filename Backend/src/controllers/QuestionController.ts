@@ -1,4 +1,4 @@
-import { Brackets, getConnection } from "typeorm";
+import { getConnection } from "typeorm";
 import { Survey } from "../entities/Survey";
 import { ErrorDto } from "../routers/dto/ErrorDto";
 import { Question } from "../entities/Question";
@@ -30,22 +30,29 @@ export class QuestionController {
       .leftJoinAndSelect("question.finishedQuestions", "finishedQuestion")
       .leftJoinAndSelect("question.survey", "survey")
       .leftJoinAndSelect("finishedQuestion.participant", "participant")
+      .leftJoinAndSelect("question.choices", "choices")
       .where("question.surveyId = :surveyId", { surveyId: surveyid })
-      .andWhere(
-        new Brackets((sqb) => {
-          sqb
-            .where("finishedQuestion.id IS NULL")
-            .orWhere("finishedQuestion.participant.id <> :partId", {
-              partId: participant.id,
-            });
-        })
-      )
       .getMany();
+
+    let questionPool = [];
+    for (const q of remainingQuestions) {
+      let answered = false;
+
+      q.finishedQuestions?.forEach((f) => {
+        if (f.participant.id === participant.id) {
+          answered = true;
+        }
+      });
+
+      if (!answered) {
+        questionPool.push(q);
+      }
+    }
 
     let bestElement: Question;
     let bestScore = 0,
       score;
-    for (const q of remainingQuestions) {
+    for (const q of questionPool) {
       if (
         (score = await this.calculateItemInformationValue(
           q.slope,
