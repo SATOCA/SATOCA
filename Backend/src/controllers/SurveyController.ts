@@ -328,7 +328,7 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions(optionsRows);
+    let numParticipants = this.extractXLSXOptions("Number participants", optionsRows);
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -377,9 +377,20 @@ export class SurveyController {
       return error;
     }
 
+    let minimalInformationGain = this.extractXLSXOptions("Minimal information gain", rows);
+    if (minimalInformationGain === undefined) {
+      error = {
+        message: "cannot find 'minimal information gain' option in survey",
+        hasError: true,
+      };
+
+      return error;
+    }
+
     const survey = new Survey();
 
     survey.title = targetRow[1];
+    survey.minimalInformationGain = minimalInformationGain;
 
     await getConnection()
       .getRepository(Survey)
@@ -485,10 +496,10 @@ export class SurveyController {
     return error;
   }
 
-  private extractXLSXOptions(rows): number | undefined {
+  private extractXLSXOptions(option: string, rows): number | undefined {
     let result: number | undefined = undefined;
     rows.forEach((row) => {
-      if ("Number participants" === row[0]) {
+      if (option === row[0]) {
         result = row[1];
       }
     });
