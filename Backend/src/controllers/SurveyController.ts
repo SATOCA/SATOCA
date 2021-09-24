@@ -103,6 +103,22 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
+    if(query.finished)
+    {
+      const err: ErrorDto = {
+        message: "",
+        hasError: false,
+      };
+      const result: CurrentQuestionResponseDto = {
+        error: err,
+        item: undefined,
+        finished: query.finished,
+        ability: query.scoring,
+      };
+
+      return result;
+    }
+
     const question = await getConnection()
       .getRepository(Question)
       .createQueryBuilder("question")

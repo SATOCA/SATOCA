@@ -29,6 +29,7 @@ export class QuestionController {
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.finishedQuestions", "finishedQuestion")
       .leftJoinAndSelect("question.survey", "survey")
+      .leftJoinAndSelect("question.choices", "choices")
       .leftJoinAndSelect("finishedQuestion.participant", "participant")
       .where("question.surveyId = :surveyId", { surveyId: surveyid })
       .andWhere(

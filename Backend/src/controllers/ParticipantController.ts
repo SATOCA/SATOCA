@@ -120,13 +120,20 @@ export class ParticipantController {
       surveyId
     );
 
-    //todo Flo und Enrico: StopLogic abhängig von ???
-    if (ParticipantController.doesNextQuestionProvideProgress(bestNextQuestion, ability)) {
-      // abbruch Bedingung erfüllt
+    if (bestNextQuestion === undefined) {
       targetUser.finished = true;
       targetUser.currentQuestion = null;
-    } else {
+    } else if (
+      ParticipantController.doesNextQuestionProvideProgress(
+        bestNextQuestion,
+        ability
+      )
+    ) {
       targetUser.currentQuestion = bestNextQuestion;
+      targetUser.finished = false;
+    } else {
+      targetUser.finished = true;
+      targetUser.currentQuestion = null;
     }
 
     let result: ErrorDto = {
@@ -167,7 +174,12 @@ export class ParticipantController {
         (Math.exp(x_vi * slope * diffAbilityDifficulty) /
           (1 + Math.exp(slope * diffAbilityDifficulty)));
 
-    return probability < 0.95 && probability > 0.05;
+    let minimalInformationGain = bestNextQuestion.survey.minimalInformationGain;
+
+    return (
+      probability < 1 - minimalInformationGain &&
+      probability > minimalInformationGain
+    );
   }
 
   async createSurveyLinks(surveyId: number): Promise<string[]> {
