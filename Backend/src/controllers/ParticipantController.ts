@@ -174,11 +174,11 @@ export class ParticipantController {
         (Math.exp(x_vi * slope * diffAbilityDifficulty) /
           (1 + Math.exp(slope * diffAbilityDifficulty)));
 
-    let minimalInformationGain = bestNextQuestion.survey.minimalInformationGain;
+    let itemSeverityBoundary = bestNextQuestion.survey.itemSeverityBoundary;
 
     return (
-      probability < 1 - minimalInformationGain &&
-      probability > minimalInformationGain
+      probability < 1 - itemSeverityBoundary &&
+      probability > itemSeverityBoundary
     );
   }
 

@@ -393,7 +393,10 @@ export class SurveyController {
       return error;
     }
 
-    let minimalInformationGain = this.extractXLSXOptions("Minimal information gain", rows);
+    let minimalInformationGain = this.extractXLSXOptions(
+      "Item severity boundary",
+      rows
+    );
     if (minimalInformationGain === undefined) {
       error = {
         message: "cannot find 'minimal information gain' option in survey",
@@ -406,7 +409,7 @@ export class SurveyController {
     const survey = new Survey();
 
     survey.title = targetRow[1];
-    survey.minimalInformationGain = minimalInformationGain;
+    survey.itemSeverityBoundary = minimalInformationGain;
 
     await getConnection()
       .getRepository(Survey)
