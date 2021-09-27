@@ -87,10 +87,6 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
   return (
     <Container className="glass-card-content" fluid="lg">
-      <h3 data-testid="header">Survey with id: {props.surveyId}</h3>
-      <h3 data-testid="header2">
-        Unique Survey with id: {props.uniqueSurveyId}
-      </h3>
       <span data-testid="item">{getContent()}</span>
     </Container>
   );

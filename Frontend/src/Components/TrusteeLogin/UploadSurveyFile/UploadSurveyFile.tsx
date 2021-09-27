@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./UploadSurveyFile.css";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
 
@@ -28,13 +29,17 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
         .uploadSurveyFile(file, props.login, props.password)
         .then((response) => {
           console.log(response);
-          setListItems(
-            <ol>
-              {response.links.map((link) => (
-                <li key={link}>{process.env.REACT_APP_FRONTEND + link}</li>
-              ))}
-            </ol>
-          );
+            setListItems(
+              <ol>
+                {response.links.map((link) => (
+                  <li key={link}>
+                    <a href={process.env.REACT_APP_FRONTEND + link}>
+                      {process.env.REACT_APP_FRONTEND + link}
+                    </a>
+                  </li>
+                ))}
+              </ol>
+            );
 
           setHasError(response.error.hasError);
           setError(response.error.message);

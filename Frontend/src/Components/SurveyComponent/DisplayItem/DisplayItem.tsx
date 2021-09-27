@@ -12,10 +12,7 @@ export type displayItemState = {
   selectedOptions: Array<number>;
 };
 
-export class DisplayItem extends React.Component<
-  displayItemProps,
-  displayItemState
-> {
+export class DisplayItem extends React.Component<displayItemProps, displayItemState> {
   constructor(props: displayItemProps) {
     super(props);
     this.state = {
@@ -49,7 +46,7 @@ export class DisplayItem extends React.Component<
   ) => {
     submitEvent.preventDefault();
     console.log("You have submitted: ", this.state.selectedOptions);
-    alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
+
     this.setState({ selectedOptions: [] });
     this.props.onAnswerSubmit(this.props.question, this.state.selectedOptions);
   };
@@ -86,7 +83,6 @@ export class DisplayItem extends React.Component<
         <div className="answer" data-testid="answer">
           {this.chooseButtonType()}
         </div>
-        <p>Selected: {this.state.selectedOptions.toString()}</p>
         <div className="submitButton">
           <button
             data-testid="submitButton"
