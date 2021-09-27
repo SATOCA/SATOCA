@@ -6,6 +6,7 @@ import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto";
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
 import { QuestionController } from "./QuestionController";
+import { itemResponseFunction } from "./SurveyController";
 
 export class ParticipantController {
   //todo export user links
@@ -158,21 +159,14 @@ export class ParticipantController {
     bestNextQuestion: Question,
     ability: number
   ): boolean {
-    let probability: number;
-
     let answerPossibilities = bestNextQuestion.choices.length;
+    let guessingRate = 1 / answerPossibilities;
+
     let slope = bestNextQuestion.slope;
 
     let difficulty = bestNextQuestion.difficulty;
-    let diffAbilityDifficulty = ability - difficulty;
 
-    let x_vi = 1;
-
-    probability =
-      answerPossibilities +
-      (1 - answerPossibilities) *
-        (Math.exp(x_vi * slope * diffAbilityDifficulty) /
-          (1 + Math.exp(slope * diffAbilityDifficulty)));
+    let probability = itemResponseFunction(slope, difficulty, guessingRate, ability);
 
     let itemSeverityBoundary = bestNextQuestion.survey.itemSeverityBoundary;
 
