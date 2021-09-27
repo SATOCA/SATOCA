@@ -39,10 +39,10 @@ const likelihoodFunction = normal(0, 1);
 // Calculates the probability that someone with a given ability level 'theta' will answer correctly an item.
 // Uses the 3 parameters logistic model (a, b, c).
 export function itemResponseFunction(
-  a: number,
-  b: number,
-  c: number,
-  theta: number
+  a: number, // slope
+  b: number, // difficulty
+  c: number, // guessing rate
+  theta: number  // ability
 ) {
   return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
 }
