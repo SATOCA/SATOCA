@@ -64,6 +64,9 @@ export class QuestionController {
         bestScore = score;
       }
     }
+    if (bestElement === undefined) {
+      participant.finished = true;
+    }
     return bestElement;
   }
 
