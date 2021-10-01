@@ -49,7 +49,7 @@ export class DisplayItem extends React.Component<
   ) => {
     submitEvent.preventDefault();
     console.log("You have submitted: ", this.state.selectedOptions);
-    //alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
+    // alert(`You have submitted: ${this.state.selectedOptions.toString()}`);
     this.setState({ selectedOptions: [] });
     this.props.onAnswerSubmit(this.props.question, this.state.selectedOptions);
   };
