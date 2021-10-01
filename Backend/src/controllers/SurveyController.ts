@@ -303,7 +303,7 @@ export class SurveyController {
       return result;
     }
 
-    let filePath = "./uploads/" + file.name;
+    let filePath = process.env.UPLOAD_DIRECTORY + file.name;
     await file.mv(filePath);
 
     // file extract
