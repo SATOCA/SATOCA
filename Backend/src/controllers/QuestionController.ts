@@ -25,15 +25,14 @@ export class QuestionController {
   }
   async getNextQuestion(participant: Participant, surveyid: number) {
     const remainingQuestions = await getConnection()
-      .getRepository(Question)
-      .createQueryBuilder("question")
-      .leftJoinAndSelect("question.finishedQuestions", "finishedQuestion")
-      .leftJoinAndSelect("question.survey", "survey")
-      .leftJoinAndSelect("question.choices", "choices")
-      .leftJoinAndSelect("finishedQuestion.participant", "participant")
-      .leftJoinAndSelect("question.choices", "choices")
-      .where("question.surveyId = :surveyId", { surveyId: surveyid })
-      .getMany();
+        .getRepository(Question)
+        .createQueryBuilder("question")
+        .leftJoinAndSelect("question.finishedQuestions", "finishedQuestion")
+        .leftJoinAndSelect("question.survey", "survey")
+        .leftJoinAndSelect("finishedQuestion.participant", "participant")
+        .leftJoinAndSelect("question.choices", "choices")
+        .where("question.surveyId = :surveyId", { surveyId: surveyid })
+        .getMany();
 
     let questionPool = [];
     for (const q of remainingQuestions) {
@@ -52,14 +51,15 @@ export class QuestionController {
 
     let bestElement: Question;
     let bestScore = 0,
-      score;
+        score;
     for (const q of questionPool) {
-        q.slope,
-          participant.scoring - q.difficulty,
-          1 / q.choices.length
-      );
-
-      if (score > bestScore) {
+      if (
+          (score = await this.calculateItemInformationValue(
+              q.slope,
+              participant.scoring - q.difficulty,
+              1 / q.choices.length
+          )) > bestScore
+      ) {
         bestElement = q;
         bestScore = score;
       }
