@@ -1,4 +1,4 @@
-import { Brackets, getConnection } from "typeorm";
+import { getConnection } from "typeorm";
 import { Survey } from "../entities/Survey";
 import { ErrorDto } from "../routers/dto/ErrorDto";
 import { Question } from "../entities/Question";
@@ -31,26 +31,32 @@ export class QuestionController {
       .leftJoinAndSelect("question.survey", "survey")
       .leftJoinAndSelect("question.choices", "choices")
       .leftJoinAndSelect("finishedQuestion.participant", "participant")
+      .leftJoinAndSelect("question.choices", "choices")
       .where("question.surveyId = :surveyId", { surveyId: surveyid })
-      .andWhere(
-        new Brackets((sqb) => {
-          sqb
-            .where("finishedQuestion.id IS NULL")
-            .orWhere("finishedQuestion.participant.id <> :partId", {
-              partId: participant.id,
-            });
-        })
-      )
       .getMany();
+
+    let questionPool = [];
+    for (const q of remainingQuestions) {
+      let answered = false;
+
+      q.finishedQuestions?.forEach((f) => {
+        if (f.participant.id === participant.id) {
+          answered = true;
+        }
+      });
+
+      if (!answered) {
+        questionPool.push(q);
+      }
+    }
 
     let bestElement: Question;
     let bestScore = 0,
       score;
-    for (const q of remainingQuestions) {
-      score = await this.calculateItemInformationValue(
+    for (const q of questionPool) {
         q.slope,
-        1,
-        participant.scoring - q.difficulty
+          participant.scoring - q.difficulty,
+          1 / q.choices.length
       );
 
       if (score > bestScore) {
@@ -58,18 +64,24 @@ export class QuestionController {
         bestScore = score;
       }
     }
+    if (bestElement === undefined) {
+      participant.finished = true;
+    }
     return bestElement;
   }
 
   async calculateItemInformationValue(
     a: number, //slope
-    k: number, // = 1
-    x: number //Scoring - Difficulty
+    //k: number, // = 1
+    x: number, //Scoring - Difficulty
+    c: number //guessing parameter
   ): Promise<number> {
-    return (
+    /* 2PL-Model
+   return (
       (a * ((k - 1) * Math.exp(a * x) + k) * Math.exp(a * k * x)) /
       Math.pow(Math.exp(a * x) + 1, 2)
-    );
+    );*/
+    return -(a * (c - 1) * Math.exp(a * x)) / Math.pow(Math.exp(a * x) + 1, 2); //3PL-Model, k=1
   }
 
   async postQuestion(surveyId: number, body: QuestionDto) {

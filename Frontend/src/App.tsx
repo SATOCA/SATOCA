@@ -29,7 +29,7 @@ function App() {
               />
             )}
           />
-          <Route exact path="/">
+          <Route>
             <Frontpage />
           </Route>
           <Route exact path="/login">

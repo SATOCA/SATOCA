@@ -12,7 +12,10 @@ export type displayItemState = {
   selectedOptions: Array<number>;
 };
 
-export class DisplayItem extends React.Component<displayItemProps, displayItemState> {
+export class DisplayItem extends React.Component<
+  displayItemProps,
+  displayItemState
+> {
   constructor(props: displayItemProps) {
     super(props);
     this.state = {
