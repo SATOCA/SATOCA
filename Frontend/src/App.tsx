@@ -1,7 +1,7 @@
 import React from "react";
 import { Container } from "reactstrap";
 import "./App.css";
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import SurveyComponent, {
   RouterSurveyComponentProps,
 } from "./Components/SurveyComponent/SurveyComponent";
