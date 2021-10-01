@@ -51,7 +51,7 @@ export default class SurveyApi extends HttpClient {
     data.append("login", login);
     data.append("password", password);
 
-    return await this.instance.post("/Survey/file", data);
+    return await this.instance.post("/Survey/upload", data);
   };
 
   public trusteeLogin = async (

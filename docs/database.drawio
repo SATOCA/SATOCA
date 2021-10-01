@@ -1,6 +1,6 @@
 <mxfile host="65bd71144e">
     <diagram id="NoLcGY3_Rd0w1QSIiBX1" name="Page-1">
-        <mxGraphModel dx="990" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+        <mxGraphModel dx="961" dy="688" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
@@ -39,7 +39,7 @@
                         <mxPoint x="441" y="112" as="sourcePoint"/>
                         <mxPoint x="620" y="230" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="520" y="110"/>
+                            <mxPoint x="520" y="83"/>
                             <mxPoint x="520" y="235"/>
                         </Array>
                     </mxGeometry>
@@ -54,7 +54,7 @@
                         <mxPoint x="260" y="215" as="sourcePoint"/>
                         <mxPoint x="260" y="394" as="targetPoint"/>
                         <Array as="points">
-                            <mxPoint x="160" y="110"/>
+                            <mxPoint x="160" y="84"/>
                             <mxPoint x="160" y="395"/>
                         </Array>
                     </mxGeometry>
@@ -280,7 +280,7 @@
                     </mxGeometry>
                 </mxCell>
                 <mxCell id="TI3GmT-DSjy5wb8d_JhB-1" value="Survey" style="shape=table;startSize=30;container=1;collapsible=1;childLayout=tableLayout;fixedRows=1;rowLines=0;fontStyle=1;align=center;resizeLast=1;" parent="1" vertex="1">
-                    <mxGeometry x="260" y="100" width="180" height="100" as="geometry"/>
+                    <mxGeometry x="260" y="70" width="180" height="130" as="geometry"/>
                 </mxCell>
                 <mxCell id="TI3GmT-DSjy5wb8d_JhB-2" value="" style="shape=partialRectangle;collapsible=0;dropTarget=0;pointerEvents=0;fillColor=none;top=0;left=0;bottom=1;right=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;" parent="TI3GmT-DSjy5wb8d_JhB-1" vertex="1">
                     <mxGeometry y="30" width="180" height="30" as="geometry"/>
@@ -309,8 +309,11 @@
                 <mxCell id="118" value="startSet" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;" parent="1" vertex="1">
                     <mxGeometry x="290" y="440" width="150" height="30" as="geometry"/>
                 </mxCell>
-                <mxCell id="119" value="scoring" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;" vertex="1" parent="1">
+                <mxCell id="119" value="scoring" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;" parent="1" vertex="1">
                     <mxGeometry x="750" y="280" width="150" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="120" value="minimalInformationGain" style="shape=partialRectangle;connectable=0;fillColor=none;top=0;left=0;bottom=0;right=0;align=left;spacingLeft=6;overflow=hidden;" vertex="1" parent="1">
+                    <mxGeometry x="290" y="160" width="150" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
