@@ -280,7 +280,7 @@ export class SurveyController {
       return result;
     }
 
-    let filePath = "./uploads/" + file.name;
+    let filePath = "/tmp/" + file.name;
     await file.mv(filePath);
 
     // file extract

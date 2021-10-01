@@ -17,7 +17,7 @@ createConnection(connectionOptions).then(async () => {
     fileUpload({
       createParentPath: true,
       useTempFiles: true,
-      tempFileDir: "/tmp/",
+      tempFileDir: '/tmp/',
       debug: true, //todo remove this after dev
     })
   );
@@ -25,7 +25,7 @@ createConnection(connectionOptions).then(async () => {
   const router = new MainRouter().router;
 
   app.use(function (req, res, next) {
-    res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+    res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader(
       "Access-Control-Allow-Methods",
       "GET, POST, OPTIONS, PUT, PATCH, DELETE"

@@ -29,13 +29,13 @@ function App() {
               />
             )}
           />
-          <Route>
+          <Route exact path="/">
             <Frontpage />
           </Route>
           <Route exact path="/login">
             <TrusteeLogin />
           </Route>
-          <Redirect to="/404" />
+          {/* <Redirect to="/404" /> */}
         </Switch>
       </div>
       <footer className="footer">
