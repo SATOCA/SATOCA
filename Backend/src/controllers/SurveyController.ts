@@ -407,7 +407,7 @@ export class SurveyController {
     );
     if (minimalInformationGain === undefined) {
       error = {
-        message: "cannot find 'minimal information gain' option in survey",
+        message: "Cannot find 'Item severity boundary' option in survey",
         hasError: true,
       };
 
