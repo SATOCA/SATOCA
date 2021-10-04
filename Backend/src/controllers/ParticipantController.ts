@@ -6,6 +6,7 @@ import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto";
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
 import { QuestionController } from "./QuestionController";
+import { itemResponseFunction } from "./SurveyController";
 
 export class ParticipantController {
   //todo export user links
@@ -105,7 +106,7 @@ export class ParticipantController {
       .getOneOrFail();
 
     let participantRepository = getConnection().getRepository(Participant);
-    let progress = await participantRepository.findOne({
+    let targetUser = await participantRepository.findOne({
       id: progressQuery.id,
     });
 
@@ -113,19 +114,36 @@ export class ParticipantController {
     let qController = new QuestionController();
 
     // TODO: rename
-    progress.scoring = ability;
-    //progress.finished = true;
-    progress.currentQuestion = await qController.getNextQuestion(
-      progress,
+    targetUser.scoring = ability;
+
+    let bestNextQuestion = await qController.getNextQuestion(
+      targetUser,
       surveyId
     );
+
+    if (bestNextQuestion === undefined) {
+      targetUser.finished = true;
+      targetUser.currentQuestion = null;
+    } else if (
+      ParticipantController.doesNextQuestionProvideProgress(
+        bestNextQuestion,
+        ability
+      )
+    ) {
+      targetUser.currentQuestion = bestNextQuestion;
+      targetUser.finished = false;
+    } else {
+      targetUser.finished = true;
+      targetUser.currentQuestion = null;
+    }
+
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
 
     await participantRepository
-      .save(progress)
+      .save(targetUser)
       .then(() => {
         result.hasError = false;
       })
@@ -135,6 +153,27 @@ export class ParticipantController {
       });
 
     return result;
+  }
+
+  private static doesNextQuestionProvideProgress(
+    bestNextQuestion: Question,
+    ability: number
+  ): boolean {
+    let answerPossibilities = bestNextQuestion.choices.length;
+    let guessingRate = 1 / answerPossibilities;
+
+    let slope = bestNextQuestion.slope;
+
+    let difficulty = bestNextQuestion.difficulty;
+
+    let probability = itemResponseFunction(slope, difficulty, guessingRate, ability);
+
+    let itemSeverityBoundary = bestNextQuestion.survey.itemSeverityBoundary;
+
+    return (
+      probability < 1 - itemSeverityBoundary &&
+      probability > itemSeverityBoundary
+    );
   }
 
   async createSurveyLinks(surveyId: number): Promise<string[]> {

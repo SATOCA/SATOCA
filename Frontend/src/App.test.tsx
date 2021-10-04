@@ -26,12 +26,4 @@ test("render application with route /init-survey/42-3-4", () => {
     /Secure Adaptive Testing for Organized Capability Assessment/i
   );
   expect(appName).toBeInTheDocument();
-
-  const surveyId = getByTestId("header");
-  expect(surveyId).toBeInTheDocument();
-  expect(surveyId).toHaveTextContent("Survey with id: init-survey");
-
-  const uniqueSurveyId = getByTestId("header2");
-  expect(uniqueSurveyId).toBeInTheDocument();
-  expect(uniqueSurveyId).toHaveTextContent("Unique Survey with id: 42-3-4");
 });

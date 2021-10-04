@@ -36,14 +36,21 @@ function normal(mean: number, stdDev: number): Array<[number, number]> {
 
 const likelihoodFunction = normal(0, 1);
 
-// Calculates the probability that someone with a given ability level 'theta' will answer correctly an item.
-// Uses the 3 parameters logistic model (a, b, c).
+/**
+ * Calculates the probability that someone with a given ability level 'theta' will answer correctly an item.
+ * Uses the 3 parameters logistic model (a, b, c).
+ *
+ * @param a slope
+ * @param b difficulty
+ * @param c guessing rate
+ * @param theta ability
+ */
 export function itemResponseFunction(
   a: number,
   b: number,
   c: number,
   theta: number
-) {
+): number {
 //  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
   return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
 }
@@ -103,6 +110,22 @@ export class SurveyController {
       .take(1)
       .getOne();
     //! \todo handle error case
+
+    if(query.finished)
+    {
+      const err: ErrorDto = {
+        message: "",
+        hasError: false,
+      };
+      const result: CurrentQuestionResponseDto = {
+        error: err,
+        item: undefined,
+        finished: query.finished,
+        ability: query.scoring,
+      };
+
+      return result;
+    }
 
     const question = await getConnection()
       .getRepository(Question)
@@ -378,7 +401,10 @@ export class SurveyController {
       return error;
     }
 
-    let minimalInformationGain = this.extractXLSXOptions("Minimal information gain", rows);
+    let minimalInformationGain = this.extractXLSXOptions(
+      "Item severity boundary",
+      rows
+    );
     if (minimalInformationGain === undefined) {
       error = {
         message: "cannot find 'minimal information gain' option in survey",
@@ -391,7 +417,7 @@ export class SurveyController {
     const survey = new Survey();
 
     survey.title = targetRow[1];
-    survey.minimalInformationGain = minimalInformationGain;
+    survey.itemSeverityBoundary = minimalInformationGain;
 
     await getConnection()
       .getRepository(Survey)
