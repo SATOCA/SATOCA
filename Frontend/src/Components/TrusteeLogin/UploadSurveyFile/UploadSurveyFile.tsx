@@ -30,10 +30,14 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
         .uploadSurveyFile(file, props.login, props.password)
         .then((response) => {
           console.log(response);
-            setListItems(
-              <ol>
-                {response.links.map((link) => (
-                <li><Link to={link} style={{ color: "blue" }}>{process.env.REACT_APP_FRONTEND + link}</Link></li>
+          setListItems(
+            <ol>
+              {response.links.map((link) => (
+                <li>
+                  <Link to={link} style={{ color: "blue" }}>
+                    {process.env.REACT_APP_FRONTEND + link}
+                  </Link>
+                </li>
               ))}
             </ol>
           );
