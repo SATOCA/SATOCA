@@ -44,7 +44,8 @@ export function itemResponseFunction(
   c: number,
   theta: number
 ) {
-  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+//  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+  return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
 }
 
 export type Zeta = { a: number; b: number; c: number };
