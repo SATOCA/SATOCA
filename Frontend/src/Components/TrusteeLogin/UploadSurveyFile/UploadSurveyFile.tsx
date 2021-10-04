@@ -33,7 +33,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
             setListItems(
               <ol>
                 {response.links.map((link) => (
-                <li><Link to={process.env.REACT_APP_FRONTEND + link} style={{ color: "blue" }}>{process.env.REACT_APP_FRONTEND + link}</Link></li>
+                <li><Link to={link} style={{ color: "blue" }}>{process.env.REACT_APP_FRONTEND + link}</Link></li>
               ))}
             </ol>
           );
