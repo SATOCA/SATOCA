@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import "./UploadSurveyFile.css";
 import { Link } from "react-router-dom";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../../Services/SurveyAPI";
@@ -32,7 +33,11 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
           setListItems(
             <ol>
               {response.links.map((link) => (
-                <li><Link to={link} style={{ color: "blue" }}>{link}</Link></li>
+                <li>
+                  <Link to={link} style={{ color: "blue" }}>
+                    {process.env.REACT_APP_FRONTEND + link}
+                  </Link>
+                </li>
               ))}
             </ol>
           );
