@@ -3,7 +3,10 @@ import { createConnection } from "typeorm";
 import express, { Request, Response } from "express";
 import fileUpload from "express-fileupload";
 import bodyParser from "body-parser";
-
+// logging
+import logger from "./logging/Logger"
+import morganConfig from './logging/MorganConfig'
+// database configuration
 import * as connectionOptions from "./ormconfig";
 
 import { MainRouter } from "./routers/MainRouter";
@@ -13,6 +16,9 @@ import ErrorHandler from "./models/ErrorHandler";
 createConnection(connectionOptions).then(async () => {
   const app = express();
   app.use(bodyParser.json());
+  // add logger middleware
+  app.use(morganConfig);
+
   app.use(
     fileUpload({
       createParentPath: true,
@@ -51,6 +57,7 @@ createConnection(connectionOptions).then(async () => {
 
   // make server listen on some port
   ((port = process.env.APP_PORT || 5000) => {
-    app.listen(port, () => console.log(`> Listening on port ${port}`));
+    app.listen(port, () => logger.info(`> Listening on port ${port}`));
   })();
-});
+
+}).catch(error => logger.error(`TypeORM connection error: ${error}`));
