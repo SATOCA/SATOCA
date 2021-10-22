@@ -59,7 +59,7 @@ export default function TrusteeLogin() {
           <Label>Password</Label>
           <Input
             data-testid="input-password"
-            type="text"
+            type="password"
             value={password}
             onChange={handlePasswordInputChange}
           />
