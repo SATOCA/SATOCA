@@ -21,10 +21,12 @@
 .env.test.local
 .env.production.local
 .eslintcache
+/Frontend/.env
 
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+*/logs/*
+
 /Backend/uploads/
 /docs/~$*.xlsx
-/Frontend/.env
