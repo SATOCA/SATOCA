@@ -52,6 +52,7 @@ export default function TrusteeLogin() {
             data-testid="input-login"
             type="text"
             value={login}
+            placeholder="login"
             onChange={handleLoginInputChange}
           />
         </FormGroup>
@@ -61,6 +62,7 @@ export default function TrusteeLogin() {
             data-testid="input-password"
             type="password"
             value={password}
+            placeholder="password"
             onChange={handlePasswordInputChange}
           />
         </FormGroup>

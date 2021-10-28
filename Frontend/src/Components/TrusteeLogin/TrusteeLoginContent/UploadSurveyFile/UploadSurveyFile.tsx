@@ -51,7 +51,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   return (
     <Form>
       <FormGroup>
-        <Label for="fileUpload">Survey File (.xslx)</Label>
+        <Label for="fileUpload">Survey File (.xlsx)</Label>
         <Input
           type="file"
           id="fileUpload"
