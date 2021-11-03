@@ -3,6 +3,7 @@ import { Button, Form, FormGroup, Input, Label } from "reactstrap";
 import SurveyApi from "../../Services/SurveyAPI";
 import { TrusteeLoginDto } from "../../DataModel/dto/TrusteeLoginDto";
 import TrusteeLoginContent from "./TrusteeLoginContent/TrusteeLoginContent";
+import "./TrusteeLogin.css";
 
 export default function TrusteeLogin() {
   const [login, setLogin] = React.useState("");
@@ -37,7 +38,7 @@ export default function TrusteeLogin() {
 
   if (loginSuccessful) {
     return (
-      <div className="centered front-page-alignment">
+      <div className="trustee-content">
         <TrusteeLoginContent login={login} password={password} />
       </div>
     );
