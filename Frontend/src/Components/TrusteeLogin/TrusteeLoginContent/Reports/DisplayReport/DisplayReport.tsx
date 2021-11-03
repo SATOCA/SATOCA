@@ -10,62 +10,35 @@ import {
   YAxis,
 } from "recharts";
 import "./DisplayReport.css";
+import { Report } from "../../../../../../../Backend/src/routers/dto/CreateReportResponseDto";
 
-export default function DisplayReport(props: { back: () => void }) {
+export default function DisplayReport(props: {
+  report: Report;
+  back: () => void;
+}) {
   return (
-      <div className="histogram">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart
-            width={500}
-            height={300}
-            data={data}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <ReferenceLine y={0} stroke="#000" />
-            <Bar dataKey="uv" fill="#ffc658" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+    <div className="histogram">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          width={500}
+          height={300}
+          data={props.report.histogramData}
+          margin={{
+            top: 5,
+            right: 30,
+            left: 20,
+            bottom: 5,
+          }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="bucketName" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <ReferenceLine y={0} stroke="#000" />
+          <Bar dataKey="participantNumber" fill="#ffc658" label="Test" />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
   );
 }
-
-const data = [
-  {
-    name: "Page A",
-    uv: 4000,
-  },
-  {
-    name: "Page B",
-    uv: -3000,
-  },
-  {
-    name: "Page C",
-    uv: -2000,
-  },
-  {
-    name: "Page D",
-    uv: 2780,
-  },
-  {
-    name: "Page E",
-    uv: -1890,
-  },
-  {
-    name: "Page F",
-    uv: 2390,
-  },
-  {
-    name: "Page G",
-    uv: 3490,
-  },
-];

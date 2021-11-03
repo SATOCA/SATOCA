@@ -5,6 +5,7 @@ import { AnswerSurveyDto } from "./dto/AnswerSurveyDto";
 import { ErrorDto } from "./dto/ErrorDto";
 import fileUpload from "express-fileupload";
 import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
+import { CreateReportDto } from "./dto/CreateReportDto";
 
 export class SurveyRouter {
   private _router = Router();
@@ -95,6 +96,21 @@ export class SurveyRouter {
                 res.status(200).json(obj);
               });
           }
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
+
+    this._router.post(
+      "/create-report",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .createReport(req.body as CreateReportDto)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
         } catch (error) {
           next(error);
         }

@@ -18,6 +18,8 @@ import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
+import { CreateReportDto } from "../routers/dto/CreateReportDto";
+import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -279,6 +281,8 @@ export class SurveyController {
     return returnValue;
   }
 
+  // Excel Upload
+
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
     body: UploadSurveyFileDto
@@ -352,7 +356,10 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions("Number participants", optionsRows);
+    let numParticipants = this.extractXLSXOptions(
+      "Number participants",
+      optionsRows
+    );
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -435,7 +442,9 @@ export class SurveyController {
   }
 
   private static hasStartSetElements(rows: surveyFormat[]) {
-    return rows.some(row => row.startSet && row.startSet.toString().toUpperCase() == "X");
+    return rows.some(
+      (row) => row.startSet && row.startSet.toString().toUpperCase() == "X"
+    );
   }
 
   private async extractXLSXQuestion(
@@ -589,6 +598,51 @@ export class SurveyController {
       },
     },
   };
+
+  // end Excel Upload
+
+  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
+    let result: CreateReportResponseDto = {
+      report: {
+        histogramData: [
+          {
+            bucketName: "-3 - -2",
+            participantNumber: 10,
+          },
+          {
+            bucketName: "-2 - -1",
+            participantNumber: 20,
+          },
+          {
+            bucketName: "-1 - 0",
+            participantNumber: 15,
+          },
+          {
+            bucketName: "0 - 1",
+            participantNumber: 5,
+          },
+          {
+            bucketName: "1 - 2",
+            participantNumber: 2,
+          },
+          {
+            bucketName: "2 - 3",
+            participantNumber: 3,
+          },
+          {
+            bucketName: "3- 4",
+            participantNumber: 18,
+          },
+        ],
+      },
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    return result;
+  }
 }
 
 type surveyFormat = {
