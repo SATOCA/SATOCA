@@ -421,10 +421,24 @@ export class SurveyController {
       return error;
     }
 
+    let privacyBudget = this.extractXLSXOptions(
+      "Privacy Budget",
+      rows
+    );
+    if (privacyBudget === undefined) {
+      error = {
+        message: "Cannot find 'Privacy Budget' option in survey",
+        hasError: true,
+      };
+
+      return error;
+    }
+
     const survey = new Survey();
 
     survey.title = targetRow[1];
     survey.itemSeverityBoundary = minimalInformationGain;
+    survey.privacyBudget = privacyBudget;
 
     await getConnection()
       .getRepository(Survey)
