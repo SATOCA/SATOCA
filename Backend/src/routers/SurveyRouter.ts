@@ -116,5 +116,19 @@ export class SurveyRouter {
         }
       }
     );
+    this._router.post(
+      "/get-surveys",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .getAllSurveys(req.body as CreateReportDto)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
   }
 }

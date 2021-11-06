@@ -4,7 +4,6 @@ import readXlsxFile from "read-excel-file/node";
 
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
-
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
@@ -53,7 +52,7 @@ export function itemResponseFunction(
   c: number,
   theta: number
 ): number {
-//  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+  //  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
   return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
 }
 
@@ -102,6 +101,9 @@ export class SurveyController {
     return result;
   }
 
+  async getAllSurveys(createReportDto: CreateReportDto) {
+    return await this.getSurveys();
+  }
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()
@@ -113,8 +115,7 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
-    if(query.finished)
-    {
+    if (query.finished) {
       const err: ErrorDto = {
         message: "",
         hasError: false,
@@ -324,7 +325,7 @@ export class SurveyController {
       sheet: "Survey",
       schema: this.fileSchema,
     });
-
+    let surveyRows = rows as surveyFormat[];
     if (errors.length > 0) {
       let errorString = this.formatReadExcelFileErrors(errors);
       result.error = {
@@ -334,7 +335,7 @@ export class SurveyController {
       return result;
     }
 
-    if (!SurveyController.hasStartSetElements(rows)) {
+    if (!SurveyController.hasStartSetElements(surveyRows)) {
       result.error = {
         hasError: true,
         message: "No question was marked as starting question!",
@@ -342,7 +343,7 @@ export class SurveyController {
       return result;
     }
 
-    for (const row of rows) {
+    for (const row of surveyRows) {
       let error = await this.extractXLSXQuestion(row, survey);
       if (error.hasError) {
         result.error = {
@@ -421,10 +422,7 @@ export class SurveyController {
       return error;
     }
 
-    let privacyBudget = this.extractXLSXOptions(
-      "Privacy Budget",
-      rows
-    );
+    let privacyBudget = this.extractXLSXOptions("Privacy Budget", rows);
     if (privacyBudget === undefined) {
       error = {
         message: "Cannot find 'Privacy Budget' option in survey",
@@ -615,37 +613,70 @@ export class SurveyController {
 
   // end Excel Upload
 
-  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
-    let result: CreateReportResponseDto = {
+  async createReport(
+    body: CreateReportDto
+  ): Promise<CreateReportResponseDto[]> {
+    let buckets = [0, 0, 0, 0, 0, 0, 0];
+    let pBuckets = [0, 0, 0, 0, 0, 0, 0];
+
+    if (body.privacyBudget > 0) {
+      let pController = new ParticipantController();
+      let participants = await pController.getParticipants(body.surveyId);
+
+      const sortBuckets = (ability: number) => {
+        if (ability < -2) {
+          buckets[0]++;
+        } else if (-2 <= ability && ability < -1) {
+          buckets[1]++;
+        } else if (-1 <= ability && ability < 0) {
+          buckets[2]++;
+        } else if (0 <= ability && ability < 1) {
+          buckets[3]++;
+        } else if (1 <= ability && ability < 2) {
+          buckets[4]++;
+        } else if (2 <= ability && ability < 3) {
+          buckets[5]++;
+        } else if (3 <= ability) {
+          buckets[6]++;
+        }
+      };
+
+      participants.participants.forEach((participant) => {
+        if (participant.finished) {
+          sortBuckets(participant.scoring);
+        }
+      });
+    }
+    let result2: CreateReportResponseDto = {
       report: {
         histogramData: [
           {
             bucketName: "-3 - -2",
-            participantNumber: 10,
+            participantNumber: pBuckets[0],
           },
           {
             bucketName: "-2 - -1",
-            participantNumber: 20,
+            participantNumber: pBuckets[1],
           },
           {
             bucketName: "-1 - 0",
-            participantNumber: 15,
+            participantNumber: pBuckets[2],
           },
           {
             bucketName: "0 - 1",
-            participantNumber: 5,
+            participantNumber: pBuckets[3],
           },
           {
             bucketName: "1 - 2",
-            participantNumber: 2,
+            participantNumber: pBuckets[4],
           },
           {
             bucketName: "2 - 3",
-            participantNumber: 3,
+            participantNumber: pBuckets[5],
           },
           {
             bucketName: "3- 4",
-            participantNumber: 18,
+            participantNumber: pBuckets[6],
           },
         ],
       },
@@ -654,8 +685,45 @@ export class SurveyController {
         message: "no Error",
       },
     };
-
-    return result;
+    let result: CreateReportResponseDto = {
+      report: {
+        histogramData: [
+          {
+            bucketName: "-3 - -2",
+            participantNumber: buckets[0],
+          },
+          {
+            bucketName: "-2 - -1",
+            participantNumber: buckets[1],
+          },
+          {
+            bucketName: "-1 - 0",
+            participantNumber: buckets[2],
+          },
+          {
+            bucketName: "0 - 1",
+            participantNumber: buckets[3],
+          },
+          {
+            bucketName: "1 - 2",
+            participantNumber: buckets[4],
+          },
+          {
+            bucketName: "2 - 3",
+            participantNumber: buckets[5],
+          },
+          {
+            bucketName: "3- 4",
+            participantNumber: buckets[6],
+          },
+        ],
+      },
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+    return [result, result2];
   }
 }
 

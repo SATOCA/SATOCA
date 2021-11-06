@@ -5,7 +5,7 @@ export interface CreateReportResponseDto {
   error: ErrorDto;
 }
 
-interface Report {
+export interface Report {
   histogramData: HistogramData[];
 }
 

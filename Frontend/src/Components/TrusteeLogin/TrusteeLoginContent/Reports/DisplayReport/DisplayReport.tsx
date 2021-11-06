@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import "./DisplayReport.css";
-import { Report } from "../../../../../../../Backend/src/routers/dto/CreateReportResponseDto";
+import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
 
 export default function DisplayReport(props: {
   report: Report;
