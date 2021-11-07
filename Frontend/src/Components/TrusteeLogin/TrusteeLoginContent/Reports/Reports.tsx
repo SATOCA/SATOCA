@@ -56,13 +56,12 @@ export default function Reports(props: { password: string; login: string }) {
       .getSurveys(props.login, props.password, 1, 1)
       .then(async (response) => {
         console.log(response);
-        setSurveyQuery(response.surveys);
+        setSurveyQuery(response.surveys.sort((a, b) => a.id - b.id));
       })
       .catch((error: AxiosError) => {
         setHasError(true);
         setErrorMessage(error.message);
       });
-    //TODO if(id.selected){ surveyApi.createPrivateReport }
   }, [props.login, props.password, selectedSurvey]);
 
   const setToggle = () => {

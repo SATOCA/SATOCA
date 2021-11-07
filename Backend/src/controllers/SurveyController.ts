@@ -1,7 +1,7 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-
+import { privatize, newArrayView } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
@@ -102,6 +102,8 @@ export class SurveyController {
   }
 
   async getAllSurveys(createReportDto: CreateReportDto) {
+    //Todo change dto, check password..
+    console.log(createReportDto);
     return await this.getSurveys();
   }
   //! \todo surveyId is not needed -> remove
@@ -616,105 +618,12 @@ export class SurveyController {
   async createReport(
     body: CreateReportDto
   ): Promise<CreateReportResponseDto[]> {
-    let buckets = [0, 0, 0, 0, 0, 0, 0];
-    let pBuckets = [0, 0, 0, 0, 0, 0, 0];
-
-    if (body.privacyBudget > 0) {
-      let pController = new ParticipantController();
-      let participants = await pController.getParticipants(body.surveyId);
-
-      const sortBuckets = (ability: number) => {
-        if (ability < -2) {
-          buckets[0]++;
-        } else if (-2 <= ability && ability < -1) {
-          buckets[1]++;
-        } else if (-1 <= ability && ability < 0) {
-          buckets[2]++;
-        } else if (0 <= ability && ability < 1) {
-          buckets[3]++;
-        } else if (1 <= ability && ability < 2) {
-          buckets[4]++;
-        } else if (2 <= ability && ability < 3) {
-          buckets[5]++;
-        } else if (3 <= ability) {
-          buckets[6]++;
-        }
-      };
-
-      participants.participants.forEach((participant) => {
-        if (participant.finished) {
-          sortBuckets(participant.scoring);
-        }
-      });
-    }
-    let result2: CreateReportResponseDto = {
-      report: {
-        histogramData: [
-          {
-            bucketName: "-3 - -2",
-            participantNumber: pBuckets[0],
-          },
-          {
-            bucketName: "-2 - -1",
-            participantNumber: pBuckets[1],
-          },
-          {
-            bucketName: "-1 - 0",
-            participantNumber: pBuckets[2],
-          },
-          {
-            bucketName: "0 - 1",
-            participantNumber: pBuckets[3],
-          },
-          {
-            bucketName: "1 - 2",
-            participantNumber: pBuckets[4],
-          },
-          {
-            bucketName: "2 - 3",
-            participantNumber: pBuckets[5],
-          },
-          {
-            bucketName: "3- 4",
-            participantNumber: pBuckets[6],
-          },
-        ],
-      },
-      error: {
-        hasError: false,
-        message: "no Error",
-      },
-    };
     let result: CreateReportResponseDto = {
       report: {
         histogramData: [
           {
-            bucketName: "-3 - -2",
-            participantNumber: buckets[0],
-          },
-          {
-            bucketName: "-2 - -1",
-            participantNumber: buckets[1],
-          },
-          {
-            bucketName: "-1 - 0",
-            participantNumber: buckets[2],
-          },
-          {
-            bucketName: "0 - 1",
-            participantNumber: buckets[3],
-          },
-          {
-            bucketName: "1 - 2",
-            participantNumber: buckets[4],
-          },
-          {
-            bucketName: "2 - 3",
-            participantNumber: buckets[5],
-          },
-          {
-            bucketName: "3- 4",
-            participantNumber: buckets[6],
+            bucketName: "-",
+            participantNumber: 0,
           },
         ],
       },
@@ -723,7 +632,70 @@ export class SurveyController {
         message: "no Error",
       },
     };
-    return [result, result2];
+    let resultPrivate = result;
+    if (body.privacyBudget > 0) {
+      let pController = new ParticipantController();
+      let participants = await pController.getParticipants(body.surveyId);
+
+      const dataset = newArrayView(participants.participants);
+
+      let [min, max, a, b] = [0, 0, 0, 0];
+      participants.participants.forEach((d) => {
+        if (d.scoring < min) {
+          min = Math.floor(d.scoring);
+        } else if (d.scoring > max) {
+          max = Math.round(d.scoring);
+        }
+      });
+
+      let width = 1;
+      a = min;
+      b = a + width;
+
+      const bucketFunc = (view) => {
+        let bucketSize = 0;
+        view.forEach((p) => {
+          if (a <= p.scoring && p.scoring < b) {
+            bucketSize += 1;
+          }
+        });
+        return bucketSize;
+      };
+
+      const options = {
+        maxEpsilon: body.privacyBudget,
+        newShadowIterator: dataset.newShadowIterator,
+      };
+      let tempPrBucketSize: number[] = [];
+      let tempPrHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+      let tempBucketSize: number[] = [];
+      let tempHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+
+      for (let i = 0; i < max - min; i += width) {
+        tempBucketSize.push(bucketFunc(dataset));
+        const getPrivateBucket = privatize(bucketFunc, options);
+        tempPrBucketSize.push((await getPrivateBucket(dataset)).result);
+        a += width;
+        b += width;
+        tempPrHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+        });
+        tempHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempBucketSize[tempBucketSize.length - 1],
+        });
+      }
+      result = tempHistogram;
+      resultPrivate = tempPrHistogram;
+    }
+    return [result, resultPrivate];
   }
 }
 
