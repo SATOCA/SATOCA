@@ -4,23 +4,19 @@ import { Report } from "../../../../DataModel/dto/CreateReportResponseDto";
 import SurveyApi from "../../../../Services/SurveyAPI";
 import { AxiosError } from "axios";
 import {
+  Container,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Row,
 } from "reactstrap";
-
-enum ReportDisplay {
-  SelectQueries,
-  ShowReport,
-}
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue = [
     { id: 0, title: "", itemSeverityBoundary: 0, privacyBudget: 1.0 },
   ];
 
-  const [activeTab, setActiveTab] = useState(ReportDisplay.SelectQueries);
   const [reportData, setReportData] = useState<Report>({ histogramData: [] });
   const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
@@ -83,15 +79,9 @@ export default function Reports(props: { password: string; login: string }) {
       Survey id:{survey.id} title:{survey.title}
     </DropdownItem>
   ));
-  const toggleView = () => {
-    if (activeTab === ReportDisplay.SelectQueries)
-      setActiveTab(ReportDisplay.ShowReport);
-    else setActiveTab(ReportDisplay.SelectQueries);
-  };
 
   if (hasError) return <div>{errorMessage}</div>;
 
-  //if (activeTab === ReportDisplay.SelectQueries)
   return (
     <div>
       <div className="d-flex p-5">
@@ -100,8 +90,12 @@ export default function Reports(props: { password: string; login: string }) {
           <DropdownMenu>{dropDownElements}</DropdownMenu>
         </Dropdown>
       </div>
-      <DisplayReport back={toggleView} report={reportData} />
-      <DisplayReport back={toggleView} report={privateData} />
+      <Row>
+        <DisplayReport report={reportData} />
+      </Row>
+      <Row>
+        <DisplayReport report={privateData} />
+      </Row>
     </div>
   );
 }

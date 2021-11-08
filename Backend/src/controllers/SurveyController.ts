@@ -632,6 +632,19 @@ export class SurveyController {
         message: "no Error",
       },
     };
+
+    //check User rights
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+
+    if (!trusteeLogin.success) {
+      result.error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+      return [result];
+    }
+
     let resultPrivate = result;
     if (body.privacyBudget > 0) {
       let pController = new ParticipantController();

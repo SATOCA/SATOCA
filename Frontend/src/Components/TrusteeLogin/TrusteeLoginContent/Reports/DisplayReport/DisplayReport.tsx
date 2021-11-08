@@ -12,13 +12,10 @@ import {
 import "./DisplayReport.css";
 import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
 
-export default function DisplayReport(props: {
-  report: Report;
-  back: () => void;
-}) {
+export default function DisplayReport(props: { report: Report }) {
   return (
     <div className="histogram">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="90%">
         <BarChart
           width={500}
           height={300}
@@ -36,7 +33,7 @@ export default function DisplayReport(props: {
           <Tooltip />
           <Legend />
           <ReferenceLine y={0} stroke="#000" />
-          <Bar dataKey="participantNumber" fill="#ffc658" label="Test" />
+          <Bar dataKey="participantNumber" fill="#0055a2" label="Test" />
         </BarChart>
       </ResponsiveContainer>
     </div>
