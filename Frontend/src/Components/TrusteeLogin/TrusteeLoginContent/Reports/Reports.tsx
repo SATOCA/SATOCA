@@ -4,7 +4,6 @@ import { Report } from "../../../../DataModel/dto/CreateReportResponseDto";
 import SurveyApi from "../../../../Services/SurveyAPI";
 import { AxiosError } from "axios";
 import {
-  Container,
   Dropdown,
   DropdownItem,
   DropdownMenu,
@@ -52,13 +51,13 @@ export default function Reports(props: { password: string; login: string }) {
       .getSurveys(props.login, props.password, 1, 1)
       .then(async (response) => {
         console.log(response);
-        setSurveyQuery(response.surveys.sort((a, b) => a.id - b.id));
+        setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
       })
       .catch((error: AxiosError) => {
         setHasError(true);
         setErrorMessage(error.message);
       });
-  }, [props.login, props.password, selectedSurvey]);
+  }, [props.login, props.password, selectedSurvey, selectedSurveyPrivacy, surveyApi]);
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -72,7 +71,7 @@ export default function Reports(props: { password: string; login: string }) {
         setSurveyItem(survey.id);
         setPrivacy(survey.privacyBudget);
         setDropDownTitle(
-          survey.id + ": " + survey.title + "  participants finished: TODO?"
+          `${survey.id}: ${survey.title}  participants finished: TODO?`
         );
       }}
     >
