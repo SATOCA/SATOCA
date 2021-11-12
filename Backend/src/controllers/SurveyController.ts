@@ -8,7 +8,6 @@ import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
 import { FinishedQuestion } from "../entities/FinishedQuestion";
@@ -106,6 +105,7 @@ export class SurveyController {
     console.log(createReportDto);
     return await this.getSurveys();
   }
+
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()
@@ -150,30 +150,6 @@ export class SurveyController {
       finished: query.finished,
       ability: query.scoring,
     };
-    return result;
-  }
-
-  async addSurvey(body: SurveyDto) {
-    const obj = new Survey();
-    //! \todo title cannot be empty
-    obj.title = body.title;
-
-    let result: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    getConnection()
-      .getRepository(Survey)
-      .save(obj)
-      .then(() => {
-        result.hasError = false;
-      })
-      .catch((e) => {
-        result.hasError = true;
-        result.message = e;
-      });
-
     return result;
   }
 
@@ -235,8 +211,6 @@ export class SurveyController {
 
       // retrieve all finished questions
       const finishedQuestions =
-        /*await getConnection()
-        .getRepository(FinishedQuestion)*/
         await finishedQuestionRepository
           .createQueryBuilder("finishedquestion")
           .leftJoinAndSelect("finishedquestion.question", "question")
@@ -713,17 +687,17 @@ export class SurveyController {
 }
 
 type surveyFormat = {
-  id: number;
-  question: string;
-  solutions: string;
-  startSet: string;
-  difficulty: number;
-  slope: number;
-  answers: {
-    answer1: string;
-    answer2: string;
-    answer3: string;
-    answer4: string;
-    answer5: string;
-  };
+    id: number;
+    question: string;
+    solutions: string;
+    startSet: string;
+    difficulty: number;
+    slope: number;
+    answers: {
+        answer1: string;
+        answer2: string;
+        answer3: string;
+        answer4: string;
+        answer5: string;
+    };
 };

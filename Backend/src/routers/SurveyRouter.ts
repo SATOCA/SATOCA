@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response, Router } from "express";
 import { SurveyController } from "../controllers/SurveyController";
-import { SurveyDto } from "./dto/SurveyDto";
 import { AnswerSurveyDto } from "./dto/AnswerSurveyDto";
 import { ErrorDto } from "./dto/ErrorDto";
 import fileUpload from "express-fileupload";
@@ -21,19 +20,6 @@ export class SurveyRouter {
 
   private _configure() {
     this._router.get(
-      "/all",
-      (req: Request, res: Response, next: NextFunction) => {
-        try {
-          this._controller.getSurveys().then((obj) => {
-            res.status(200).json(obj);
-          });
-        } catch (error) {
-          next(error);
-        }
-      }
-    );
-
-    this._router.get(
       "/:surveyId/:uniqueId",
       (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -47,16 +33,6 @@ export class SurveyRouter {
         }
       }
     );
-
-    this._router.post("", (req: Request, res: Response, next: NextFunction) => {
-      try {
-        this._controller.addSurvey(req.body as SurveyDto).then((obj) => {
-          res.status(200).json(obj);
-        });
-      } catch (error) {
-        next(error);
-      }
-    });
 
     this._router.post(
       "/:surveyId/:uniqueId",
@@ -116,6 +92,8 @@ export class SurveyRouter {
         }
       }
     );
+
+    //todo: change to GET endpoint
     this._router.post(
       "/get-surveys",
       (req: Request, res: Response, next: NextFunction) => {

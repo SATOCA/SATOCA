@@ -1,15 +1,11 @@
 import { Router } from "express";
-import { ParticipantRouter } from "./ParticipantRouter";
-import { QuestionRouter } from "./QuestionRouter";
 import { SurveyRouter } from "./SurveyRouter";
 import { TrusteeRouter } from "./TrusteeRouter";
 
 export class MainRouter {
   private _router = Router();
   private _surveyRouter = new SurveyRouter().router;
-  private _participantRouter = new ParticipantRouter().router;
   private _trusteeRouter = new TrusteeRouter().router;
-  private _questionRouter = new QuestionRouter().router;
 
   get router() {
     return this._router;
@@ -21,8 +17,6 @@ export class MainRouter {
 
   private _configure() {
     this._router.use("/survey", this._surveyRouter);
-    this._router.use("/participant", this._participantRouter);
     this._router.use("/trustee", this._trusteeRouter);
-    this._router.use("/question", this._questionRouter);
   }
 }
