@@ -1,15 +1,13 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-
+import { privatize, newArrayView } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
-
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
 import { FinishedQuestion } from "../entities/FinishedQuestion";
@@ -18,6 +16,8 @@ import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
+import { CreateReportDto } from "../routers/dto/CreateReportDto";
+import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -51,7 +51,7 @@ export function itemResponseFunction(
   c: number,
   theta: number
 ): number {
-//  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+  //  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
   return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
 }
 
@@ -100,6 +100,12 @@ export class SurveyController {
     return result;
   }
 
+  async getAllSurveys(createReportDto: CreateReportDto) {
+    //Todo change dto, check password..
+    console.log(createReportDto);
+    return await this.getSurveys();
+  }
+
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
     const query = await getConnection()
@@ -111,8 +117,7 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
-    if(query.finished)
-    {
+    if (query.finished) {
       const err: ErrorDto = {
         message: "",
         hasError: false,
@@ -145,30 +150,6 @@ export class SurveyController {
       finished: query.finished,
       ability: query.scoring,
     };
-    return result;
-  }
-
-  async addSurvey(body: SurveyDto) {
-    const obj = new Survey();
-    //! \todo title cannot be empty
-    obj.title = body.title;
-
-    let result: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    getConnection()
-      .getRepository(Survey)
-      .save(obj)
-      .then(() => {
-        result.hasError = false;
-      })
-      .catch((e) => {
-        result.hasError = true;
-        result.message = e;
-      });
-
     return result;
   }
 
@@ -230,8 +211,6 @@ export class SurveyController {
 
       // retrieve all finished questions
       const finishedQuestions =
-        /*await getConnection()
-        .getRepository(FinishedQuestion)*/
         await finishedQuestionRepository
           .createQueryBuilder("finishedquestion")
           .leftJoinAndSelect("finishedquestion.question", "question")
@@ -279,6 +258,8 @@ export class SurveyController {
     return returnValue;
   }
 
+  // Excel Upload
+
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
     body: UploadSurveyFileDto
@@ -320,7 +301,7 @@ export class SurveyController {
       sheet: "Survey",
       schema: this.fileSchema,
     });
-
+    let surveyRows = rows as surveyFormat[];
     if (errors.length > 0) {
       let errorString = this.formatReadExcelFileErrors(errors);
       result.error = {
@@ -330,7 +311,7 @@ export class SurveyController {
       return result;
     }
 
-    if (!SurveyController.hasStartSetElements(rows)) {
+    if (!SurveyController.hasStartSetElements(surveyRows)) {
       result.error = {
         hasError: true,
         message: "No question was marked as starting question!",
@@ -338,7 +319,7 @@ export class SurveyController {
       return result;
     }
 
-    for (const row of rows) {
+    for (const row of surveyRows) {
       let error = await this.extractXLSXQuestion(row, survey);
       if (error.hasError) {
         result.error = {
@@ -352,7 +333,10 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions("Number participants", optionsRows);
+    let numParticipants = this.extractXLSXOptions(
+      "Number participants",
+      optionsRows
+    );
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -414,10 +398,7 @@ export class SurveyController {
       return error;
     }
 
-    let privacyBudget = this.extractXLSXOptions(
-      "Privacy Budget",
-      rows
-    );
+    let privacyBudget = this.extractXLSXOptions("Privacy Budget", rows);
     if (privacyBudget === undefined) {
       error = {
         message: "Cannot find 'Privacy Budget' option in survey",
@@ -449,7 +430,9 @@ export class SurveyController {
   }
 
   private static hasStartSetElements(rows: surveyFormat[]) {
-    return rows.some(row => row.startSet && row.startSet.toString().toUpperCase() == "X");
+    return rows.some(
+      (row) => row.startSet && row.startSet.toString().toUpperCase() == "X"
+    );
   }
 
   private async extractXLSXQuestion(
@@ -603,20 +586,118 @@ export class SurveyController {
       },
     },
   };
+
+  // end Excel Upload
+
+  async createReport(
+    body: CreateReportDto
+  ): Promise<CreateReportResponseDto[]> {
+    let result: CreateReportResponseDto = {
+      report: {
+        histogramData: [
+          {
+            bucketName: "-",
+            participantNumber: 0,
+          },
+        ],
+      },
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    //check User rights
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+
+    if (!trusteeLogin.success) {
+      result.error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+      return [result];
+    }
+
+    let resultPrivate = result;
+    if (body.privacyBudget > 0) {
+      let pController = new ParticipantController();
+      let participants = await pController.getParticipants(body.surveyId);
+
+      const dataset = newArrayView(participants.participants);
+
+      let [min, max, a, b] = [0, 0, 0, 0];
+      participants.participants.forEach((d) => {
+        if (d.scoring < min) {
+          min = Math.floor(d.scoring);
+        } else if (d.scoring > max) {
+          max = Math.round(d.scoring);
+        }
+      });
+
+      let width = 1;
+      a = min;
+      b = a + width;
+
+      const bucketFunc = (view) => {
+        let bucketSize = 0;
+        view.forEach((p) => {
+          if (a <= p.scoring && p.scoring < b) {
+            bucketSize += 1;
+          }
+        });
+        return bucketSize;
+      };
+
+      const options = {
+        maxEpsilon: body.privacyBudget,
+        newShadowIterator: dataset.newShadowIterator,
+      };
+      let tempPrBucketSize: number[] = [];
+      let tempPrHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+      let tempBucketSize: number[] = [];
+      let tempHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+
+      for (let i = 0; i < max - min; i += width) {
+        tempBucketSize.push(bucketFunc(dataset));
+        const getPrivateBucket = privatize(bucketFunc, options);
+        tempPrBucketSize.push((await getPrivateBucket(dataset)).result);
+        a += width;
+        b += width;
+        tempPrHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+        });
+        tempHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempBucketSize[tempBucketSize.length - 1],
+        });
+      }
+      result = tempHistogram;
+      resultPrivate = tempPrHistogram;
+    }
+    return [result, resultPrivate];
+  }
 }
 
 type surveyFormat = {
-  id: number;
-  question: string;
-  solutions: string;
-  startSet: string;
-  difficulty: number;
-  slope: number;
-  answers: {
-    answer1: string;
-    answer2: string;
-    answer3: string;
-    answer4: string;
-    answer5: string;
-  };
+    id: number;
+    question: string;
+    solutions: string;
+    startSet: string;
+    difficulty: number;
+    slope: number;
+    answers: {
+        answer1: string;
+        answer2: string;
+        answer3: string;
+        answer4: string;
+        answer5: string;
+    };
 };
