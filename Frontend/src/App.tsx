@@ -9,6 +9,7 @@ import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
 import Frontpage from "./Components/Frontpage/Frontpage";
 import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLogin";
+import Guide from "./Components/Guide/Guide";
 
 function App() {
   return (
@@ -34,6 +35,9 @@ function App() {
           </Route>
           <Route exact path="/login">
             <TrusteeLogin />
+          </Route>
+          <Route exact path="/guide">
+            <Guide/>
           </Route>
           {/* <Redirect to="/404" /> */}
         </Switch>

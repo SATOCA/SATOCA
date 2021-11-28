@@ -37,6 +37,11 @@ export default function Header() {
             >
               Trustee Login
             </NavLink>
+            <NavItem>
+            <NavLink tag={Link} to="/guide">
+              How to use the Platform
+            </NavLink>
+          </NavItem>            
           </NavItem>
         </Nav>
       </Collapse>
