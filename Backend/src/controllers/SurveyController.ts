@@ -101,7 +101,7 @@ export class SurveyController {
   }
 
   async getAllSurveys(createReportDto: CreateReportDto) {
-    //Todo change dto, check password..
+    //Todo change dto, check password....
     console.log(createReportDto);
     return await this.getSurveys();
   }
@@ -210,15 +210,14 @@ export class SurveyController {
         });
 
       // retrieve all finished questions
-      const finishedQuestions =
-        await finishedQuestionRepository
-          .createQueryBuilder("finishedquestion")
-          .leftJoinAndSelect("finishedquestion.question", "question")
-          .leftJoinAndSelect("question.choices", "choices")
-          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-          .leftJoinAndSelect("finishedquestion.participant", "participant")
-          .where("participant.uuid = :uuid", { uuid: uniqueId })
-          .getMany();
+      const finishedQuestions = await finishedQuestionRepository
+        .createQueryBuilder("finishedquestion")
+        .leftJoinAndSelect("finishedquestion.question", "question")
+        .leftJoinAndSelect("question.choices", "choices")
+        .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+        .leftJoinAndSelect("finishedquestion.participant", "participant")
+        .where("participant.uuid = :uuid", { uuid: uniqueId })
+        .getMany();
 
       const zeta = finishedQuestions.map((fq) => {
         const currentZeta: Zeta = {
@@ -589,9 +588,7 @@ export class SurveyController {
 
   // end Excel Upload
 
-  async createReport(
-    body: CreateReportDto
-  ): Promise<CreateReportResponseDto[]> {
+  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
     let result: CreateReportResponseDto = {
       report: {
         histogramData: [
@@ -616,7 +613,7 @@ export class SurveyController {
         message: "Invalid credentials",
         hasError: true,
       };
-      return [result];
+      return result;
     }
 
     let resultPrivate = result;
@@ -627,6 +624,7 @@ export class SurveyController {
       const dataset = newArrayView(participants.participants);
 
       let [min, max, a, b] = [0, 0, 0, 0];
+
       participants.participants.forEach((d) => {
         if (d.scoring < min) {
           min = Math.floor(d.scoring);
@@ -635,18 +633,21 @@ export class SurveyController {
         }
       });
 
-      let width = 1;
+      let width = 0.5;
       a = min;
       b = a + width;
 
       const bucketFunc = (view) => {
         let bucketSize = 0;
+        let total = 0;
+
         view.forEach((p) => {
           if (a <= p.scoring && p.scoring < b) {
             bucketSize += 1;
           }
+          total += 1;
         });
-        return bucketSize;
+        return (bucketSize * 100) / total;
       };
 
       const options = {
@@ -658,46 +659,37 @@ export class SurveyController {
         report: { histogramData: [] },
         error: { hasError: false, message: "no Error" },
       };
-      let tempBucketSize: number[] = [];
-      let tempHistogram: CreateReportResponseDto = {
-        report: { histogramData: [] },
-        error: { hasError: false, message: "no Error" },
-      };
 
       for (let i = 0; i < max - min; i += width) {
-        tempBucketSize.push(bucketFunc(dataset));
         const getPrivateBucket = privatize(bucketFunc, options);
-        tempPrBucketSize.push((await getPrivateBucket(dataset)).result);
+        tempPrBucketSize.push(
+          Math.abs((await getPrivateBucket(dataset)).result)
+        );
         a += width;
         b += width;
         tempPrHistogram.report.histogramData.push({
-          bucketName: a + " - " + b,
+          bucketName: a + ".." + b,
           participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
-        tempHistogram.report.histogramData.push({
-          bucketName: a + " - " + b,
-          participantNumber: tempBucketSize[tempBucketSize.length - 1],
-        });
       }
-      result = tempHistogram;
       resultPrivate = tempPrHistogram;
     }
-    return [result, resultPrivate];
+    return resultPrivate;
   }
 }
 
 type surveyFormat = {
-    id: number;
-    question: string;
-    solutions: string;
-    startSet: string;
-    difficulty: number;
-    slope: number;
-    answers: {
-        answer1: string;
-        answer2: string;
-        answer3: string;
-        answer4: string;
-        answer5: string;
-    };
+  id: number;
+  question: string;
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
 };

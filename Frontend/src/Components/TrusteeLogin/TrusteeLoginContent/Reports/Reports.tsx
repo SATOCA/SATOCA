@@ -8,15 +8,19 @@ import {
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
-  Row,
 } from "reactstrap";
+
+enum ReportDisplay {
+  SelectQueries,
+  ShowReport,
+}
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue = [
     { id: 0, title: "", itemSeverityBoundary: 0, privacyBudget: 1.0 },
   ];
 
-  const [reportData, setReportData] = useState<Report>({ histogramData: [] });
+  const [activeTab, setActiveTab] = useState(ReportDisplay.SelectQueries);
   const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [hasError, setHasError] = useState(false);
@@ -39,8 +43,7 @@ export default function Reports(props: { password: string; login: string }) {
       )
       .then(async (response) => {
         console.log(response);
-        setReportData(response[0].report);
-        setPrivateData(response[1].report);
+        setPrivateData(response.report);
         setHasError(false);
       })
       .catch((error: AxiosError) => {
@@ -51,13 +54,13 @@ export default function Reports(props: { password: string; login: string }) {
       .getSurveys(props.login, props.password, 1, 1)
       .then(async (response) => {
         console.log(response);
-        setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
+        setSurveyQuery(response.surveys.sort((a, b) => a.id - b.id));
       })
       .catch((error: AxiosError) => {
         setHasError(true);
         setErrorMessage(error.message);
       });
-  }, [props.login, props.password, selectedSurvey, selectedSurveyPrivacy, surveyApi]);
+  }, [props.login, props.password, selectedSurvey]);
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -78,6 +81,11 @@ export default function Reports(props: { password: string; login: string }) {
       Survey id:{survey.id} title:{survey.title}
     </DropdownItem>
   ));
+  const toggleView = () => {
+    if (activeTab === ReportDisplay.SelectQueries)
+      setActiveTab(ReportDisplay.ShowReport);
+    else setActiveTab(ReportDisplay.SelectQueries);
+  };
 
   if (hasError) return <div>{errorMessage}</div>;
 
@@ -89,12 +97,7 @@ export default function Reports(props: { password: string; login: string }) {
           <DropdownMenu>{dropDownElements}</DropdownMenu>
         </Dropdown>
       </div>
-      <Row>
-        <DisplayReport report={reportData} />
-      </Row>
-      <Row>
-        <DisplayReport report={privateData} />
-      </Row>
+      <DisplayReport report={privateData} />
     </div>
   );
 }
