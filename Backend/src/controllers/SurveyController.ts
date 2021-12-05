@@ -190,65 +190,71 @@ export class SurveyController {
     if (count > 0) {
       result.hasError = true;
       result.message =
-        "The question with the id: " + question.id + " was already answered";
-    } else {
-      // if question was not already answered
-      let finishedQuestion = new FinishedQuestion();
-      //finishedQuestion.id = body.itemId;
-      finishedQuestion.question = question;
-      finishedQuestion.givenAnswers = body.answers;
-      finishedQuestion.participant = participant;
+        "The question with the id: " +
+        question.id +
+        " was already answered. If that wasn't you, please consider contacting the trustee.";
 
-      await finishedQuestionRepository
-        .save(finishedQuestion)
-        .then(() => {
-          result.hasError = false;
-        })
-        .catch((e) => {
-          result.hasError = true;
-          result.message = e;
-        });
+      let returnValue: AnswerSurveyResponseDto = {
+        error: result,
+      };
+      return returnValue;
+    }
 
-      // retrieve all finished questions
-      const finishedQuestions =
-        await finishedQuestionRepository
-          .createQueryBuilder("finishedquestion")
-          .leftJoinAndSelect("finishedquestion.question", "question")
-          .leftJoinAndSelect("question.choices", "choices")
-          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-          .leftJoinAndSelect("finishedquestion.participant", "participant")
-          .where("participant.uuid = :uuid", { uuid: uniqueId })
-          .getMany();
+    // if question was not already answered
+    let finishedQuestion = new FinishedQuestion();
+    //finishedQuestion.id = body.itemId;
+    finishedQuestion.question = question;
+    finishedQuestion.givenAnswers = body.answers;
+    finishedQuestion.participant = participant;
 
-      const zeta = finishedQuestions.map((fq) => {
-        const currentZeta: Zeta = {
-          a: fq.question.slope,
-          b: fq.question.difficulty,
-          c: 1 / fq.question.choices.length,
-        };
-        return currentZeta;
+    await finishedQuestionRepository
+      .save(finishedQuestion)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
       });
-      const responseVector = finishedQuestions.map((fq) => {
-        // only one anwers is submitted, therefore select the first one
-        return fq.givenAnswers[0].correct ? 1 : 0;
-      });
-      const ability = estimateAbilityEAP(responseVector, zeta);
 
-      // update Participant
-      const participantController = new ParticipantController();
+    // retrieve all finished questions
+    const finishedQuestions = await finishedQuestionRepository
+      .createQueryBuilder("finishedquestion")
+      .leftJoinAndSelect("finishedquestion.question", "question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+      .leftJoinAndSelect("finishedquestion.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
+      .getMany();
 
-      if (!result.hasError) {
-        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-        let updateParticipantReturn = await participantController.updateParticipant(
-          surveyId,
-          uniqueId,
-          ability
-        );
+    const zeta = finishedQuestions.map((fq) => {
+      const currentZeta: Zeta = {
+        a: fq.question.slope,
+        b: fq.question.difficulty,
+        c: 1 / fq.question.choices.length,
+      };
+      return currentZeta;
+    });
+    const responseVector = finishedQuestions.map((fq) => {
+      // only one anwers is submitted, therefore select the first one
+      return fq.givenAnswers[0].correct ? 1 : 0;
+    });
+    const ability = estimateAbilityEAP(responseVector, zeta);
 
-        if (updateParticipantReturn.hasError) {
-          result.hasError = true;
-          result.message = updateParticipantReturn.message;
-        }
+    // update Participant
+    const participantController = new ParticipantController();
+
+    if (!result.hasError) {
+      // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+      let updateParticipantReturn = await participantController.updateParticipant(
+        surveyId,
+        uniqueId,
+        ability
+      );
+
+      if (updateParticipantReturn.hasError) {
+        result.hasError = true;
+        result.message = updateParticipantReturn.message;
       }
     }
 
@@ -687,17 +693,17 @@ export class SurveyController {
 }
 
 type surveyFormat = {
-    id: number;
-    question: string;
-    solutions: string;
-    startSet: string;
-    difficulty: number;
-    slope: number;
-    answers: {
-        answer1: string;
-        answer2: string;
-        answer3: string;
-        answer4: string;
-        answer5: string;
-    };
+  id: number;
+  question: string;
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
 };

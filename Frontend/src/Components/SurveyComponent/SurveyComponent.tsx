@@ -13,7 +13,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> { }
+  extends RouteComponentProps<SurveyComponentProps> {}
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();
@@ -65,6 +65,10 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
     surveyApi
       .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
+      .catch((error: AxiosError) => {
+        setHasError(true);
+        setErrorMessage(error.message);
+      })
       .then(() => updateCurrentItem());
 
     setSurveyEnded(false);
