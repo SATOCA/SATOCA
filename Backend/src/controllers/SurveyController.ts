@@ -171,13 +171,15 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: participant.currentQuestion.id })
+      .where("question.id = :id", { id: body.itemId })
       .getOne();
 
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
+
+    //todo: check if currentQuestionID = id of the submitted question!
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
