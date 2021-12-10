@@ -179,7 +179,7 @@ export class SurveyController {
       hasError: false,
     };
 
-    //todo: check if currentQuestionID = id of the submitted question!
+    //todo: check if currentQuestionID = id of the submitted question! @Flo @Enrico
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -192,9 +192,9 @@ export class SurveyController {
     if (count > 0) {
       result.hasError = true;
       result.message =
-        "The question with the id: " +
-        question.id +
-        " was already answered. If that wasn't you, please consider contacting the trustee.";
+        "The question '" +
+        question.text +
+        "' was already answered. If that wasn't you, please consider contacting the trustee.";
 
       let returnValue: AnswerSurveyResponseDto = {
         error: result,
