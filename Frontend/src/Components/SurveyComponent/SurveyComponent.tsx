@@ -6,6 +6,7 @@ import SurveyApi from "../../Services/SurveyAPI";
 import { Container } from "reactstrap";
 import { Question } from "../../DataModel/Item";
 import { AxiosError } from "axios";
+import LegalDisclaimer from "./LegalDisclaimer/LegalDisclaimer";
 
 type SurveyComponentProps = {
   surveyId: string;
@@ -24,6 +25,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [surveyEnded, setSurveyEnded] = useState(false);
+  const [legalDisclaimerAccepted, setLegalDisclaimerAccepted] = useState(false);
 
   const surveyApi = SurveyApi.getInstance();
 
@@ -74,20 +76,18 @@ export default function SurveyComponent(props: SurveyComponentProps) {
     if (isLoading) return <div>loading...</div>;
     if (hasError) return <div>{errorMessage}</div>;
     if (currentQuestion === undefined) return <div>no data</div>;
+    if (surveyEnded) return <SurveyFinished />;
+    if (legalDisclaimerAccepted === false) return <LegalDisclaimer surveyId={props.surveyId} participantId={props.uniqueSurveyId}/>;
 
-    return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
-  };
-
-  if (surveyEnded)
     return (
-      <Container className="glass-card-content" fluid="lg">
-        <SurveyFinished />
-      </Container>
-    );
+      <span data-testid="item">
+        <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />
+      </span>);
+  };
 
   return (
     <Container className="glass-card-content" fluid="lg">
-      <span data-testid="item">{getContent()}</span>
+      {getContent()}
     </Container>
   );
 }
