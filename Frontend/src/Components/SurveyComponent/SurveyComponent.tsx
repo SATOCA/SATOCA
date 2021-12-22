@@ -3,7 +3,7 @@ import { RouteComponentProps, useHistory } from "react-router-dom";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
 import SurveyApi from "../../Services/SurveyAPI";
-import { Button, Container, Row } from "reactstrap";
+import { Container } from "reactstrap";
 import { Question } from "../../DataModel/Item";
 import { AxiosError } from "axios";
 
@@ -13,7 +13,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> {}
+  extends RouteComponentProps<SurveyComponentProps> { }
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();
@@ -29,22 +29,10 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
   const updateCurrentItem = useCallback(() => {
     setIsLoading(true);
-    setHasError(false);
-    setErrorMessage("");
-
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
-      .then(async (axiosResponse) => {
-        let response = await axiosResponse;
-        if (response.error?.hasError) {
-          setHasError(true);
-          setErrorMessage(response.error.message);
-
-          return;
-        }
-
-        const responseQuestion = response.item;
-
+      .then(async (response) => {
+        const responseQuestion = (await response).item;
         console.log("current ability: ", (await response).ability);
         setSurveyEnded((await response).finished);
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
@@ -77,48 +65,25 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
     surveyApi
       .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
-      .then(async (axiosResponse) => {
-
-        let response = await axiosResponse;
-        if (response.error?.hasError) {
-          setHasError(true);
-          setErrorMessage(response.error.message);
-
-          return;
-        }
-
-        updateCurrentItem()
-      })
-      .catch((error: AxiosError) => {
-        setHasError(true);
-        setErrorMessage(error.message);
-      });
+      .then(() => updateCurrentItem());
 
     setSurveyEnded(false);
   };
 
-  const onLoadCurrentQuestionClick = () => {
-    updateCurrentItem();
-  };
-
   const getContent = () => {
-    if (surveyEnded) return <SurveyFinished />;
     if (isLoading) return <div>loading...</div>;
-    if (hasError)
-      return (
-        <Container>
-          <Row>{errorMessage}</Row>
-          <Row>
-            <Button onClick={onLoadCurrentQuestionClick}>
-              Load current question
-            </Button>
-          </Row>
-        </Container>
-      );
+    if (hasError) return <div>{errorMessage}</div>;
     if (currentQuestion === undefined) return <div>no data</div>;
 
     return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
+
+  if (surveyEnded)
+    return (
+      <Container className="glass-card-content" fluid="lg">
+        <SurveyFinished />
+      </Container>
+    );
 
   return (
     <Container className="glass-card-content" fluid="lg">
