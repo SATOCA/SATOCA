@@ -22,6 +22,9 @@ export class Survey extends BaseEntity {
   @Column("real")
   privacyBudget: number = 0;
 
+  @Column()
+  isClosed: boolean = false;
+
   @OneToMany((type) => Participant, (participant) => participant.survey)
   participants: Participant[];
 
