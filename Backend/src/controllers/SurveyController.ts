@@ -179,7 +179,13 @@ export class SurveyController {
       hasError: false,
     };
 
-    //todo: check if currentQuestionID = id of the submitted question! @Flo @Enrico
+    if (body.itemId != participant.currentQuestion.id)
+    {
+      return this.buildErrorResponseItem(question,
+          "The question that was submitted '" +
+          question.text +
+          "' is not the active one!");
+    }
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -190,16 +196,10 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      result.hasError = true;
-      result.message =
-        "The question '" +
-        question.text +
-        "' was already answered. If that wasn't you, please consider contacting the trustee.";
-
-      let returnValue: AnswerSurveyResponseDto = {
-        error: result,
-      };
-      return returnValue;
+      return this.buildErrorResponseItem(question,
+          "The question '" +
+          question.text +
+          "' was already answered. If that wasn't you, please consider contacting the trustee.");
     }
 
     // if question was not already answered
@@ -266,7 +266,22 @@ export class SurveyController {
     return returnValue;
   }
 
-  // Excel Upload
+  private buildErrorResponseItem(question: Question, errorMessage: string) {
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    result.hasError = true;
+    result.message = errorMessage;
+
+    let returnValue: AnswerSurveyResponseDto = {
+      error: result,
+    };
+    return returnValue;
+  }
+
+// Excel Upload
 
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
