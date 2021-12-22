@@ -1,7 +1,7 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-import { privatize, newArrayView } from "differential-privacy";
+import { newArrayView, privatize } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
@@ -179,12 +179,13 @@ export class SurveyController {
       hasError: false,
     };
 
-    if (body.itemId != participant.currentQuestion.id)
-    {
-      return this.buildErrorResponseItem(question,
-          "The question that was submitted '" +
+    if (body.itemId != participant.currentQuestion.id) {
+      return this.buildErrorResponseItem(
+        question,
+        "The question that was submitted '" +
           question.text +
-          "' is not the active one!");
+          "' is not the active one!"
+      );
     }
 
     let finishedQuestionRepository = await getConnection().getRepository(
@@ -196,10 +197,12 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      return this.buildErrorResponseItem(question,
-          "The question '" +
+      return this.buildErrorResponseItem(
+        question,
+        "The question '" +
           question.text +
-          "' was already answered. If that wasn't you, please consider contacting the trustee.");
+          "' was already answered. If that wasn't you, please consider contacting the trustee."
+      );
     }
 
     // if question was not already answered
@@ -281,7 +284,7 @@ export class SurveyController {
     return returnValue;
   }
 
-// Excel Upload
+  // Excel Upload
 
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,

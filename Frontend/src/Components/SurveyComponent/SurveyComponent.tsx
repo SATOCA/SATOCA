@@ -35,7 +35,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
       .then(async (axiosResponse) => {
-        let response = await axiosResponse;
+        const response = await axiosResponse;
         if (response.error?.hasError) {
           setHasError(true);
           setErrorMessage(response.error.message);
@@ -78,8 +78,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
     surveyApi
       .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
       .then(async (axiosResponse) => {
-
-        let response = await axiosResponse;
+        const response = await axiosResponse;
         if (response.error?.hasError) {
           setHasError(true);
           setErrorMessage(response.error.message);
@@ -87,7 +86,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
           return;
         }
 
-        updateCurrentItem()
+        updateCurrentItem();
       })
       .catch((error: AxiosError) => {
         setHasError(true);
