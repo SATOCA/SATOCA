@@ -18,6 +18,9 @@ import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
 import { CreateReportDto } from "../routers/dto/CreateReportDto";
 import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
+import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
+import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
+import { TrusteeDto } from "../routers/dto/TrusteeDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -299,15 +302,10 @@ export class SurveyController {
     };
 
     //check User rights
-    const trusteeController = new TrusteeController();
-    let trusteeLogin = await trusteeController.loginTrustee(body);
-    console.log(trusteeLogin);
+    let loginResult = await this.checkTrusteeLogin(body);
 
-    if (!trusteeLogin.success) {
-      result.error = {
-        message: "Invalid credentials",
-        hasError: true,
-      };
+    if (loginResult.hasError) {
+      result.error = loginResult;
       return result;
     }
 
@@ -370,6 +368,27 @@ export class SurveyController {
     result.links = await pController.createSurveyLinks(survey.id);
 
     return result;
+  }
+
+  private async checkTrusteeLogin(body: TrusteeDto): Promise<ErrorDto> {
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+    console.log(trusteeLogin);
+
+    let error: ErrorDto;
+
+    if (!trusteeLogin.success) {
+      error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+    } else {
+      error = {
+        hasError: false,
+        message: "no Error",
+      };
+    }
+    return error;
   }
 
   private formatReadExcelFileErrors(errors): string {
@@ -634,14 +653,10 @@ export class SurveyController {
     };
 
     //check User rights
-    const trusteeController = new TrusteeController();
-    let trusteeLogin = await trusteeController.loginTrustee(body);
+    let loginResult = await this.checkTrusteeLogin(body);
 
-    if (!trusteeLogin.success) {
-      result.error = {
-        message: "Invalid credentials",
-        hasError: true,
-      };
+    if (loginResult.hasError) {
+      result.error = loginResult;
       return [result];
     }
 
@@ -709,6 +724,49 @@ export class SurveyController {
       resultPrivate = tempPrHistogram;
     }
     return [result, resultPrivate];
+  }
+
+  async closeSurvey(body: CloseSurveyDto): Promise<CloseSurveyResponseDto> {
+    let result: CloseSurveyResponseDto = {
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    //check User rights
+    let loginResult = await this.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+
+    const surveyRepository = await getConnection().getRepository(Survey);
+
+    const targetSurvey = await surveyRepository
+      .createQueryBuilder("survey")
+      .where("survey.id = :id", { id: body.surveyId })
+      .getOne();
+
+    if (targetSurvey.isClosed) {
+      result.error = {
+        hasError: true,
+        message: "Survey already closed!",
+      };
+      return result;
+    }
+
+    targetSurvey.isClosed = true;
+
+    surveyRepository.save(targetSurvey).catch((e) => {
+      result.error = {
+        message: e.message,
+        hasError: true,
+      };
+    });
+
+    return result;
   }
 }
 
