@@ -1,7 +1,7 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-import { privatize, newArrayView } from "differential-privacy";
+import { newArrayView, privatize } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
@@ -171,13 +171,22 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: participant.currentQuestion.id })
+      .where("question.id = :id", { id: body.itemId })
       .getOne();
 
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
+
+    if (body.itemId != participant.currentQuestion.id) {
+      return this.buildErrorResponseItem(
+        question,
+        "The question that was submitted '" +
+          question.text +
+          "' is not the active one!"
+      );
+    }
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -188,69 +197,86 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      result.hasError = true;
-      result.message =
-        "The question with the id: " + question.id + " was already answered";
-    } else {
-      // if question was not already answered
-      let finishedQuestion = new FinishedQuestion();
-      //finishedQuestion.id = body.itemId;
-      finishedQuestion.question = question;
-      finishedQuestion.givenAnswers = body.answers;
-      finishedQuestion.participant = participant;
+      return this.buildErrorResponseItem(
+        question,
+        "The question '" +
+          question.text +
+          "' was already answered. If that wasn't you, please consider contacting the trustee."
+      );
+    }
 
-      await finishedQuestionRepository
-        .save(finishedQuestion)
-        .then(() => {
-          result.hasError = false;
-        })
-        .catch((e) => {
-          result.hasError = true;
-          result.message = e;
-        });
+    // if question was not already answered
+    let finishedQuestion = new FinishedQuestion();
+    //finishedQuestion.id = body.itemId;
+    finishedQuestion.question = question;
+    finishedQuestion.givenAnswers = body.answers;
+    finishedQuestion.participant = participant;
 
-      // retrieve all finished questions
-      const finishedQuestions =
-        await finishedQuestionRepository
-          .createQueryBuilder("finishedquestion")
-          .leftJoinAndSelect("finishedquestion.question", "question")
-          .leftJoinAndSelect("question.choices", "choices")
-          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-          .leftJoinAndSelect("finishedquestion.participant", "participant")
-          .where("participant.uuid = :uuid", { uuid: uniqueId })
-          .getMany();
-
-      const zeta = finishedQuestions.map((fq) => {
-        const currentZeta: Zeta = {
-          a: fq.question.slope,
-          b: fq.question.difficulty,
-          c: 1 / fq.question.choices.length,
-        };
-        return currentZeta;
+    await finishedQuestionRepository
+      .save(finishedQuestion)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
       });
-      const responseVector = finishedQuestions.map((fq) => {
-        // only one anwers is submitted, therefore select the first one
-        return fq.givenAnswers[0].correct ? 1 : 0;
-      });
-      const ability = estimateAbilityEAP(responseVector, zeta);
 
-      // update Participant
-      const participantController = new ParticipantController();
+    // retrieve all finished questions
+    const finishedQuestions = await finishedQuestionRepository
+      .createQueryBuilder("finishedquestion")
+      .leftJoinAndSelect("finishedquestion.question", "question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+      .leftJoinAndSelect("finishedquestion.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
+      .getMany();
 
-      if (!result.hasError) {
-        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-        let updateParticipantReturn = await participantController.updateParticipant(
-          surveyId,
-          uniqueId,
-          ability
-        );
+    const zeta = finishedQuestions.map((fq) => {
+      const currentZeta: Zeta = {
+        a: fq.question.slope,
+        b: fq.question.difficulty,
+        c: 1 / fq.question.choices.length,
+      };
+      return currentZeta;
+    });
+    const responseVector = finishedQuestions.map((fq) => {
+      // only one anwers is submitted, therefore select the first one
+      return fq.givenAnswers[0].correct ? 1 : 0;
+    });
+    const ability = estimateAbilityEAP(responseVector, zeta);
 
-        if (updateParticipantReturn.hasError) {
-          result.hasError = true;
-          result.message = updateParticipantReturn.message;
-        }
+    // update Participant
+    const participantController = new ParticipantController();
+
+    if (!result.hasError) {
+      // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+      let updateParticipantReturn = await participantController.updateParticipant(
+        surveyId,
+        uniqueId,
+        ability
+      );
+
+      if (updateParticipantReturn.hasError) {
+        result.hasError = true;
+        result.message = updateParticipantReturn.message;
       }
     }
+
+    let returnValue: AnswerSurveyResponseDto = {
+      error: result,
+    };
+    return returnValue;
+  }
+
+  private buildErrorResponseItem(question: Question, errorMessage: string) {
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    result.hasError = true;
+    result.message = errorMessage;
 
     let returnValue: AnswerSurveyResponseDto = {
       error: result,
@@ -687,17 +713,17 @@ export class SurveyController {
 }
 
 type surveyFormat = {
-    id: number;
-    question: string;
-    solutions: string;
-    startSet: string;
-    difficulty: number;
-    slope: number;
-    answers: {
-        answer1: string;
-        answer2: string;
-        answer3: string;
-        answer4: string;
-        answer5: string;
-    };
+  id: number;
+  question: string;
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
 };
