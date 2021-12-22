@@ -103,6 +103,7 @@ export class SurveyController {
     return result;
   }
 
+  // todo change Dto Type! and add login check!
   async getAllSurveys(createReportDto: CreateReportDto) {
     //Todo change dto, check password..
     console.log(createReportDto);
@@ -111,7 +112,7 @@ export class SurveyController {
 
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
-    const query = await getConnection()
+    const targetParticipant = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
       .leftJoinAndSelect("participant.currentQuestion", "currentQuestion")
@@ -120,7 +121,20 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
-    if (query.finished) {
+    if (targetParticipant.survey.isClosed) {
+      const err: ErrorDto = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return {
+        error: err,
+        item: undefined,
+        finished: targetParticipant.finished,
+        ability: 0,
+      };
+    }
+
+    if (targetParticipant.finished) {
       const err: ErrorDto = {
         message: "",
         hasError: false,
@@ -128,8 +142,8 @@ export class SurveyController {
       const result: CurrentQuestionResponseDto = {
         error: err,
         item: undefined,
-        finished: query.finished,
-        ability: query.scoring,
+        finished: targetParticipant.finished,
+        ability: targetParticipant.scoring,
       };
 
       return result;
@@ -139,7 +153,7 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: query.currentQuestion.id })
+      .where("question.id = :id", { id: targetParticipant.currentQuestion.id })
       .getOne();
     //! \todo handle error case
 
@@ -150,8 +164,8 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
-      finished: query.finished,
-      ability: query.scoring,
+      finished: targetParticipant.finished,
+      ability: targetParticipant.scoring,
     };
     return result;
   }
@@ -181,6 +195,14 @@ export class SurveyController {
       message: "",
       hasError: false,
     };
+
+    if (participant.survey.isClosed) {
+      result = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return result;
+    }
 
     if (body.itemId != participant.currentQuestion.id) {
       return this.buildErrorResponseItem(
