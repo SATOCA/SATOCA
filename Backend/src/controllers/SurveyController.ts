@@ -171,21 +171,13 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: body.itemId })
+      .where("question.id = :id", { id: participant.currentQuestion.id })
       .getOne();
 
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
-
-    if (body.itemId != participant.currentQuestion.id)
-    {
-      return this.buildErrorResponseItem(question,
-          "The question that was submitted '" +
-          question.text +
-          "' is not the active one!");
-    }
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -196,67 +188,67 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      return this.buildErrorResponseItem(question,
-          "The question '" +
-          question.text +
-          "' was already answered. If that wasn't you, please consider contacting the trustee.");
-    }
+      result.hasError = true;
+      result.message =
+        "The question with the id: " + question.id + " was already answered";
+    } else {
+      // if question was not already answered
+      let finishedQuestion = new FinishedQuestion();
+      //finishedQuestion.id = body.itemId;
+      finishedQuestion.question = question;
+      finishedQuestion.givenAnswers = body.answers;
+      finishedQuestion.participant = participant;
 
-    // if question was not already answered
-    let finishedQuestion = new FinishedQuestion();
-    //finishedQuestion.id = body.itemId;
-    finishedQuestion.question = question;
-    finishedQuestion.givenAnswers = body.answers;
-    finishedQuestion.participant = participant;
+      await finishedQuestionRepository
+        .save(finishedQuestion)
+        .then(() => {
+          result.hasError = false;
+        })
+        .catch((e) => {
+          result.hasError = true;
+          result.message = e;
+        });
 
-    await finishedQuestionRepository
-      .save(finishedQuestion)
-      .then(() => {
-        result.hasError = false;
-      })
-      .catch((e) => {
-        result.hasError = true;
-        result.message = e;
+      // retrieve all finished questions
+      const finishedQuestions =
+        await finishedQuestionRepository
+          .createQueryBuilder("finishedquestion")
+          .leftJoinAndSelect("finishedquestion.question", "question")
+          .leftJoinAndSelect("question.choices", "choices")
+          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+          .leftJoinAndSelect("finishedquestion.participant", "participant")
+          .where("participant.uuid = :uuid", { uuid: uniqueId })
+          .getMany();
+
+      const zeta = finishedQuestions.map((fq) => {
+        const currentZeta: Zeta = {
+          a: fq.question.slope,
+          b: fq.question.difficulty,
+          c: 1 / fq.question.choices.length,
+        };
+        return currentZeta;
       });
+      const responseVector = finishedQuestions.map((fq) => {
+        // only one anwers is submitted, therefore select the first one
+        return fq.givenAnswers[0].correct ? 1 : 0;
+      });
+      const ability = estimateAbilityEAP(responseVector, zeta);
 
-    // retrieve all finished questions
-    const finishedQuestions = await finishedQuestionRepository
-      .createQueryBuilder("finishedquestion")
-      .leftJoinAndSelect("finishedquestion.question", "question")
-      .leftJoinAndSelect("question.choices", "choices")
-      .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-      .leftJoinAndSelect("finishedquestion.participant", "participant")
-      .where("participant.uuid = :uuid", { uuid: uniqueId })
-      .getMany();
+      // update Participant
+      const participantController = new ParticipantController();
 
-    const zeta = finishedQuestions.map((fq) => {
-      const currentZeta: Zeta = {
-        a: fq.question.slope,
-        b: fq.question.difficulty,
-        c: 1 / fq.question.choices.length,
-      };
-      return currentZeta;
-    });
-    const responseVector = finishedQuestions.map((fq) => {
-      // only one anwers is submitted, therefore select the first one
-      return fq.givenAnswers[0].correct ? 1 : 0;
-    });
-    const ability = estimateAbilityEAP(responseVector, zeta);
+      if (!result.hasError) {
+        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+        let updateParticipantReturn = await participantController.updateParticipant(
+          surveyId,
+          uniqueId,
+          ability
+        );
 
-    // update Participant
-    const participantController = new ParticipantController();
-
-    if (!result.hasError) {
-      // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-      let updateParticipantReturn = await participantController.updateParticipant(
-        surveyId,
-        uniqueId,
-        ability
-      );
-
-      if (updateParticipantReturn.hasError) {
-        result.hasError = true;
-        result.message = updateParticipantReturn.message;
+        if (updateParticipantReturn.hasError) {
+          result.hasError = true;
+          result.message = updateParticipantReturn.message;
+        }
       }
     }
 
@@ -266,22 +258,7 @@ export class SurveyController {
     return returnValue;
   }
 
-  private buildErrorResponseItem(question: Question, errorMessage: string) {
-    let result: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    result.hasError = true;
-    result.message = errorMessage;
-
-    let returnValue: AnswerSurveyResponseDto = {
-      error: result,
-    };
-    return returnValue;
-  }
-
-// Excel Upload
+  // Excel Upload
 
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
@@ -710,17 +687,17 @@ export class SurveyController {
 }
 
 type surveyFormat = {
-  id: number;
-  question: string;
-  solutions: string;
-  startSet: string;
-  difficulty: number;
-  slope: number;
-  answers: {
-    answer1: string;
-    answer2: string;
-    answer3: string;
-    answer4: string;
-    answer5: string;
-  };
+    id: number;
+    question: string;
+    solutions: string;
+    startSet: string;
+    difficulty: number;
+    slope: number;
+    answers: {
+        answer1: string;
+        answer2: string;
+        answer3: string;
+        answer4: string;
+        answer5: string;
+    };
 };
