@@ -115,6 +115,7 @@ export class SurveyController {
     const targetParticipant = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
+      .leftJoinAndSelect("participant.survey", "survey")
       .leftJoinAndSelect("participant.currentQuestion", "currentQuestion")
       .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)

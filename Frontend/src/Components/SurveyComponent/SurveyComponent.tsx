@@ -35,8 +35,8 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const surveyApi = SurveyApi.getInstance();
 
   const updateCurrentItem = useCallback(() => {
+    console.log("update Current Item");
     setIsLoading(true);
-    setErrorMessage("");
 
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
@@ -109,7 +109,12 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const getContent = () => {
     if (surveyEnded) return <SurveyFinished />;
     if (isLoading) return <div>loading...</div>;
-    if (currentQuestion === undefined) return <div>no data</div>;
+    if (currentQuestion === undefined)
+      return (
+        <div>
+          No active survey found! todo make it fancy, picture or similar...
+        </div>
+      );
 
     return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
