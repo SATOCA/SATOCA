@@ -13,6 +13,8 @@ import {
   Row,
 } from "reactstrap";
 import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
+import ErrorModal from "./ErrorModal/ErrorModal";
+import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue: SurveyInfo[] = [
@@ -25,15 +27,17 @@ export default function Reports(props: { password: string; login: string }) {
     },
   ];
 
-  const [reportData, setReportData] = useState<Report>({ histogramData: [] });
-  const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
-  const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [areYouSureCloseSurvey, setAreYouSureCloseSurvey] = useState(false);
+
+  const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
+  const [surveyQuery, setSurveyQuery] = useState(initialValue);
+
   const [dropDownTitle, setDropDownTitle] = useState(
     "Select the query to show report"
   );
-  const [selectedSurvey, setSurveyId] = useState(0);
+  const [selectedSurvey, setSurveyId] = useState(-1);
   const [selectedSurveyPrivacy, setPrivacy] = useState(0);
   const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
@@ -49,7 +53,6 @@ export default function Reports(props: { password: string; login: string }) {
       )
       .then(async (response) => {
         console.log(response);
-        setReportData(response[0].report);
         setPrivateData(response[1].report);
         setHasError(false);
       })
@@ -74,9 +77,7 @@ export default function Reports(props: { password: string; login: string }) {
   }, [
     props.login,
     props.password,
-    selectedSurvey,
-    selectedSurveyPrivacy,
-    surveyApi,
+    surveyApi
   ]);
 
   const setToggle = () => {
@@ -104,14 +105,27 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyDisplay = () => {
     if (isSurveyClosed) {
       return (
-        <Row>
-          <DisplayReport report={privateData} />
-        </Row>
+        <Container>
+          <Row>
+            <h1>Report</h1>
+          </Row>
+          <Row>
+            <DisplayReport report={privateData} />
+          </Row>
+        </Container>
       );
     }
   };
 
   const closeSurveyClick = () => {
+    setAreYouSureCloseSurvey(true);
+  };
+
+  const doNotCloseSurvey = () => {
+    setAreYouSureCloseSurvey(false);
+  };
+
+  const closeSurvey = () => {
     surveyApi
       .closeSurvey(props.login, props.password, selectedSurvey)
       .then((response) => {
@@ -122,13 +136,22 @@ export default function Reports(props: { password: string; login: string }) {
           setIsSurveyClosed(true);
           updateSurveyDisplay();
         }
-      });
+      })
+      .finally(() => setAreYouSureCloseSurvey(false));
   };
 
   if (hasError) return <div>{errorMessage}</div>;
 
   return (
     <div>
+      <ErrorModal hasError={hasError} errorMessage={errorMessage} />
+      <AreYouSureModal
+        modalOpen={areYouSureCloseSurvey}
+        header="Are you sure?"
+        bodyText={`Are you sure you want to close survey ${selectedSurvey}`}
+        yesButtonAction={closeSurvey}
+        noButtonAction={doNotCloseSurvey}
+      />
       <Container className="p-5">
         <Row>
           <Dropdown isOpen={toggleState} onClick={setToggle}>
