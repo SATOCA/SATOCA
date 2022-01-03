@@ -48,7 +48,7 @@ export default function Reports(props: { password: string; login: string }) {
         setErrorMessage(error.message);
       });
     surveyApi
-      .getSurveys(props.login, props.password, 1, 1)
+      .getSurveys(props.login, props.password)
       .then(async (response) => {
         console.log(response);
         setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
