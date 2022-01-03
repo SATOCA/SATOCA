@@ -10,6 +10,8 @@ import { CreateReportResponseDto } from "../DataModel/dto/CreateReportResponseDt
 import { CreateReportDto } from "../DataModel/dto/CreateReportDto";
 import { SurveyResponseDto } from "../DataModel/dto/SurveyResponseDto";
 import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
+import { CloseSurveyResponseDto } from "../../../Backend/src/routers/dto/CloseSurveyResponseDto";
+import { CloseSurveyDto } from "../../../Backend/src/routers/dto/CloseSurveyDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -90,6 +92,22 @@ export default class SurveyApi extends HttpClient {
     return await this.instance.post<SurveyResponseDto>(
       "/Survey/get-surveys",
       createReportDto
+    );
+  };
+
+  public closeSurvey = async (
+    login: string,
+    password: string,
+    surveyId: number
+  ): Promise<CloseSurveyResponseDto> => {
+    const closeSurveyDto: CloseSurveyDto = {
+      login,
+      password,
+      surveyId,
+    };
+    return await this.instance.post<SurveyResponseDto>(
+      "/Survey/close-survey",
+      closeSurveyDto
     );
   };
 }

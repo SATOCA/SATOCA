@@ -4,16 +4,25 @@ import { Report } from "../../../../DataModel/dto/CreateReportResponseDto";
 import SurveyApi from "../../../../Services/SurveyAPI";
 import { AxiosError } from "axios";
 import {
+  Button,
+  Container,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
   Row,
 } from "reactstrap";
+import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
 
 export default function Reports(props: { password: string; login: string }) {
-  const initialValue = [
-    { id: 0, title: "", itemSeverityBoundary: 0, privacyBudget: 1.0 },
+  const initialValue: SurveyInfo[] = [
+    {
+      id: -1,
+      title: "",
+      itemSeverityBoundary: 0,
+      privacyBudget: 1.0,
+      isClosed: false,
+    },
   ];
 
   const [reportData, setReportData] = useState<Report>({ histogramData: [] });
@@ -26,10 +35,11 @@ export default function Reports(props: { password: string; login: string }) {
   );
   const [selectedSurvey, setSurveyId] = useState(0);
   const [selectedSurveyPrivacy, setPrivacy] = useState(0);
+  const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
   const surveyApi = SurveyApi.getInstance();
 
-  useEffect(() => {
+  function updateSurveyDisplay() {
     surveyApi
       .createReport(
         props.login,
@@ -57,19 +67,31 @@ export default function Reports(props: { password: string; login: string }) {
         setHasError(true);
         setErrorMessage(error.message);
       });
-  }, [props.login, props.password, selectedSurvey, selectedSurveyPrivacy, surveyApi]);
+  }
+
+  useEffect(() => {
+    updateSurveyDisplay();
+  }, [
+    props.login,
+    props.password,
+    selectedSurvey,
+    selectedSurveyPrivacy,
+    surveyApi,
+  ]);
 
   const setToggle = () => {
     toggleValue(!toggleState);
   };
-  const setSurveyItem = (survey: number) => {
-    setSurveyId(survey);
+  const setSurveyItem = (survey: SurveyInfo) => {
+    setSurveyId(survey.id);
+    setPrivacy(survey.privacyBudget);
+    setIsSurveyClosed(survey.isClosed);
   };
+
   const dropDownElements = surveyQuery.map((survey) => (
     <DropdownItem
       onClick={() => {
-        setSurveyItem(survey.id);
-        setPrivacy(survey.privacyBudget);
+        setSurveyItem(survey);
         setDropDownTitle(
           `${survey.id}: ${survey.title}  participants finished: TODO?`
         );
@@ -79,22 +101,55 @@ export default function Reports(props: { password: string; login: string }) {
     </DropdownItem>
   ));
 
+  const surveyDisplay = () => {
+    if (isSurveyClosed) {
+      return (
+        <Row>
+          <DisplayReport report={privateData} />
+        </Row>
+      );
+    }
+  };
+
+  const closeSurveyClick = () => {
+    surveyApi
+      .closeSurvey(props.login, props.password, selectedSurvey)
+      .then((response) => {
+        if (response.error.hasError) {
+          setHasError(true);
+          setErrorMessage(response.error.message);
+        } else {
+          setIsSurveyClosed(true);
+          updateSurveyDisplay();
+        }
+      });
+  };
+
   if (hasError) return <div>{errorMessage}</div>;
 
   return (
     <div>
-      <div className="d-flex p-5">
-        <Dropdown isOpen={toggleState} onClick={setToggle}>
-          <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
-          <DropdownMenu>{dropDownElements}</DropdownMenu>
-        </Dropdown>
-      </div>
-      <Row>
-        <DisplayReport report={reportData} />
-      </Row>
-      <Row>
-        <DisplayReport report={privateData} />
-      </Row>
+      <Container className="p-5">
+        <Row>
+          <Dropdown isOpen={toggleState} onClick={setToggle}>
+            <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
+            <DropdownMenu>{dropDownElements}</DropdownMenu>
+          </Dropdown>
+        </Row>
+        {selectedSurvey >= 0 ? (
+          <Row>
+            <p>{isSurveyClosed ? "Survey closed" : "Survey open"}</p>
+            {isSurveyClosed ? (
+              <div />
+            ) : (
+              <Button onClick={closeSurveyClick}>Close survey</Button>
+            )}
+          </Row>
+        ) : (
+          <div />
+        )}
+      </Container>
+      {surveyDisplay()}
     </div>
   );
 }
