@@ -9,6 +9,7 @@ import { UploadSurveyFileResponseDto } from "../DataModel/dto/UploadSurveyFileRe
 import { CreateReportResponseDto } from "../DataModel/dto/CreateReportResponseDto";
 import { CreateReportDto } from "../DataModel/dto/CreateReportDto";
 import { SurveyResponseDto } from "../DataModel/dto/SurveyResponseDto";
+import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -80,15 +81,11 @@ export default class SurveyApi extends HttpClient {
 
   public getSurveys = async (
     login: string,
-    password: string,
-    surveyId: number,
-    privacyBudget: number
+    password: string
   ): Promise<SurveyResponseDto> => {
-    const createReportDto: CreateReportDto = {
+    const createReportDto: TrusteeDto = {
       login,
       password,
-      surveyId,
-      privacyBudget,
     };
     return await this.instance.post<SurveyResponseDto>(
       "/Survey/get-surveys",

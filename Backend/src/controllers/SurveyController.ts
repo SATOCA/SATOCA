@@ -89,7 +89,7 @@ export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
 }
 
 export class SurveyController {
-  async getSurveys() {
+  async getSurveys(): Promise<SurveyResponseDto> {
     const query = await getConnection().getRepository(Survey).find();
 
     const err: ErrorDto = {
@@ -103,10 +103,17 @@ export class SurveyController {
     return result;
   }
 
-  // todo change Dto Type! and add login check!
-  async getAllSurveys(createReportDto: CreateReportDto) {
-    //Todo change dto, check password..
-    console.log(createReportDto);
+  async getAllSurveys(trusteeDto: TrusteeDto): Promise<SurveyResponseDto> {
+    //check User rights
+    let loginResult = await this.checkTrusteeLogin(trusteeDto);
+
+    if (loginResult.hasError) {
+      return {
+        surveys: [],
+        error: loginResult,
+      };
+    }
+
     return await this.getSurveys();
   }
 

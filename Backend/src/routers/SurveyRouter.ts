@@ -6,6 +6,7 @@ import fileUpload from "express-fileupload";
 import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
 import { CreateReportDto } from "./dto/CreateReportDto";
 import { CloseSurveyDto } from "./dto/CloseSurveyDto";
+import {TrusteeDto} from "./dto/TrusteeDto";
 
 export class SurveyRouter {
   private _router = Router();
@@ -100,7 +101,7 @@ export class SurveyRouter {
       (req: Request, res: Response, next: NextFunction) => {
         try {
           this._controller
-            .getAllSurveys(req.body as CreateReportDto)
+            .getAllSurveys(req.body as TrusteeDto)
             .then((obj) => {
               res.status(200).json(obj);
             });
