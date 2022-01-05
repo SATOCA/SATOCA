@@ -15,6 +15,7 @@ import {
 import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
 import ErrorModal from "./ErrorModal/ErrorModal";
 import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
+import "./Reports.css";
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue: SurveyInfo[] = [
@@ -74,11 +75,7 @@ export default function Reports(props: { password: string; login: string }) {
 
   useEffect(() => {
     updateSurveyDisplay();
-  }, [
-    props.login,
-    props.password,
-    surveyApi
-  ]);
+  }, [props.login, props.password, surveyApi]);
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -105,7 +102,7 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyDisplay = () => {
     if (isSurveyClosed) {
       return (
-        <Container>
+        <Container className="report-margin">
           <Row>
             <h1>Report</h1>
           </Row>
@@ -153,15 +150,17 @@ export default function Reports(props: { password: string; login: string }) {
         noButtonAction={doNotCloseSurvey}
       />
       <Container className="p-5">
-        <Row>
+        <Row className="row-margin">
           <Dropdown isOpen={toggleState} onClick={setToggle}>
             <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
             <DropdownMenu>{dropDownElements}</DropdownMenu>
           </Dropdown>
         </Row>
         {selectedSurvey >= 0 ? (
-          <Row>
-            <p>{isSurveyClosed ? "Survey closed" : "Survey open"}</p>
+          <Row className="row-margin">
+            <div className="closed-status-text">
+              {isSurveyClosed ? "Survey closed" : "Survey open"}
+            </div>
             {isSurveyClosed ? (
               <div />
             ) : (
