@@ -588,7 +588,29 @@ export class SurveyController {
 
   // end Excel Upload
 
+  static async updateSurveyPrivacyBudget(
+    surveyId: number,
+    newPrivacyBudget: number
+  ) {
+    const SurveyRepository = await getConnection().getRepository(Survey);
+
+    let survey = await SurveyRepository.find({ where: { id: surveyId } });
+    survey[0].privacyBudget = newPrivacyBudget;
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    await SurveyRepository.save(survey[0])
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+  }
   async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
+    let cost = 1;
     let result: CreateReportResponseDto = {
       report: {
         histogramData: [
@@ -615,9 +637,15 @@ export class SurveyController {
       };
       return result;
     }
-
     let resultPrivate = result;
-    if (body.privacyBudget > 0) {
+
+    if (body.privacyBudget < cost) {
+      resultPrivate.error = {
+        message: "Not enough budget left on this survey!",
+        hasError: true,
+      };
+      return resultPrivate;
+    } else {
       let pController = new ParticipantController();
       let participants = await pController.getParticipants(body.surveyId);
 
@@ -651,7 +679,7 @@ export class SurveyController {
       };
 
       const options = {
-        maxEpsilon: body.privacyBudget,
+        maxEpsilon: cost,
         newShadowIterator: dataset.newShadowIterator,
       };
       let tempPrBucketSize: number[] = [];
@@ -674,6 +702,10 @@ export class SurveyController {
       }
       resultPrivate = tempPrHistogram;
     }
+    await SurveyController.updateSurveyPrivacyBudget(
+      body.surveyId,
+      body.privacyBudget - cost
+    );
     return resultPrivate;
   }
 }

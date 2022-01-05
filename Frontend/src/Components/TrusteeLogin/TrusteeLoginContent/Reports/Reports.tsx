@@ -44,6 +44,9 @@ export default function Reports(props: { password: string; login: string }) {
       .then(async (response) => {
         console.log(response);
         setPrivateData(response.report);
+        if (response.error.hasError) {
+          alert(response.error.message);
+        }
         setHasError(false);
       })
       .catch((error: AxiosError) => {
