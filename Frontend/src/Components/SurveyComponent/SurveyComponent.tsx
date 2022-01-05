@@ -3,7 +3,14 @@ import { RouteComponentProps, useHistory } from "react-router-dom";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
 import SurveyApi from "../../Services/SurveyAPI";
-import { Button, Container, Row } from "reactstrap";
+import {
+  Button,
+  Container,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "reactstrap";
 import { Question } from "../../DataModel/Item";
 import { AxiosError } from "axios";
 
@@ -28,9 +35,8 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const surveyApi = SurveyApi.getInstance();
 
   const updateCurrentItem = useCallback(() => {
+    console.log("update Current Item");
     setIsLoading(true);
-    setHasError(false);
-    setErrorMessage("");
 
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
@@ -79,6 +85,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
       .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
       .then(async (axiosResponse) => {
         const response = await axiosResponse;
+        console.log(response);
         if (response.error?.hasError) {
           setHasError(true);
           setErrorMessage(response.error.message);
@@ -92,29 +99,22 @@ export default function SurveyComponent(props: SurveyComponentProps) {
         setHasError(true);
         setErrorMessage(error.message);
       });
-
-    setSurveyEnded(false);
   };
 
-  const onLoadCurrentQuestionClick = () => {
-    updateCurrentItem();
+  const closeErrorModal = () => {
+    setHasError(false);
+    setErrorMessage("");
   };
 
   const getContent = () => {
     if (surveyEnded) return <SurveyFinished />;
     if (isLoading) return <div>loading...</div>;
-    if (hasError)
+    if (currentQuestion === undefined)
       return (
-        <Container>
-          <Row>{errorMessage}</Row>
-          <Row>
-            <Button onClick={onLoadCurrentQuestionClick}>
-              Load current question
-            </Button>
-          </Row>
-        </Container>
+        <div>
+          No active survey found! todo make it fancy, picture or similar...
+        </div>
       );
-    if (currentQuestion === undefined) return <div>no data</div>;
 
     return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
@@ -122,6 +122,13 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   return (
     <Container className="glass-card-content" fluid="lg">
       <span data-testid="item">{getContent()}</span>
+      <Modal isOpen={hasError} toggle={closeErrorModal}>
+        <ModalHeader toggle={closeErrorModal}>Error</ModalHeader>
+        <ModalBody>{errorMessage}</ModalBody>
+        <ModalFooter>
+          <Button onClick={closeErrorModal}>Close</Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
 }
