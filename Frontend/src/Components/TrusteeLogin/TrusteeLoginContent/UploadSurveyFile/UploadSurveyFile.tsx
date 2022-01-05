@@ -49,8 +49,9 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   };
 
   return (
-    <Form>
+    <Form className="p-5">
       <FormGroup>
+        <h1>Upload Survey File</h1>
         <Label for="fileUpload">Survey File (.xlsx)</Label>
         <Input
           type="file"
@@ -60,7 +61,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
           onChange={updateFileChanged}
         />
       </FormGroup>
-      <Button disabled={file === undefined} onClick={upload}>
+      <Button color="primary" disabled={file === undefined} onClick={upload}>
         Submit
       </Button>
       {listItems}
