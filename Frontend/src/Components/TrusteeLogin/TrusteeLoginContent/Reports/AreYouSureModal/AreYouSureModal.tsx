@@ -13,8 +13,12 @@ export default function AreYouSureModal(props: {
       <ModalHeader toggle={props.noButtonAction}>{props.header}</ModalHeader>
       <ModalBody>{props.bodyText}</ModalBody>
       <ModalFooter>
-        <Button onClick={props.yesButtonAction}>Yes</Button>
-        <Button onClick={props.noButtonAction}>No</Button>
+        <Button color="danger" onClick={props.yesButtonAction}>
+          Yes
+        </Button>
+        <Button color="secondary" onClick={props.noButtonAction}>
+          No
+        </Button>
       </ModalFooter>
     </Modal>
   );

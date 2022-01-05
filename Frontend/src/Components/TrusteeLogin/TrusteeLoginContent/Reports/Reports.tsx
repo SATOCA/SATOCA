@@ -148,7 +148,7 @@ export default function Reports(props: { password: string; login: string }) {
       <AreYouSureModal
         modalOpen={areYouSureCloseSurvey}
         header="Are you sure?"
-        bodyText={`Are you sure you want to close survey ${selectedSurvey}`}
+        bodyText={`Are you sure you want to close survey "${dropDownTitle}"`}
         yesButtonAction={closeSurvey}
         noButtonAction={doNotCloseSurvey}
       />
