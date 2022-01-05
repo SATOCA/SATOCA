@@ -75,7 +75,7 @@ export default function Reports(props: { password: string; login: string }) {
 
   useEffect(() => {
     updateSurveyDisplay();
-  }, [props.login, props.password, surveyApi]);
+  }, [props.login, props.password, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setToggle = () => {
     toggleValue(!toggleState);

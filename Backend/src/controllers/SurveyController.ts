@@ -96,16 +96,15 @@ export class SurveyController {
       message: query ? "" : "todo: error message",
       hasError: !query,
     };
-    const result: SurveyResponseDto = {
+    return {
       error: err,
       surveys: query,
     };
-    return result;
   }
 
   async getAllSurveys(trusteeDto: TrusteeDto): Promise<SurveyResponseDto> {
     //check User rights
-    let loginResult = await this.checkTrusteeLogin(trusteeDto);
+    let loginResult = await SurveyController.checkTrusteeLogin(trusteeDto);
 
     if (loginResult.hasError) {
       return {
@@ -213,7 +212,7 @@ export class SurveyController {
     }
 
     if (body.itemId != participant.currentQuestion.id) {
-      return this.buildErrorResponseItem(
+      return SurveyController.buildErrorResponseItem(
         question,
         "The question that was submitted '" +
           question.text +
@@ -230,7 +229,7 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      return this.buildErrorResponseItem(
+      return SurveyController.buildErrorResponseItem(
         question,
         "The question '" +
           question.text +
@@ -302,7 +301,7 @@ export class SurveyController {
     return returnValue;
   }
 
-  private buildErrorResponseItem(question: Question, errorMessage: string) {
+  private static buildErrorResponseItem(question: Question, errorMessage: string) {
     let result: ErrorDto = {
       message: "",
       hasError: false,
@@ -332,7 +331,7 @@ export class SurveyController {
     };
 
     //check User rights
-    let loginResult = await this.checkTrusteeLogin(body);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
     if (loginResult.hasError) {
       result.error = loginResult;
@@ -400,7 +399,7 @@ export class SurveyController {
     return result;
   }
 
-  private async checkTrusteeLogin(body: TrusteeDto): Promise<ErrorDto> {
+  private static async checkTrusteeLogin(body: TrusteeDto): Promise<ErrorDto> {
     const trusteeController = new TrusteeController();
     let trusteeLogin = await trusteeController.loginTrustee(body);
     console.log(trusteeLogin);
@@ -683,7 +682,7 @@ export class SurveyController {
     };
 
     //check User rights
-    let loginResult = await this.checkTrusteeLogin(body);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
     if (loginResult.hasError) {
       result.error = loginResult;
@@ -765,7 +764,7 @@ export class SurveyController {
     };
 
     //check User rights
-    let loginResult = await this.checkTrusteeLogin(body);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
     if (loginResult.hasError) {
       result.error = loginResult;
