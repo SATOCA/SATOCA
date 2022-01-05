@@ -25,27 +25,33 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   };
 
   const upload = async () => {
-    if (file !== undefined)
+    if (file !== undefined) {
+      setHasError(false);
+      setError("");
       await surveyApi
         .uploadSurveyFile(file, props.login, props.password)
         .then((response) => {
           console.log(response);
           setListItems(
-            <ol>
-              {response.links.map((link) => (
-                <li>
-                  <Link to={link} style={{ color: "blue" }}>
-                    {process.env.REACT_APP_FRONTEND + link}
-                  </Link>
-                </li>
-              ))}
-            </ol>
+            <div>
+              <h3>Participant links:</h3>
+              <ol>
+                {response.links.map((link) => (
+                  <li>
+                    <Link to={link} style={{ color: "blue" }}>
+                      {process.env.REACT_APP_FRONTEND + link}
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
           );
 
           setHasError(response.error.hasError);
           setError(response.error.message);
         })
         .catch();
+    }
   };
 
   return (
@@ -64,8 +70,16 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
       <Button color="primary" disabled={file === undefined} onClick={upload}>
         Submit
       </Button>
+      <div />
       {listItems}
-      {hasError ? <div>{error}</div> : <div />}
+      {hasError ? (
+        <div>
+          <h3>Error</h3>
+          {error}
+        </div>
+      ) : (
+        <div />
+      )}
     </Form>
   );
 }
