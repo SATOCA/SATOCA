@@ -20,7 +20,7 @@ export class SurveyRouter {
 
     private _configure() {
         this._router.get(
-            '/foo/:surveyId/:uniqueId',
+            '/data/:surveyId/:uniqueId',
             (req: Request, res: Response, next: NextFunction) => {
                 try {
                     this._controller

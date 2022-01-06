@@ -32,7 +32,7 @@ export default class SurveyApi extends HttpClient {
         uniqueSurveyID: string
     ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
         await this.instance.get<CurrentQuestionResponseDto>(
-            `/Survey/foo/${surveyID}/${uniqueSurveyID}`
+            `/Survey/data/${surveyID}/${uniqueSurveyID}`
         );
 
     public submitAnswer = async (
