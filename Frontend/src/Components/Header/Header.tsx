@@ -43,6 +43,11 @@ export default function Header() {
             </NavLink>
           </NavItem>            
           </NavItem>
+          <NavItem>
+            <NavLink tag={Link} to="/help">
+              Help
+            </NavLink>
+          </NavItem>
         </Nav>
       </Collapse>
     </Navbar>

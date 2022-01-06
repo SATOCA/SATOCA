@@ -34,7 +34,7 @@ export default function TrusteeLoginContent(props: {
               toggle("2");
             }}
           >
-            Show Report
+            Existing Surveys
           </NavLink>
         </NavItem>
       </Nav>

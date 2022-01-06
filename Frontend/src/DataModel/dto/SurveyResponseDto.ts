@@ -10,4 +10,5 @@ export interface SurveyInfo {
   title: string;
   itemSeverityBoundary: number;
   privacyBudget: number;
+  isClosed: boolean;
 }
