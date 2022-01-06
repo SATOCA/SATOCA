@@ -38,6 +38,11 @@ export default function Header() {
               Trustee Login
             </NavLink>
           </NavItem>
+          <NavItem>
+            <NavLink tag={Link} to="/help">
+              Help
+            </NavLink>
+          </NavItem>
         </Nav>
       </Collapse>
     </Navbar>
