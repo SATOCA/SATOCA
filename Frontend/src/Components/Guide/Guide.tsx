@@ -10,17 +10,16 @@ import { Container } from "reactstrap";
 export default function Guide() {
   return (
     <>
-      <br/>
+
       <Container>
           <h2>How to use the platform</h2>
 
             <h4>How to Create a Survey?</h4>
-            <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder under UploadSurvey.xlsx.<br/>
+            <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder under UploadSurvey.xlsx.
               Document has two Sheets:
                 <li>Survey, where You save your questions</li>
-                <li>Options, where Survey parameters are defined.</li></p><br/>
+                <li>Options, where Survey parameters are defined.</li></p>
               <img src={survey} alt={"survey"}/>
-              <br/><br/>
             <p> Survey Columns explanation:
               <ul>
               <li>ID - question id</li>
@@ -30,8 +29,8 @@ export default function Guide() {
               <li>Dificulty - question's difficulty parameter</li>
               <li>Slope - question's slope/discrimination parameter</li>
               <li>A1 - A5 - multiple choice answers</li></ul>
-            </p><br/>
-            <img src={options} alt={"otpions"}/><br/>
+            </p>
+            <img src={options} alt={"otpions"}/>
           <p>Options Columns explanation:
               <ul>
               <li>Title - survey title</li>
@@ -40,19 +39,19 @@ export default function Guide() {
               <li>Privacy Budget - epsilon (ε) metric of privacy loss at a differential change in data</li>
               <li>Legal Disclaimer - legal disclaimer text</li></ul>
           </p>
-          <p><br/>
+          <p>
               To upload the Survey File Trustee have to login in.
           </p>
             <img src={login} alt={"login"}/>
-          <p><br/>
+          <p>
               Choose Survey File path.
           </p>
             <img src={upload} alt={"upload"}/>
-          <p><br/>
+          <p>
               After uploading the file appropriately defined (xlsx file) number of links will be shown.
           </p>
             <img src={links} alt={"links"}/>
-          <p><br/>
+          <p>
               For a started Survey Trustee can generate reports.
           </p>
             <img src={report} alt={"report"}/>
