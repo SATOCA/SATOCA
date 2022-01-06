@@ -38,7 +38,7 @@ function App() {
             <TrusteeLogin />
           </Route>
           <Route exact path="/guide">
-            <Guide/>
+            <Guide />
           </Route>
           <Route exact path="/help">
             <Helppage />

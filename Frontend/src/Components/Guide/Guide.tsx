@@ -38,9 +38,12 @@ export default function Guide() {
               <ul>
               <li>Title - survey title</li>
               <li>Number participants - number of generated links
-                  to survey instances</li>
+                  to survey instances
+              </li>
               <li>Item severity boundary - minimal information gain value</li>
-              <li>Privacy Budget - epsilon (ε) metric of privacy loss at a differential change in data</li>
+              <li>Privacy Budget - epsilon (ε) metric of privacy loss
+                  at a differential change in data
+              </li>
               <li>Legal Disclaimer - legal disclaimer text</li>
               </ul>
           </p>
