@@ -15,7 +15,8 @@ export default function Guide() {
           <h2>How to use the platform</h2>
 
             <h4>How to Create a Survey?</h4>
-            <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder under UploadSurvey.xlsx.
+            <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder
+                under UploadSurvey.xlsx.
               Document has two Sheets:
                 <li>Survey, where You save your questions</li>
                 <li>Options, where Survey parameters are defined.</li>
@@ -29,13 +30,15 @@ export default function Guide() {
               <li>Start Set - flag marking questions to begin the Survey with</li>
               <li>Dificulty - question's difficulty parameter</li>
               <li>Slope - question's slope/discrimination parameter</li>
-              <li>A1 - A5 - multiple choice answers</li></ul>
+              <li>A1 - A5 - multiple choice answers</li>
+              </ul>
             </p>
             <img src={options} alt={"otpions"} />
           <p>Options Columns explanation:
               <ul>
               <li>Title - survey title</li>
-              <li>Number participants - number of generated links to survey instances</li>
+              <li>Number participants - number of generated links
+                  to survey instances</li>
               <li>Item severity boundary - minimal information gain value</li>
               <li>Privacy Budget - epsilon (ε) metric of privacy loss at a differential change in data</li>
               <li>Legal Disclaimer - legal disclaimer text</li>
@@ -50,7 +53,8 @@ export default function Guide() {
           </p>
             <img src={upload} alt={"upload"} />
           <p>
-              After uploading the file appropriately defined (xlsx file) number of links will be shown.
+              After uploading the file appropriately defined (xlsx file)
+              number of links will be shown.
           </p>
             <img src={links} alt={"links"} />
           <p>
