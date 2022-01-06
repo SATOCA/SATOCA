@@ -1,15 +1,13 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-
+import { newArrayView, privatize } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
-
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
 import { AnswerSurveyResponseDto } from "../routers/dto/AnswerSurveyResponseDto";
 import { CurrentQuestionResponseDto } from "../routers/dto/CurrentQuestionResponseDto";
 import { ErrorDto } from "../routers/dto/ErrorDto";
-import { SurveyDto } from "../routers/dto/SurveyDto";
 import { SurveyResponseDto } from "../routers/dto/SurveyResponseDto";
 import { UploadSurveyFileDto } from "../routers/dto/UploadSurveyFileDto";
 import { FinishedQuestion } from "../entities/FinishedQuestion";
@@ -18,6 +16,11 @@ import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
+import { CreateReportDto } from "../routers/dto/CreateReportDto";
+import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
+import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
+import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
+import { TrusteeDto } from "../routers/dto/TrusteeDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -51,7 +54,7 @@ export function itemResponseFunction(
   c: number,
   theta: number
 ): number {
-//  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
+  //  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
   return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
 }
 
@@ -86,33 +89,59 @@ export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
 }
 
 export class SurveyController {
-  async getSurveys() {
+  async getSurveys(): Promise<SurveyResponseDto> {
     const query = await getConnection().getRepository(Survey).find();
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
       hasError: !query,
     };
-    const result: SurveyResponseDto = {
+    return {
       error: err,
       surveys: query,
     };
-    return result;
+  }
+
+  async getAllSurveys(trusteeDto: TrusteeDto): Promise<SurveyResponseDto> {
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(trusteeDto);
+
+    if (loginResult.hasError) {
+      return {
+        surveys: [],
+        error: loginResult,
+      };
+    }
+
+    return await this.getSurveys();
   }
 
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
-    const query = await getConnection()
+    const targetParticipant = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
+      .leftJoinAndSelect("participant.survey", "survey")
       .leftJoinAndSelect("participant.currentQuestion", "currentQuestion")
       .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)
       .getOne();
     //! \todo handle error case
 
-    if(query.finished)
-    {
+    if (targetParticipant.survey.isClosed) {
+      const err: ErrorDto = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return {
+        error: err,
+        item: undefined,
+        finished: targetParticipant.finished,
+        ability: 0,
+      };
+    }
+
+    if (targetParticipant.finished) {
       const err: ErrorDto = {
         message: "",
         hasError: false,
@@ -120,8 +149,8 @@ export class SurveyController {
       const result: CurrentQuestionResponseDto = {
         error: err,
         item: undefined,
-        finished: query.finished,
-        ability: query.scoring,
+        finished: targetParticipant.finished,
+        ability: targetParticipant.scoring,
       };
 
       return result;
@@ -131,7 +160,7 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: query.currentQuestion.id })
+      .where("question.id = :id", { id: targetParticipant.currentQuestion.id })
       .getOne();
     //! \todo handle error case
 
@@ -142,33 +171,9 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
-      finished: query.finished,
-      ability: query.scoring,
+      finished: targetParticipant.finished,
+      ability: targetParticipant.scoring,
     };
-    return result;
-  }
-
-  async addSurvey(body: SurveyDto) {
-    const obj = new Survey();
-    //! \todo title cannot be empty
-    obj.title = body.title;
-
-    let result: ErrorDto = {
-      message: "",
-      hasError: false,
-    };
-
-    getConnection()
-      .getRepository(Survey)
-      .save(obj)
-      .then(() => {
-        result.hasError = false;
-      })
-      .catch((e) => {
-        result.hasError = true;
-        result.message = e;
-      });
-
     return result;
   }
 
@@ -190,13 +195,30 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: participant.currentQuestion.id })
+      .where("question.id = :id", { id: body.itemId })
       .getOne();
 
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
+
+    if (participant.survey.isClosed) {
+      result = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return result;
+    }
+
+    if (body.itemId != participant.currentQuestion.id) {
+      return SurveyController.buildErrorResponseItem(
+        question,
+        "The question that was submitted '" +
+          question.text +
+          "' is not the active one!"
+      );
+    }
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -207,69 +229,69 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      result.hasError = true;
-      result.message =
-        "The question with the id: " + question.id + " was already answered";
-    } else {
-      // if question was not already answered
-      let finishedQuestion = new FinishedQuestion();
-      //finishedQuestion.id = body.itemId;
-      finishedQuestion.question = question;
-      finishedQuestion.givenAnswers = body.answers;
-      finishedQuestion.participant = participant;
+      return SurveyController.buildErrorResponseItem(
+        question,
+        "The question '" +
+          question.text +
+          "' was already answered. If that wasn't you, please consider contacting the trustee."
+      );
+    }
 
-      await finishedQuestionRepository
-        .save(finishedQuestion)
-        .then(() => {
-          result.hasError = false;
-        })
-        .catch((e) => {
-          result.hasError = true;
-          result.message = e;
-        });
+    // if question was not already answered
+    let finishedQuestion = new FinishedQuestion();
+    //finishedQuestion.id = body.itemId;
+    finishedQuestion.question = question;
+    finishedQuestion.givenAnswers = body.answers;
+    finishedQuestion.participant = participant;
 
-      // retrieve all finished questions
-      const finishedQuestions =
-        /*await getConnection()
-        .getRepository(FinishedQuestion)*/
-        await finishedQuestionRepository
-          .createQueryBuilder("finishedquestion")
-          .leftJoinAndSelect("finishedquestion.question", "question")
-          .leftJoinAndSelect("question.choices", "choices")
-          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-          .leftJoinAndSelect("finishedquestion.participant", "participant")
-          .where("participant.uuid = :uuid", { uuid: uniqueId })
-          .getMany();
-
-      const zeta = finishedQuestions.map((fq) => {
-        const currentZeta: Zeta = {
-          a: fq.question.slope,
-          b: fq.question.difficulty,
-          c: 1 / fq.question.choices.length,
-        };
-        return currentZeta;
+    await finishedQuestionRepository
+      .save(finishedQuestion)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
       });
-      const responseVector = finishedQuestions.map((fq) => {
-        // only one anwers is submitted, therefore select the first one
-        return fq.givenAnswers[0].correct ? 1 : 0;
-      });
-      const ability = estimateAbilityEAP(responseVector, zeta);
 
-      // update Participant
-      const participantController = new ParticipantController();
+    // retrieve all finished questions
+    const finishedQuestions = await finishedQuestionRepository
+      .createQueryBuilder("finishedquestion")
+      .leftJoinAndSelect("finishedquestion.question", "question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+      .leftJoinAndSelect("finishedquestion.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
+      .getMany();
 
-      if (!result.hasError) {
-        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-        let updateParticipantReturn = await participantController.updateParticipant(
-          surveyId,
-          uniqueId,
-          ability
-        );
+    const zeta = finishedQuestions.map((fq) => {
+      const currentZeta: Zeta = {
+        a: fq.question.slope,
+        b: fq.question.difficulty,
+        c: 1 / fq.question.choices.length,
+      };
+      return currentZeta;
+    });
+    const responseVector = finishedQuestions.map((fq) => {
+      // only one anwers is submitted, therefore select the first one
+      return fq.givenAnswers[0].correct ? 1 : 0;
+    });
+    const ability = estimateAbilityEAP(responseVector, zeta);
 
-        if (updateParticipantReturn.hasError) {
-          result.hasError = true;
-          result.message = updateParticipantReturn.message;
-        }
+    // update Participant
+    const participantController = new ParticipantController();
+
+    if (!result.hasError) {
+      // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+      let updateParticipantReturn = await participantController.updateParticipant(
+        surveyId,
+        uniqueId,
+        ability
+      );
+
+      if (updateParticipantReturn.hasError) {
+        result.hasError = true;
+        result.message = updateParticipantReturn.message;
       }
     }
 
@@ -278,6 +300,23 @@ export class SurveyController {
     };
     return returnValue;
   }
+
+  private static buildErrorResponseItem(question: Question, errorMessage: string) {
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    result.hasError = true;
+    result.message = errorMessage;
+
+    let returnValue: AnswerSurveyResponseDto = {
+      error: result,
+    };
+    return returnValue;
+  }
+
+  // Excel Upload
 
   async createSurveyFromFile(
     file: fileUpload.UploadedFile,
@@ -292,15 +331,10 @@ export class SurveyController {
     };
 
     //check User rights
-    const trusteeController = new TrusteeController();
-    let trusteeLogin = await trusteeController.loginTrustee(body);
-    console.log(trusteeLogin);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
-    if (!trusteeLogin.success) {
-      result.error = {
-        message: "Invalid credentials",
-        hasError: true,
-      };
+    if (loginResult.hasError) {
+      result.error = loginResult;
       return result;
     }
 
@@ -320,7 +354,7 @@ export class SurveyController {
       sheet: "Survey",
       schema: this.fileSchema,
     });
-
+    let surveyRows = rows as surveyFormat[];
     if (errors.length > 0) {
       let errorString = this.formatReadExcelFileErrors(errors);
       result.error = {
@@ -330,7 +364,7 @@ export class SurveyController {
       return result;
     }
 
-    if (!SurveyController.hasStartSetElements(rows)) {
+    if (!SurveyController.hasStartSetElements(surveyRows)) {
       result.error = {
         hasError: true,
         message: "No question was marked as starting question!",
@@ -338,7 +372,7 @@ export class SurveyController {
       return result;
     }
 
-    for (const row of rows) {
+    for (const row of surveyRows) {
       let error = await this.extractXLSXQuestion(row, survey);
       if (error.hasError) {
         result.error = {
@@ -352,7 +386,10 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions("Number participants", optionsRows);
+    let numParticipants = this.extractXLSXOptions(
+      "Number participants",
+      optionsRows
+    );
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -360,6 +397,27 @@ export class SurveyController {
     result.links = await pController.createSurveyLinks(survey.id);
 
     return result;
+  }
+
+  private static async checkTrusteeLogin(body: TrusteeDto): Promise<ErrorDto> {
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+    console.log(trusteeLogin);
+
+    let error: ErrorDto;
+
+    if (!trusteeLogin.success) {
+      error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+    } else {
+      error = {
+        hasError: false,
+        message: "no Error",
+      };
+    }
+    return error;
   }
 
   private formatReadExcelFileErrors(errors): string {
@@ -414,10 +472,21 @@ export class SurveyController {
       return error;
     }
 
+    let privacyBudget = this.extractXLSXOptions("Privacy Budget", rows);
+    if (privacyBudget === undefined) {
+      error = {
+        message: "Cannot find 'Privacy Budget' option in survey",
+        hasError: true,
+      };
+
+      return error;
+    }
+
     const survey = new Survey();
 
     survey.title = targetRow[1];
     survey.itemSeverityBoundary = minimalInformationGain;
+    survey.privacyBudget = privacyBudget;
 
     await getConnection()
       .getRepository(Survey)
@@ -435,7 +504,9 @@ export class SurveyController {
   }
 
   private static hasStartSetElements(rows: surveyFormat[]) {
-    return rows.some(row => row.startSet && row.startSet.toString().toUpperCase() == "X");
+    return rows.some(
+      (row) => row.startSet && row.startSet.toString().toUpperCase() == "X"
+    );
   }
 
   private async extractXLSXQuestion(
@@ -589,6 +660,143 @@ export class SurveyController {
       },
     },
   };
+
+  // end Excel Upload
+
+  async createReport(
+    body: CreateReportDto
+  ): Promise<CreateReportResponseDto[]> {
+    let result: CreateReportResponseDto = {
+      report: {
+        histogramData: [
+          {
+            bucketName: "-",
+            participantNumber: 0,
+          },
+        ],
+      },
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return [result];
+    }
+
+    let resultPrivate = result;
+    if (body.privacyBudget > 0) {
+      let pController = new ParticipantController();
+      let participants = await pController.getParticipants(body.surveyId);
+
+      const dataset = newArrayView(participants.participants);
+
+      let [min, max, a, b] = [0, 0, 0, 0];
+      participants.participants.forEach((d) => {
+        if (d.scoring < min) {
+          min = Math.floor(d.scoring);
+        } else if (d.scoring > max) {
+          max = Math.round(d.scoring);
+        }
+      });
+
+      let width = 1;
+      a = min;
+      b = a + width;
+
+      const bucketFunc = (view) => {
+        let bucketSize = 0;
+        view.forEach((p) => {
+          if (a <= p.scoring && p.scoring < b) {
+            bucketSize += 1;
+          }
+        });
+        return bucketSize;
+      };
+
+      const options = {
+        maxEpsilon: body.privacyBudget,
+        newShadowIterator: dataset.newShadowIterator,
+      };
+      let tempPrBucketSize: number[] = [];
+      let tempPrHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+      let tempBucketSize: number[] = [];
+      let tempHistogram: CreateReportResponseDto = {
+        report: { histogramData: [] },
+        error: { hasError: false, message: "no Error" },
+      };
+
+      for (let i = 0; i < max - min; i += width) {
+        tempBucketSize.push(bucketFunc(dataset));
+        const getPrivateBucket = privatize(bucketFunc, options);
+        tempPrBucketSize.push((await getPrivateBucket(dataset)).result);
+        a += width;
+        b += width;
+        tempPrHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+        });
+        tempHistogram.report.histogramData.push({
+          bucketName: a + " - " + b,
+          participantNumber: tempBucketSize[tempBucketSize.length - 1],
+        });
+      }
+      result = tempHistogram;
+      resultPrivate = tempPrHistogram;
+    }
+    return [result, resultPrivate];
+  }
+
+  async closeSurvey(body: CloseSurveyDto): Promise<CloseSurveyResponseDto> {
+    let result: CloseSurveyResponseDto = {
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+
+    const surveyRepository = await getConnection().getRepository(Survey);
+
+    const targetSurvey = await surveyRepository
+      .createQueryBuilder("survey")
+      .where("survey.id = :id", { id: body.surveyId })
+      .getOne();
+
+    if (targetSurvey.isClosed) {
+      result.error = {
+        hasError: true,
+        message: "Survey already closed!",
+      };
+      return result;
+    }
+
+    targetSurvey.isClosed = true;
+
+    surveyRepository.save(targetSurvey).catch((e) => {
+      result.error = {
+        message: e.message,
+        hasError: true,
+      };
+    });
+
+    return result;
+  }
 }
 
 type surveyFormat = {

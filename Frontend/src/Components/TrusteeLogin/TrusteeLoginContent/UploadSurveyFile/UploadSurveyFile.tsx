@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./UploadSurveyFile.css";
 import { Link } from "react-router-dom";
 import { Button, Form, FormGroup, Input, Label } from "reactstrap";
-import SurveyApi from "../../../Services/SurveyAPI";
+import SurveyApi from "../../../../Services/SurveyAPI";
 
 type UploadSurveyFileProps = {
   login: string;
@@ -51,7 +51,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
   return (
     <Form>
       <FormGroup>
-        <Label for="fileUpload">Survey File (.xslx)</Label>
+        <Label for="fileUpload">Survey File (.xlsx)</Label>
         <Input
           type="file"
           id="fileUpload"

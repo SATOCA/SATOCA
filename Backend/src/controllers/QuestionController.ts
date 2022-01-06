@@ -8,21 +8,6 @@ import { Answer } from "../entities/Answer";
 import { Participant } from "../entities/Participant";
 
 export class QuestionController {
-  async getQuestions(surveyId: number) {
-    const query = await getConnection()
-      .getRepository(Question)
-      .find({ where: { survey: surveyId } });
-
-    const err: ErrorDto = {
-      message: query ? "" : "todo: error message",
-      hasError: !query,
-    };
-    const result: QuestionResponseDto = {
-      error: err,
-      questions: query,
-    };
-    return result;
-  }
   async getNextQuestion(participant: Participant, surveyid: number) {
     const remainingQuestions = await getConnection()
         .getRepository(Question)

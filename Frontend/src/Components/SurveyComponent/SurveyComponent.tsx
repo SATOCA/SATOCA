@@ -3,7 +3,14 @@ import { RouteComponentProps, useHistory } from "react-router-dom";
 import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
 import SurveyApi from "../../Services/SurveyAPI";
-import { Container } from "reactstrap";
+import {
+  Button,
+  Container,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
+} from "reactstrap";
 import { Question } from "../../DataModel/Item";
 import { AxiosError } from "axios";
 
@@ -13,7 +20,7 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> { }
+  extends RouteComponentProps<SurveyComponentProps> {}
 
 export default function SurveyComponent(props: SurveyComponentProps) {
   const history = useHistory();
@@ -28,11 +35,22 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const surveyApi = SurveyApi.getInstance();
 
   const updateCurrentItem = useCallback(() => {
+    console.log("update Current Item");
     setIsLoading(true);
+
     surveyApi
       .getCurrentQuestion(props.surveyId, props.uniqueSurveyId)
-      .then(async (response) => {
-        const responseQuestion = (await response).item;
+      .then(async (axiosResponse) => {
+        const response = await axiosResponse;
+        if (response.error?.hasError) {
+          setHasError(true);
+          setErrorMessage(response.error.message);
+
+          return;
+        }
+
+        const responseQuestion = response.item;
+
         console.log("current ability: ", (await response).ability);
         setSurveyEnded((await response).finished);
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
@@ -65,29 +83,52 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
     surveyApi
       .submitAnswer(props.surveyId, props.uniqueSurveyId, answerDto)
-      .then(() => updateCurrentItem());
+      .then(async (axiosResponse) => {
+        const response = await axiosResponse;
+        console.log(response);
+        if (response.error?.hasError) {
+          setHasError(true);
+          setErrorMessage(response.error.message);
 
-    setSurveyEnded(false);
+          return;
+        }
+
+        updateCurrentItem();
+      })
+      .catch((error: AxiosError) => {
+        setHasError(true);
+        setErrorMessage(error.message);
+      });
+  };
+
+  const closeErrorModal = () => {
+    setHasError(false);
+    setErrorMessage("");
   };
 
   const getContent = () => {
+    if (surveyEnded) return <SurveyFinished />;
     if (isLoading) return <div>loading...</div>;
-    if (hasError) return <div>{errorMessage}</div>;
-    if (currentQuestion === undefined) return <div>no data</div>;
+    if (currentQuestion === undefined)
+      return (
+        <div>
+          No active survey found! todo make it fancy, picture or similar...
+        </div>
+      );
 
     return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
 
-  if (surveyEnded)
-    return (
-      <Container className="glass-card-content" fluid="lg">
-        <SurveyFinished />
-      </Container>
-    );
-
   return (
     <Container className="glass-card-content" fluid="lg">
       <span data-testid="item">{getContent()}</span>
+      <Modal isOpen={hasError} toggle={closeErrorModal}>
+        <ModalHeader toggle={closeErrorModal}>Error</ModalHeader>
+        <ModalBody>{errorMessage}</ModalBody>
+        <ModalFooter>
+          <Button onClick={closeErrorModal}>Close</Button>
+        </ModalFooter>
+      </Modal>
     </Container>
   );
 }

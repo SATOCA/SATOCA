@@ -33,18 +33,14 @@ export default function Header() {
             <NavLink
               className="NavbarText"
               tag={Link}
-              to="/5/ba1633d4-2729-47ac-ba89-fb362886b303"
-            >
-              Test Survey
-            </NavLink>
-          </NavItem>
-          <NavItem>
-            <NavLink
-              className="NavbarText"
-              tag={Link}
               to="/login"
             >
               Trustee Login
+            </NavLink>
+          </NavItem>
+          <NavItem>
+            <NavLink tag={Link} to="/help">
+              Help
             </NavLink>
           </NavItem>
         </Nav>
