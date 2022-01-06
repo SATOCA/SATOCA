@@ -41,7 +41,7 @@ export default function Header() {
             <NavLink tag={Link} to="/guide">
               How to use the Platform
             </NavLink>
-          </NavItem>            
+            </NavItem>
           </NavItem>
           <NavItem>
             <NavLink tag={Link} to="/help">
