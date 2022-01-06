@@ -18,7 +18,8 @@ export default function Guide() {
             <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder under UploadSurvey.xlsx.
               Document has two Sheets:
                 <li>Survey, where You save your questions</li>
-                <li>Options, where Survey parameters are defined.</li></p>
+                <li>Options, where Survey parameters are defined.</li>
+            </p>
               <img src={survey} alt={"survey"}/>
             <p> Survey Columns explanation:
               <ul>
@@ -37,7 +38,8 @@ export default function Guide() {
               <li>Number participants - number of generated links to survey instances</li>
               <li>Item severity boundary - minimal information gain value</li>
               <li>Privacy Budget - epsilon (ε) metric of privacy loss at a differential change in data</li>
-              <li>Legal Disclaimer - legal disclaimer text</li></ul>
+              <li>Legal Disclaimer - legal disclaimer text</li>
+              </ul>
           </p>
           <p>
               To upload the Survey File Trustee have to login in.
