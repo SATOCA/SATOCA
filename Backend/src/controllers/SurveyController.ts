@@ -1,7 +1,7 @@
 import { getConnection } from "typeorm";
 import fileUpload from "express-fileupload";
 import readXlsxFile from "read-excel-file/node";
-import { privatize, newArrayView } from "differential-privacy";
+import { newArrayView, privatize } from "differential-privacy";
 import { ParticipantController } from "./ParticipantController";
 import { TrusteeController } from "./TrusteeController";
 import { AnswerSurveyDto } from "../routers/dto/AnswerSurveyDto";
@@ -18,6 +18,9 @@ import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
 import { CreateReportDto } from "../routers/dto/CreateReportDto";
 import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
+import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
+import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
+import { TrusteeDto } from "../routers/dto/TrusteeDto";
 import {LegalDisclaimerResponseDtoResponseDto} from "../routers/dto/LegalDisclaimerResponseDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
@@ -87,23 +90,31 @@ export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
 }
 
 export class SurveyController {
-  async getSurveys() {
+  async getSurveys(): Promise<SurveyResponseDto> {
     const query = await getConnection().getRepository(Survey).find();
 
     const err: ErrorDto = {
       message: query ? "" : "todo: error message",
       hasError: !query,
     };
-    const result: SurveyResponseDto = {
+    return {
       error: err,
       surveys: query,
     };
     return result;
   }
 
-  async getAllSurveys(createReportDto: CreateReportDto) {
-    //Todo change dto, check password..
-    console.log(createReportDto);
+  async getAllSurveys(trusteeDto: TrusteeDto): Promise<SurveyResponseDto> {
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(trusteeDto);
+
+    if (loginResult.hasError) {
+      return {
+        surveys: [],
+        error: loginResult,
+      };
+    }
+
     return await this.getSurveys();
   }
 
@@ -144,16 +155,30 @@ export class SurveyController {
 
   //! \todo surveyId is not needed -> remove
   async getCurrentSurvey(surveyId: number, uniqueId: string) {
-    const query = await getConnection()
+    const targetParticipant = await getConnection()
       .getRepository(Participant)
       .createQueryBuilder("participant")
+      .leftJoinAndSelect("participant.survey", "survey")
       .leftJoinAndSelect("participant.currentQuestion", "currentQuestion")
       .where("participant.uuid = :uuid", { uuid: uniqueId })
       .take(1)
       .getOne();
     //! \todo handle error case
 
-    if (query.finished) {
+    if (targetParticipant.survey.isClosed) {
+      const err: ErrorDto = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return {
+        error: err,
+        item: undefined,
+        finished: targetParticipant.finished,
+        ability: 0,
+      };
+    }
+
+    if (targetParticipant.finished) {
       const err: ErrorDto = {
         message: "",
         hasError: false,
@@ -164,7 +189,10 @@ export class SurveyController {
         finished: query.finished,
         ability: query.scoring,
         legalDisclaimerAccepted: query.legalDisclaimerAccepted,
+        finished: targetParticipant.finished,
+        ability: targetParticipant.scoring,
       };
+
       return result;
     }
 
@@ -172,7 +200,7 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: query.currentQuestion.id })
+      .where("question.id = :id", { id: targetParticipant.currentQuestion.id })
       .getOne();
     //! \todo handle error case
 
@@ -183,6 +211,8 @@ export class SurveyController {
     const result: CurrentQuestionResponseDto = {
       error: err,
       item: question,
+      finished: targetParticipant.finished,
+      ability: targetParticipant.scoring,
       finished: query.finished,
       ability: query.scoring,
       legalDisclaimerAccepted: query.legalDisclaimerAccepted,
@@ -208,13 +238,30 @@ export class SurveyController {
       .getRepository(Question)
       .createQueryBuilder("question")
       .leftJoinAndSelect("question.choices", "choices")
-      .where("question.id = :id", { id: participant.currentQuestion.id })
+      .where("question.id = :id", { id: body.itemId })
       .getOne();
 
     let result: ErrorDto = {
       message: "",
       hasError: false,
     };
+
+    if (participant.survey.isClosed) {
+      result = {
+        hasError: true,
+        message: "Survey is already closed!",
+      };
+      return result;
+    }
+
+    if (body.itemId != participant.currentQuestion.id) {
+      return SurveyController.buildErrorResponseItem(
+        question,
+        "The question that was submitted '" +
+          question.text +
+          "' is not the active one!"
+      );
+    }
 
     let finishedQuestionRepository = await getConnection().getRepository(
       FinishedQuestion
@@ -225,69 +272,86 @@ export class SurveyController {
     });
 
     if (count > 0) {
-      result.hasError = true;
-      result.message =
-        "The question with the id: " + question.id + " was already answered";
-    } else {
-      // if question was not already answered
-      let finishedQuestion = new FinishedQuestion();
-      //finishedQuestion.id = body.itemId;
-      finishedQuestion.question = question;
-      finishedQuestion.givenAnswers = body.answers;
-      finishedQuestion.participant = participant;
+      return SurveyController.buildErrorResponseItem(
+        question,
+        "The question '" +
+          question.text +
+          "' was already answered. If that wasn't you, please consider contacting the trustee."
+      );
+    }
 
-      await finishedQuestionRepository
-        .save(finishedQuestion)
-        .then(() => {
-          result.hasError = false;
-        })
-        .catch((e) => {
-          result.hasError = true;
-          result.message = e;
-        });
+    // if question was not already answered
+    let finishedQuestion = new FinishedQuestion();
+    //finishedQuestion.id = body.itemId;
+    finishedQuestion.question = question;
+    finishedQuestion.givenAnswers = body.answers;
+    finishedQuestion.participant = participant;
 
-      // retrieve all finished questions
-      const finishedQuestions =
-        await finishedQuestionRepository
-          .createQueryBuilder("finishedquestion")
-          .leftJoinAndSelect("finishedquestion.question", "question")
-          .leftJoinAndSelect("question.choices", "choices")
-          .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
-          .leftJoinAndSelect("finishedquestion.participant", "participant")
-          .where("participant.uuid = :uuid", { uuid: uniqueId })
-          .getMany();
-
-      const zeta = finishedQuestions.map((fq) => {
-        const currentZeta: Zeta = {
-          a: fq.question.slope,
-          b: fq.question.difficulty,
-          c: 1 / fq.question.choices.length,
-        };
-        return currentZeta;
+    await finishedQuestionRepository
+      .save(finishedQuestion)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
       });
-      const responseVector = finishedQuestions.map((fq) => {
-        // only one anwers is submitted, therefore select the first one
-        return fq.givenAnswers[0].correct ? 1 : 0;
-      });
-      const ability = estimateAbilityEAP(responseVector, zeta);
 
-      // update Participant
-      const participantController = new ParticipantController();
+    // retrieve all finished questions
+    const finishedQuestions = await finishedQuestionRepository
+      .createQueryBuilder("finishedquestion")
+      .leftJoinAndSelect("finishedquestion.question", "question")
+      .leftJoinAndSelect("question.choices", "choices")
+      .leftJoinAndSelect("finishedquestion.givenAnswers", "givenAnswers")
+      .leftJoinAndSelect("finishedquestion.participant", "participant")
+      .where("participant.uuid = :uuid", { uuid: uniqueId })
+      .getMany();
 
-      if (!result.hasError) {
-        // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
-        let updateParticipantReturn = await participantController.updateParticipant(
-          surveyId,
-          uniqueId,
-          ability
-        );
+    const zeta = finishedQuestions.map((fq) => {
+      const currentZeta: Zeta = {
+        a: fq.question.slope,
+        b: fq.question.difficulty,
+        c: 1 / fq.question.choices.length,
+      };
+      return currentZeta;
+    });
+    const responseVector = finishedQuestions.map((fq) => {
+      // only one anwers is submitted, therefore select the first one
+      return fq.givenAnswers[0].correct ? 1 : 0;
+    });
+    const ability = estimateAbilityEAP(responseVector, zeta);
 
-        if (updateParticipantReturn.hasError) {
-          result.hasError = true;
-          result.message = updateParticipantReturn.message;
-        }
+    // update Participant
+    const participantController = new ParticipantController();
+
+    if (!result.hasError) {
+      // make sure that an error of finishedQuestionRepository is not be overwritten by result of updateParticipant
+      let updateParticipantReturn = await participantController.updateParticipant(
+        surveyId,
+        uniqueId,
+        ability
+      );
+
+      if (updateParticipantReturn.hasError) {
+        result.hasError = true;
+        result.message = updateParticipantReturn.message;
       }
     }
+
+    let returnValue: AnswerSurveyResponseDto = {
+      error: result,
+    };
+    return returnValue;
+  }
+
+  private static buildErrorResponseItem(question: Question, errorMessage: string) {
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+
+    result.hasError = true;
+    result.message = errorMessage;
 
     let returnValue: AnswerSurveyResponseDto = {
       error: result,
@@ -310,15 +374,10 @@ export class SurveyController {
     };
 
     //check User rights
-    const trusteeController = new TrusteeController();
-    let trusteeLogin = await trusteeController.loginTrustee(body);
-    console.log(trusteeLogin);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
-    if (!trusteeLogin.success) {
-      result.error = {
-        message: "Invalid credentials",
-        hasError: true,
-      };
+    if (loginResult.hasError) {
+      result.error = loginResult;
       return result;
     }
 
@@ -378,6 +437,27 @@ export class SurveyController {
     result.links = await pController.createSurveyLinks(survey.id);
 
     return result;
+  }
+
+  private static async checkTrusteeLogin(body: TrusteeDto): Promise<ErrorDto> {
+    const trusteeController = new TrusteeController();
+    let trusteeLogin = await trusteeController.loginTrustee(body);
+    console.log(trusteeLogin);
+
+    let error: ErrorDto;
+
+    if (!trusteeLogin.success) {
+      error = {
+        message: "Invalid credentials",
+        hasError: true,
+      };
+    } else {
+      error = {
+        hasError: false,
+        message: "no Error",
+      };
+    }
+    return error;
   }
 
   private formatReadExcelFileErrors(errors): string {
@@ -451,7 +531,6 @@ export class SurveyController {
     survey.title = targetRow[1];
     survey.itemSeverityBoundary = minimalInformationGain;
     survey.privacyBudget = privacyBudget;
-    survey.legalDisclaimer = legalDisclaimer;
 
     await getConnection()
       .getRepository(Survey)
@@ -647,14 +726,10 @@ export class SurveyController {
     };
 
     //check User rights
-    const trusteeController = new TrusteeController();
-    let trusteeLogin = await trusteeController.loginTrustee(body);
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
 
-    if (!trusteeLogin.success) {
-      result.error = {
-        message: "Invalid credentials",
-        hasError: true,
-      };
+    if (loginResult.hasError) {
+      result.error = loginResult;
       return [result];
     }
 
@@ -722,6 +797,49 @@ export class SurveyController {
       resultPrivate = tempPrHistogram;
     }
     return [result, resultPrivate];
+  }
+
+  async closeSurvey(body: CloseSurveyDto): Promise<CloseSurveyResponseDto> {
+    let result: CloseSurveyResponseDto = {
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+
+    const surveyRepository = await getConnection().getRepository(Survey);
+
+    const targetSurvey = await surveyRepository
+      .createQueryBuilder("survey")
+      .where("survey.id = :id", { id: body.surveyId })
+      .getOne();
+
+    if (targetSurvey.isClosed) {
+      result.error = {
+        hasError: true,
+        message: "Survey already closed!",
+      };
+      return result;
+    }
+
+    targetSurvey.isClosed = true;
+
+    surveyRepository.save(targetSurvey).catch((e) => {
+      result.error = {
+        message: e.message,
+        hasError: true,
+      };
+    });
+
+    return result;
   }
 }
 
