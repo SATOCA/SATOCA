@@ -22,7 +22,7 @@ export default function Guide() {
                 <li>Options, where Survey parameters are defined.</li>
             </p>
               <img src={survey} alt={"survey"} />
-            <p> Survey Columns explanation:
+            <p> Survey Columns explanation</p>:
               <ul>
               <li>ID - question id</li>
               <li>Question - question text</li>
@@ -32,9 +32,8 @@ export default function Guide() {
               <li>Slope - question's slope/discrimination parameter</li>
               <li>A1 - A5 - multiple choice answers</li>
               </ul>
-            </p>
             <img src={options} alt={"otpions"} />
-          <p>Options Columns explanation:
+          <p>Options Columns explanation</p>:
               <ul>
               <li>Title - survey title</li>
               <li>Number participants - number of generated links
@@ -46,7 +45,6 @@ export default function Guide() {
               </li>
               <li>Legal Disclaimer - legal disclaimer text</li>
               </ul>
-          </p>
           <p>
               To upload the Survey File Trustee have to login in.
           </p>
