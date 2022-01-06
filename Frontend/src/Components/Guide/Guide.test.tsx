@@ -8,6 +8,6 @@ test("smoke test guide", () => {
       <Guide />
     </MemoryRouter>
   );
-  const centerButton = screen.getByText("How to");
+  const centerButton = screen.getByText("How to use the platform");
   expect(centerButton).toBeInTheDocument();
 });
