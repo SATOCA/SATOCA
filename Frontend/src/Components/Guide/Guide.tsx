@@ -20,7 +20,7 @@ export default function Guide() {
                 <li>Survey, where You save your questions</li>
                 <li>Options, where Survey parameters are defined.</li>
             </p>
-              <img src={survey} alt={"survey"}/>
+              <img src={survey} alt={"survey"} />
             <p> Survey Columns explanation:
               <ul>
               <li>ID - question id</li>
@@ -31,7 +31,7 @@ export default function Guide() {
               <li>Slope - question's slope/discrimination parameter</li>
               <li>A1 - A5 - multiple choice answers</li></ul>
             </p>
-            <img src={options} alt={"otpions"}/>
+            <img src={options} alt={"otpions"} />
           <p>Options Columns explanation:
               <ul>
               <li>Title - survey title</li>
@@ -44,19 +44,19 @@ export default function Guide() {
           <p>
               To upload the Survey File Trustee have to login in.
           </p>
-            <img src={login} alt={"login"}/>
+            <img src={login} alt={"login"} />
           <p>
               Choose Survey File path.
           </p>
-            <img src={upload} alt={"upload"}/>
+            <img src={upload} alt={"upload"} />
           <p>
               After uploading the file appropriately defined (xlsx file) number of links will be shown.
           </p>
-            <img src={links} alt={"links"}/>
+            <img src={links} alt={"links"} />
           <p>
               For a started Survey Trustee can generate reports.
           </p>
-            <img src={report} alt={"report"}/>
+            <img src={report} alt={"report"} />
       </Container>
     </>
   );
