@@ -301,7 +301,10 @@ export class SurveyController {
     return returnValue;
   }
 
-  private static buildErrorResponseItem(question: Question, errorMessage: string) {
+  private static buildErrorResponseItem(
+    question: Question,
+    errorMessage: string
+  ) {
     let result: ErrorDto = {
       message: "",
       hasError: false,
@@ -686,6 +689,7 @@ export class SurveyController {
   }
   async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
     let cost = 1;
+    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
       report: {
         histogramData: [
@@ -706,7 +710,7 @@ export class SurveyController {
 
     if (loginResult.hasError) {
       result.error = loginResult;
-      return [result];
+      return result;
     }
     let resultPrivate = result;
 
@@ -761,9 +765,12 @@ export class SurveyController {
 
       for (let i = 0; i < max - min; i += width) {
         const getPrivateBucket = privatize(bucketFunc, options);
-        tempPrBucketSize.push(
-          Math.abs((await getPrivateBucket(dataset)).result)
-        );
+        let value = (await getPrivateBucket(dataset)).result;
+        if (value < 0) {
+          tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
+        } else {
+          tempPrBucketSize.push(value);
+        }
         a += width;
         b += width;
         tempPrHistogram.report.histogramData.push({

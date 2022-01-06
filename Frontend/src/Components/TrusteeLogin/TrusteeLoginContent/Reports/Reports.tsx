@@ -17,11 +17,6 @@ import ErrorModal from "./ErrorModal/ErrorModal";
 import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 import "./Reports.css";
 
-enum ReportDisplay {
-  SelectQueries,
-  ShowReport,
-}
-
 export default function Reports(props: { password: string; login: string }) {
   const initialValue: SurveyInfo[] = [
     {
@@ -33,11 +28,11 @@ export default function Reports(props: { password: string; login: string }) {
     },
   ];
 
-  const [reportData, setReportData] = useState<Report>({ histogramData: [] });
   const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [areYouSureCloseSurvey, setAreYouSureCloseSurvey] = useState(false);
   const [dropDownTitle, setDropDownTitle] = useState(
     "Select the query to show report"
   );
@@ -48,27 +43,30 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
+    //only trigger Report creation, when Survey is selected
+    if (selectedSurvey >= 0 && isSurveyClosed) {
+      surveyApi
+        .createReport(
+          props.login,
+          props.password,
+          selectedSurvey,
+          selectedSurveyPrivacy
+        )
+        .then(async (response) => {
+          console.log(response);
+          setPrivateData(response.report);
+          if (response.error.hasError) {
+            alert(response.error.message);
+          }
+          setHasError(false);
+        })
+        .catch((error: AxiosError) => {
+          setHasError(true);
+          setErrorMessage(error.message);
+        });
+    }
     surveyApi
-      .createReport(
-        props.login,
-        props.password,
-        selectedSurvey,
-        selectedSurveyPrivacy
-      )
-      .then(async (response) => {
-        console.log(response);
-        setPrivateData(response.report);
-        if (response.error.hasError) {
-          alert(response.error.message);
-        }
-        setHasError(false);
-      })
-      .catch((error: AxiosError) => {
-        setHasError(true);
-        setErrorMessage(error.message);
-      });
-    surveyApi
-      .getSurveys(props.login, props.password, 1, 1)
+      .getSurveys(props.login, props.password)
       .then(async (response) => {
         console.log(response);
         setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
@@ -81,7 +79,7 @@ export default function Reports(props: { password: string; login: string }) {
 
   useEffect(() => {
     updateSurveyDisplay();
-  }, [props.login, props.password, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.login, props.password, selectedSurvey, isSurveyClosed, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -147,13 +145,6 @@ export default function Reports(props: { password: string; login: string }) {
 
   return (
     <div>
-      <div className="d-flex p-5">
-        <Dropdown isOpen={toggleState} onClick={setToggle}>
-          <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
-          <DropdownMenu>{dropDownElements}</DropdownMenu>
-        </Dropdown>
-      </div>
-      <DisplayReport report={privateData} />
       <ErrorModal hasError={hasError} errorMessage={errorMessage} />
       <AreYouSureModal
         modalOpen={areYouSureCloseSurvey}
