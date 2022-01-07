@@ -9,6 +9,7 @@ import Header from "./Components/Header/Header";
 import NotFound from "./Components/NotFound/NotFound";
 import Frontpage from "./Components/Frontpage/Frontpage";
 import TrusteeLogin from "./Components/TrusteeLogin/TrusteeLogin";
+import Guide from "./Components/Guide/Guide";
 import Helppage from "./Components/Helppage/Helppage";
 
 function App() {
@@ -35,6 +36,9 @@ function App() {
           </Route>
           <Route exact path="/login">
             <TrusteeLogin />
+          </Route>
+          <Route exact path="/guide">
+            <Guide />
           </Route>
           <Route exact path="/help">
             <Helppage />
