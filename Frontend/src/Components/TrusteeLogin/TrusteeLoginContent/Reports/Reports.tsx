@@ -43,7 +43,7 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
-    //only trigger Report creation, when Survey is selected
+    // only trigger Report creation, when Survey is selected
     if (selectedSurvey >= 0 && isSurveyClosed) {
       surveyApi
         .createReport(
