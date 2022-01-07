@@ -28,13 +28,11 @@ export default function Reports(props: { password: string; login: string }) {
     },
   ];
 
+  const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
+  const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [areYouSureCloseSurvey, setAreYouSureCloseSurvey] = useState(false);
-
-  const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
-  const [surveyQuery, setSurveyQuery] = useState(initialValue);
-
   const [dropDownTitle, setDropDownTitle] = useState(
     "Select the query to show report"
   );
@@ -45,21 +43,27 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
-    surveyApi
-      .createReport(
-        props.login,
-        props.password,
-        selectedSurvey,
-        selectedSurveyPrivacy
-      )
-      .then(async (response) => {
-        setPrivateData(response[1].report);
-        setHasError(false);
-      })
-      .catch((error: AxiosError) => {
-        setHasError(true);
-        setErrorMessage(error.message);
-      });
+    // only trigger Report creation, when Survey is selected
+    if (selectedSurvey >= 0 && isSurveyClosed) {
+      surveyApi
+        .createReport(
+          props.login,
+          props.password,
+          selectedSurvey,
+          selectedSurveyPrivacy
+        )
+        .then(async (response) => {
+          setPrivateData(response.report);
+          if (response.error.hasError) {
+            alert(response.error.message);
+          }
+          setHasError(false);
+        })
+        .catch((error: AxiosError) => {
+          setHasError(true);
+          setErrorMessage(error.message);
+        });
+    }
     surveyApi
       .getSurveys(props.login, props.password)
       .then(async (response) => {
@@ -73,7 +77,7 @@ export default function Reports(props: { password: string; login: string }) {
 
   useEffect(() => {
     updateSurveyDisplay();
-  }, [props.login, props.password, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.login, props.password, selectedSurvey, isSurveyClosed, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setToggle = () => {
     toggleValue(!toggleState);
