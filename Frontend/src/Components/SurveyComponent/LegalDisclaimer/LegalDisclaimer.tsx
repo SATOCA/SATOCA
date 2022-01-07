@@ -17,7 +17,10 @@ const LegalDisclaimer = (props: LegalDisclaimerProps) => {
             .then(async (response) => (setText((await response).legalDisclaimer)));
     }, [props.surveyId, surveyApi]);
 
-    const handleSubmit = async (event: { currentTarget: any; preventDefault: () => void; stopPropagation: () => void; }) => {
+    const handleSubmit = async (event: {
+        currentTarget: any;
+        preventDefault: () => void;
+        stopPropagation: () => void; }) => {
         event.preventDefault();
         surveyApi.acceptLegalDisclaimer(props.participantId)
             .then(() => (window.location.reload()));
@@ -31,7 +34,8 @@ const LegalDisclaimer = (props: LegalDisclaimerProps) => {
                 </FormGroup>
                 <FormGroup row>
                     <Input id="acceptLegalDisclaimerCheck" name="check" type="checkbox"
-                           onChange={(e) => (setAccepted(e.target.checked))} />
+                           onChange={(e) => (setAccepted(e.target.checked))}
+                    />
                     <Label check for="acceptLegalDisclaimerCheck">Accept legal disclaimer</Label>
                 </FormGroup>
                 <FormGroup row>

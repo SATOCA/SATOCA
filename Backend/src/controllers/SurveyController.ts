@@ -101,7 +101,6 @@ export class SurveyController {
       error: err,
       surveys: query,
     };
-    return result;
   }
 
   async getAllSurveys(trusteeDto: TrusteeDto): Promise<SurveyResponseDto> {
@@ -186,11 +185,9 @@ export class SurveyController {
       const result: CurrentQuestionResponseDto = {
         error: err,
         item: undefined,
-        finished: query.finished,
-        ability: query.scoring,
-        legalDisclaimerAccepted: query.legalDisclaimerAccepted,
         finished: targetParticipant.finished,
         ability: targetParticipant.scoring,
+        legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
       };
 
       return result;
@@ -213,9 +210,7 @@ export class SurveyController {
       item: question,
       finished: targetParticipant.finished,
       ability: targetParticipant.scoring,
-      finished: query.finished,
-      ability: query.scoring,
-      legalDisclaimerAccepted: query.legalDisclaimerAccepted,
+      legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
     };
     return result;
   }
@@ -256,7 +251,6 @@ export class SurveyController {
 
     if (body.itemId != participant.currentQuestion.id) {
       return SurveyController.buildErrorResponseItem(
-        question,
         "The question that was submitted '" +
           question.text +
           "' is not the active one!"
@@ -273,7 +267,6 @@ export class SurveyController {
 
     if (count > 0) {
       return SurveyController.buildErrorResponseItem(
-        question,
         "The question '" +
           question.text +
           "' was already answered. If that wasn't you, please consider contacting the trustee."
@@ -344,7 +337,7 @@ export class SurveyController {
     return returnValue;
   }
 
-  private static buildErrorResponseItem(question: Question, errorMessage: string) {
+  private static buildErrorResponseItem(errorMessage: string) {
     let result: ErrorDto = {
       message: "",
       hasError: false,
