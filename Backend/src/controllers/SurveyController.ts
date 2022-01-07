@@ -187,7 +187,6 @@ export class SurveyController {
         item: undefined,
         finished: targetParticipant.finished,
         ability: targetParticipant.scoring,
-        legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
       };
 
       return result;
@@ -210,7 +209,6 @@ export class SurveyController {
       item: question,
       finished: targetParticipant.finished,
       ability: targetParticipant.scoring,
-      legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
     };
     return result;
   }
@@ -251,6 +249,7 @@ export class SurveyController {
 
     if (body.itemId != participant.currentQuestion.id) {
       return SurveyController.buildErrorResponseItem(
+        question,
         "The question that was submitted '" +
           question.text +
           "' is not the active one!"
@@ -267,6 +266,7 @@ export class SurveyController {
 
     if (count > 0) {
       return SurveyController.buildErrorResponseItem(
+        question,
         "The question '" +
           question.text +
           "' was already answered. If that wasn't you, please consider contacting the trustee."
@@ -337,7 +337,10 @@ export class SurveyController {
     return returnValue;
   }
 
-  private static buildErrorResponseItem(errorMessage: string) {
+  private static buildErrorResponseItem(
+    question: Question,
+    errorMessage: string
+  ) {
     let result: ErrorDto = {
       message: "",
       hasError: false,
@@ -700,9 +703,30 @@ export class SurveyController {
 
   // end Excel Upload
 
-  async createReport(
-    body: CreateReportDto
-  ): Promise<CreateReportResponseDto[]> {
+  static async updateSurveyPrivacyBudget(
+    surveyId: number,
+    newPrivacyBudget: number
+  ) {
+    const SurveyRepository = await getConnection().getRepository(Survey);
+
+    let survey = await SurveyRepository.find({ where: { id: surveyId } });
+    survey[0].privacyBudget = newPrivacyBudget;
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    await SurveyRepository.save(survey[0])
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+  }
+  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
+    let cost = 1;
+    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
       report: {
         histogramData: [
@@ -723,17 +747,24 @@ export class SurveyController {
 
     if (loginResult.hasError) {
       result.error = loginResult;
-      return [result];
+      return result;
     }
-
     let resultPrivate = result;
-    if (body.privacyBudget > 0) {
+
+    if (body.privacyBudget < cost) {
+      resultPrivate.error = {
+        message: "Not enough budget left on this survey!",
+        hasError: true,
+      };
+      return resultPrivate;
+    } else {
       let pController = new ParticipantController();
       let participants = await pController.getParticipants(body.surveyId);
 
       const dataset = newArrayView(participants.participants);
 
       let [min, max, a, b] = [0, 0, 0, 0];
+
       participants.participants.forEach((d) => {
         if (d.scoring < min) {
           min = Math.floor(d.scoring);
@@ -742,22 +773,25 @@ export class SurveyController {
         }
       });
 
-      let width = 1;
+      let width = 0.5;
       a = min;
       b = a + width;
 
       const bucketFunc = (view) => {
         let bucketSize = 0;
+        let total = 0;
+
         view.forEach((p) => {
           if (a <= p.scoring && p.scoring < b) {
             bucketSize += 1;
           }
+          total += 1;
         });
-        return bucketSize;
+        return (bucketSize * 100) / total;
       };
 
       const options = {
-        maxEpsilon: body.privacyBudget,
+        maxEpsilon: cost,
         newShadowIterator: dataset.newShadowIterator,
       };
       let tempPrBucketSize: number[] = [];
@@ -765,31 +799,29 @@ export class SurveyController {
         report: { histogramData: [] },
         error: { hasError: false, message: "no Error" },
       };
-      let tempBucketSize: number[] = [];
-      let tempHistogram: CreateReportResponseDto = {
-        report: { histogramData: [] },
-        error: { hasError: false, message: "no Error" },
-      };
 
       for (let i = 0; i < max - min; i += width) {
-        tempBucketSize.push(bucketFunc(dataset));
         const getPrivateBucket = privatize(bucketFunc, options);
-        tempPrBucketSize.push((await getPrivateBucket(dataset)).result);
+        let value = (await getPrivateBucket(dataset)).result;
+        if (value < 0) {
+          tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
+        } else {
+          tempPrBucketSize.push(value);
+        }
         a += width;
         b += width;
         tempPrHistogram.report.histogramData.push({
-          bucketName: a + " - " + b,
+          bucketName: a + ".." + b,
           participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
-        tempHistogram.report.histogramData.push({
-          bucketName: a + " - " + b,
-          participantNumber: tempBucketSize[tempBucketSize.length - 1],
-        });
       }
-      result = tempHistogram;
       resultPrivate = tempPrHistogram;
     }
-    return [result, resultPrivate];
+    await SurveyController.updateSurveyPrivacyBudget(
+      body.surveyId,
+      body.privacyBudget - cost
+    );
+    return resultPrivate;
   }
 
   async closeSurvey(body: CloseSurveyDto): Promise<CloseSurveyResponseDto> {
@@ -837,17 +869,17 @@ export class SurveyController {
 }
 
 type surveyFormat = {
-    id: number;
-    question: string;
-    solutions: string;
-    startSet: string;
-    difficulty: number;
-    slope: number;
-    answers: {
-        answer1: string;
-        answer2: string;
-        answer3: string;
-        answer4: string;
-        answer5: string;
-    };
+  id: number;
+  question: string;
+  solutions: string;
+  startSet: string;
+  difficulty: number;
+  slope: number;
+  answers: {
+    answer1: string;
+    answer2: string;
+    answer3: string;
+    answer4: string;
+    answer5: string;
+  };
 };

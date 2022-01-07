@@ -71,7 +71,7 @@ export default class SurveyApi extends HttpClient {
     password: string,
     surveyId: number,
     privacyBudget: number
-  ): Promise<CreateReportResponseDto[]> => {
+  ): Promise<CreateReportResponseDto> => {
     const createReportDto: CreateReportDto = {
       login,
       password,
