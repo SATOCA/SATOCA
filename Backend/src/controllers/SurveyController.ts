@@ -525,6 +525,7 @@ export class SurveyController {
     survey.title = targetRow[1];
     survey.itemSeverityBoundary = minimalInformationGain;
     survey.privacyBudget = privacyBudget;
+    survey.legalDisclaimer = legalDisclaimer;
 
     await getConnection()
       .getRepository(Survey)
