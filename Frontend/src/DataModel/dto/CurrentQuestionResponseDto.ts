@@ -6,4 +6,5 @@ export interface CurrentQuestionResponseDto {
   item: Question | null;
   finished: boolean;
   ability: number;
+  legalDisclaimerAccepted: boolean;
 }

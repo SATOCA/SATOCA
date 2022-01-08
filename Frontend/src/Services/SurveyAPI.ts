@@ -12,6 +12,7 @@ import { SurveyResponseDto } from "../DataModel/dto/SurveyResponseDto";
 import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
 import { CloseSurveyResponseDto } from "../../../Backend/src/routers/dto/CloseSurveyResponseDto";
 import { CloseSurveyDto } from "../../../Backend/src/routers/dto/CloseSurveyDto";
+import { LegalDisclaimerResponseDtoResponseDto } from "../DataModel/dto/LegalDisclaimerResponseDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -29,13 +30,13 @@ export default class SurveyApi extends HttpClient {
     return this.classInstance;
   }
 
-  public getCurrentQuestion = async (
-    surveyID: string,
-    uniqueSurveyID: string
-  ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
-    await this.instance.get<CurrentQuestionResponseDto>(
-      `/Survey/${surveyID}/${uniqueSurveyID}`
-    );
+    public getCurrentQuestion = async (
+        surveyID: string,
+        uniqueSurveyID: string
+    ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
+        await this.instance.get<CurrentQuestionResponseDto>(
+            `/Survey/data/${surveyID}/${uniqueSurveyID}`
+        );
 
   public submitAnswer = async (
     surveyID: string,
@@ -70,7 +71,7 @@ export default class SurveyApi extends HttpClient {
     password: string,
     surveyId: number,
     privacyBudget: number
-  ): Promise<CreateReportResponseDto[]> => {
+  ): Promise<CreateReportResponseDto> => {
     const createReportDto: CreateReportDto = {
       login,
       password,
@@ -110,4 +111,14 @@ export default class SurveyApi extends HttpClient {
       closeSurveyDto
     );
   };
+
+  // eslint-disable-next-line
+  public getLegalDisclaimer = async (surveyId: string) => {
+      return await this.instance.get<LegalDisclaimerResponseDtoResponseDto>(`/survey/disclaimer/${surveyId}`);
+  }
+
+  // eslint-disable-next-line
+  public acceptLegalDisclaimer = async (participantId: string) => {
+      return await this.instance.post(`/survey/accept-disclaimer/${participantId}`);
+  }
 }

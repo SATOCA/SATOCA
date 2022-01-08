@@ -1,18 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { RouteComponentProps, useHistory } from "react-router-dom";
-import { DisplayItem } from "./DisplayItem/DisplayItem";
 import SurveyFinished from "./SurveyFinished/SurveyFinished";
 import SurveyApi from "../../Services/SurveyAPI";
-import {
-  Button,
-  Container,
-  Modal,
-  ModalBody,
-  ModalFooter,
-  ModalHeader,
-} from "reactstrap";
+import {Button, Container, Modal, ModalBody, ModalFooter, ModalHeader } from "reactstrap";
 import { Question } from "../../DataModel/Item";
 import { AxiosError } from "axios";
+import LegalDisclaimer from "./LegalDisclaimer/LegalDisclaimer";
+import {DisplayItem} from "./DisplayItem/DisplayItem";
 
 type SurveyComponentProps = {
   surveyId: string;
@@ -20,19 +14,20 @@ type SurveyComponentProps = {
 };
 
 export interface RouterSurveyComponentProps
-  extends RouteComponentProps<SurveyComponentProps> {}
+  extends RouteComponentProps<SurveyComponentProps> { }
 
 export default function SurveyComponent(props: SurveyComponentProps) {
-  const history = useHistory();
-  const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>(
-    undefined
-  );
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasError, setHasError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [surveyEnded, setSurveyEnded] = useState(false);
+    const history = useHistory();
+    const [currentQuestion, setCurrentQuestion] = useState<Question | undefined>(
+        undefined
+    );
+    const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
+    const [surveyEnded, setSurveyEnded] = useState(false);
+    const [legalDisclaimerAccepted, setLegalDisclaimerAccepted] = useState(false);
 
-  const surveyApi = SurveyApi.getInstance();
+    const surveyApi = SurveyApi.getInstance();
 
   const updateCurrentItem = useCallback(() => {
     console.log("update Current Item");
@@ -53,6 +48,7 @@ export default function SurveyComponent(props: SurveyComponentProps) {
 
         console.log("current ability: ", (await response).ability);
         setSurveyEnded((await response).finished);
+        setLegalDisclaimerAccepted((await response).legalDisclaimerAccepted);
         if (responseQuestion !== null) setCurrentQuestion(responseQuestion);
       })
       .catch((error: AxiosError) => {
@@ -109,14 +105,19 @@ export default function SurveyComponent(props: SurveyComponentProps) {
   const getContent = () => {
     if (surveyEnded) return <SurveyFinished />;
     if (isLoading) return <div>loading...</div>;
-    if (currentQuestion === undefined)
-      return (
-        <div>
-          No active survey found! todo make it fancy, picture or similar...
-        </div>
-      );
+    if (currentQuestion === undefined) {
+        return (
+            <div>
+                No active survey found! todo make it fancy, picture or similar...
+            </div>
+        );
+    }
+      if (hasError) return <div>{errorMessage}</div>;
+      if (legalDisclaimerAccepted === false) {
+          return <LegalDisclaimer surveyId={props.surveyId} participantId={props.uniqueSurveyId} />;
+      }
 
-    return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
+      return <DisplayItem question={currentQuestion} onAnswerSubmit={submit} />;
   };
 
   return (

@@ -2,7 +2,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -29,9 +28,15 @@ export default function DisplayReport(props: { report: Report }) {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="bucketName" />
-          <YAxis />
+          <YAxis
+            label={{
+              value: "   in %    ",
+              angle: 0,
+              position: "insideLeft",
+              textAnchor: "middle",
+            }}
+          />
           <Tooltip />
-          <Legend />
           <ReferenceLine y={0} stroke="#000" />
           <Bar dataKey="participantNumber" fill="#0055a2" label="Test" />
         </BarChart>

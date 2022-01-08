@@ -1,6 +1,6 @@
 import UploadSurveyFile from "./UploadSurveyFile/UploadSurveyFile";
 import React, { useState } from "react";
-import { Nav, NavItem, NavLink, TabContent, TabPane } from "reactstrap";
+import {Container, Nav, NavItem, NavLink, TabContent, TabPane} from "reactstrap";
 import classnames from "classnames";
 import Reports from "./Reports/Reports";
 
@@ -15,7 +15,7 @@ export default function TrusteeLoginContent(props: {
   };
 
   return (
-    <div>
+    <Container className="glass-card-content" fluid="lg">
       <Nav tabs>
         <NavItem>
           <NavLink
@@ -46,6 +46,6 @@ export default function TrusteeLoginContent(props: {
           <Reports login={props.login} password={props.password} />
         </TabPane>
       </TabContent>
-    </div>
+    </Container>
   );
 }
