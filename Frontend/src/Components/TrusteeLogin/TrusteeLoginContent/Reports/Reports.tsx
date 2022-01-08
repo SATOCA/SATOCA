@@ -53,7 +53,6 @@ export default function Reports(props: { password: string; login: string }) {
           selectedSurveyPrivacy
         )
         .then(async (response) => {
-          console.log(response);
           setPrivateData(response.report);
           if (response.error.hasError) {
             alert(response.error.message);
@@ -68,7 +67,6 @@ export default function Reports(props: { password: string; login: string }) {
     surveyApi
       .getSurveys(props.login, props.password)
       .then(async (response) => {
-        console.log(response);
         setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
       })
       .catch((error: AxiosError) => {
@@ -106,7 +104,7 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyDisplay = () => {
     if (isSurveyClosed) {
       return (
-        <Container className="report-margin">
+        <Container className="p-5">
           <Row>
             <h1>Report</h1>
           </Row>
@@ -163,12 +161,12 @@ export default function Reports(props: { password: string; login: string }) {
         {selectedSurvey >= 0 ? (
           <Row className="row-margin">
             <div className="closed-status-text">
-              {isSurveyClosed ? "Survey closed" : "Survey open"}
+              {isSurveyClosed ? "🔒 Survey closed" : "🔓 Survey open"}
             </div>
             {isSurveyClosed ? (
               <div />
             ) : (
-              <Button onClick={closeSurveyClick}>Close survey</Button>
+              <Button color="primary" onClick={closeSurveyClick}>Close survey</Button>
             )}
           </Row>
         ) : (

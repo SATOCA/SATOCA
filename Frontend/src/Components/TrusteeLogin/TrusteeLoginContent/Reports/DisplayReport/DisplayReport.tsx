@@ -2,7 +2,6 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
@@ -38,7 +37,6 @@ export default function DisplayReport(props: { report: Report }) {
             }}
           />
           <Tooltip />
-          <Legend />
           <ReferenceLine y={0} stroke="#000" />
           <Bar dataKey="participantNumber" fill="#0055a2" label="Test" />
         </BarChart>
