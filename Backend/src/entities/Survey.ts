@@ -30,4 +30,7 @@ export class Survey extends BaseEntity {
 
   @OneToMany((type) => Question, (question) => question.survey)
   questions: Question[];
+
+  @Column()
+  legalDisclaimer: string = "";
 }

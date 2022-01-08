@@ -35,4 +35,7 @@ export class Participant extends BaseEntity {
     (finishedQuestion) => finishedQuestion.participant
   )
   finishedQuestions: FinishedQuestion[];
+
+  @Column()
+  legalDisclaimerAccepted: boolean = false;
 }

@@ -21,6 +21,7 @@ import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto"
 import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
 import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
 import { TrusteeDto } from "../routers/dto/TrusteeDto";
+import {LegalDisclaimerResponseDtoResponseDto} from "../routers/dto/LegalDisclaimerResponseDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -114,6 +115,41 @@ export class SurveyController {
     }
 
     return await this.getSurveys();
+  }
+
+  async getLegalDisclaimer(surveyId: number) {
+    const query = await getConnection()
+        .getRepository(Survey)
+        .createQueryBuilder("survey")
+        .where("survey.id = :id", {id: surveyId })
+        .take(1)
+        .getOne();
+
+    const err: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    const result: LegalDisclaimerResponseDtoResponseDto = {
+      error: err,
+      legalDisclaimer: query.legalDisclaimer
+    };
+    return result;
+  }
+
+  async acceptLegalDisclaimer(participantId: string) {
+
+    let participant = await getConnection()
+        .getRepository(Participant)
+        .createQueryBuilder("participant")
+        .where("participant.uuid = :uuid", { uuid: participantId })
+        .take(1)
+        .getOne();
+
+    participant.legalDisclaimerAccepted = true;
+
+    await getConnection()
+        .getRepository(Participant)
+        .save(participant);
   }
 
   //! \todo surveyId is not needed -> remove
@@ -389,10 +425,7 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions(
-      "Number participants",
-      optionsRows
-    );
+    let numParticipants = this.extractXLSXOptions<number>("Number participants", optionsRows);
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -462,26 +495,30 @@ export class SurveyController {
       return error;
     }
 
-    let minimalInformationGain = this.extractXLSXOptions(
-      "Item severity boundary",
-      rows
-    );
+    let minimalInformationGain = this.extractXLSXOptions<number>("Item severity boundary", rows);
     if (minimalInformationGain === undefined) {
       error = {
         message: "Cannot find 'Item severity boundary' option in survey",
         hasError: true,
       };
-
       return error;
     }
 
-    let privacyBudget = this.extractXLSXOptions("Privacy Budget", rows);
+    let privacyBudget = this.extractXLSXOptions<number>("Privacy Budget", rows);
     if (privacyBudget === undefined) {
       error = {
         message: "Cannot find 'Privacy Budget' option in survey",
         hasError: true,
       };
+      return error;
+    }
 
+    let legalDisclaimer = this.extractXLSXOptions<string>("Legal Disclaimer", rows);
+    if (legalDisclaimer === undefined) {
+      error = {
+        message: "Cannot find 'Legal Disclaimer' option in survey",
+        hasError: true,
+      };
       return error;
     }
 
@@ -597,8 +634,8 @@ export class SurveyController {
     return error;
   }
 
-  private extractXLSXOptions(option: string, rows): number | undefined {
-    let result: number | undefined = undefined;
+  private extractXLSXOptions<Type>(option: string, rows) : Type | undefined {
+    let result: Type | undefined = undefined;
     rows.forEach((row) => {
       if (option === row[0]) {
         result = row[1];
