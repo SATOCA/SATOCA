@@ -21,7 +21,7 @@ import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto"
 import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
 import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
 import { TrusteeDto } from "../routers/dto/TrusteeDto";
-import {LegalDisclaimerResponseDtoResponseDto} from "../routers/dto/LegalDisclaimerResponseDto";
+import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDisclaimerResponseDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -187,6 +187,7 @@ export class SurveyController {
         item: undefined,
         finished: targetParticipant.finished,
         ability: targetParticipant.scoring,
+        legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
       };
 
       return result;
@@ -209,6 +210,7 @@ export class SurveyController {
       item: question,
       finished: targetParticipant.finished,
       ability: targetParticipant.scoring,
+      legalDisclaimerAccepted: targetParticipant.legalDisclaimerAccepted,
     };
     return result;
   }
@@ -249,7 +251,6 @@ export class SurveyController {
 
     if (body.itemId != participant.currentQuestion.id) {
       return SurveyController.buildErrorResponseItem(
-        question,
         "The question that was submitted '" +
           question.text +
           "' is not the active one!"
@@ -266,7 +267,6 @@ export class SurveyController {
 
     if (count > 0) {
       return SurveyController.buildErrorResponseItem(
-        question,
         "The question '" +
           question.text +
           "' was already answered. If that wasn't you, please consider contacting the trustee."
@@ -337,10 +337,8 @@ export class SurveyController {
     return returnValue;
   }
 
-  private static buildErrorResponseItem(
-    question: Question,
-    errorMessage: string
-  ) {
+  private static buildErrorResponseItem(errorMessage: string)
+  {
     let result: ErrorDto = {
       message: "",
       hasError: false,
