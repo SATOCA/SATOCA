@@ -30,6 +30,7 @@ export default function Reports(props: { password: string; login: string }) {
 
   const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
+  const [surveyProgress, setSurveyProgress] = useState(0);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [areYouSureCloseSurvey, setAreYouSureCloseSurvey] = useState(false);
@@ -43,27 +44,6 @@ export default function Reports(props: { password: string; login: string }) {
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
-    // only trigger Report creation, when Survey is selected
-    if (selectedSurvey >= 0 && isSurveyClosed) {
-      surveyApi
-        .createReport(
-          props.login,
-          props.password,
-          selectedSurvey,
-          selectedSurveyPrivacy
-        )
-        .then(async (response) => {
-          setPrivateData(response.report);
-          if (response.error.hasError) {
-            alert(response.error.message);
-          }
-          setHasError(false);
-        })
-        .catch((error: AxiosError) => {
-          setHasError(true);
-          setErrorMessage(error.message);
-        });
-    }
     surveyApi
       .getSurveys(props.login, props.password)
       .then(async (response) => {
@@ -73,6 +53,43 @@ export default function Reports(props: { password: string; login: string }) {
         setHasError(true);
         setErrorMessage(error.message);
       });
+
+    // only trigger Report creation, when Survey is selected
+    if (selectedSurvey >= 0) {
+      surveyApi
+        .getSurveyProgress(props.login, props.password, selectedSurvey)
+        .then(async (response) => {
+          if (response.error.hasError) {
+            alert(response.error.message);
+          } else {
+            setSurveyProgress(response.progress);
+          }
+        })
+        .catch((error: AxiosError) => {
+          setHasError(true);
+          setErrorMessage(error.message);
+        });
+      if (isSurveyClosed) {
+        surveyApi
+          .createReport(
+            props.login,
+            props.password,
+            selectedSurvey,
+            selectedSurveyPrivacy
+          )
+          .then(async (response) => {
+            setPrivateData(response.report);
+            if (response.error.hasError) {
+              alert(response.error.message);
+            }
+            setHasError(false);
+          })
+          .catch((error: AxiosError) => {
+            setHasError(true);
+            setErrorMessage(error.message);
+          });
+      }
+    }
   }
 
   useEffect(() => {
@@ -93,7 +110,9 @@ export default function Reports(props: { password: string; login: string }) {
       onClick={() => {
         setSurveyItem(survey);
         setDropDownTitle(
-          `${survey.id}: ${survey.title}  participants finished: TODO?`
+          `[${survey.id}] ${
+            survey.title
+          }: survey progress ${surveyProgress.toPrecision(3)}%`
         );
       }}
     >
@@ -166,7 +185,9 @@ export default function Reports(props: { password: string; login: string }) {
             {isSurveyClosed ? (
               <div />
             ) : (
-              <Button color="primary" onClick={closeSurveyClick}>Close survey</Button>
+              <Button color="primary" onClick={closeSurveyClick}>
+                Close survey
+              </Button>
             )}
           </Row>
         ) : (

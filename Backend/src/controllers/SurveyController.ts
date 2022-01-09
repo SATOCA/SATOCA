@@ -22,6 +22,8 @@ import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
 import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
 import { TrusteeDto } from "../routers/dto/TrusteeDto";
 import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDisclaimerResponseDto";
+import { SurveyProgressResponseDto } from "../routers/dto/SurveyProgressResponseDto";
+import { SurveyProgressDto } from "../routers/dto/SurveyProgressDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -119,11 +121,11 @@ export class SurveyController {
 
   async getLegalDisclaimer(surveyId: number) {
     const query = await getConnection()
-        .getRepository(Survey)
-        .createQueryBuilder("survey")
-        .where("survey.id = :id", {id: surveyId })
-        .take(1)
-        .getOne();
+      .getRepository(Survey)
+      .createQueryBuilder("survey")
+      .where("survey.id = :id", { id: surveyId })
+      .take(1)
+      .getOne();
 
     const err: ErrorDto = {
       message: "",
@@ -131,25 +133,22 @@ export class SurveyController {
     };
     const result: LegalDisclaimerResponseDtoResponseDto = {
       error: err,
-      legalDisclaimer: query.legalDisclaimer
+      legalDisclaimer: query.legalDisclaimer,
     };
     return result;
   }
 
   async acceptLegalDisclaimer(participantId: string) {
-
     let participant = await getConnection()
-        .getRepository(Participant)
-        .createQueryBuilder("participant")
-        .where("participant.uuid = :uuid", { uuid: participantId })
-        .take(1)
-        .getOne();
+      .getRepository(Participant)
+      .createQueryBuilder("participant")
+      .where("participant.uuid = :uuid", { uuid: participantId })
+      .take(1)
+      .getOne();
 
     participant.legalDisclaimerAccepted = true;
 
-    await getConnection()
-        .getRepository(Participant)
-        .save(participant);
+    await getConnection().getRepository(Participant).save(participant);
   }
 
   //! \todo surveyId is not needed -> remove
@@ -337,8 +336,7 @@ export class SurveyController {
     return returnValue;
   }
 
-  private static buildErrorResponseItem(errorMessage: string)
-  {
+  private static buildErrorResponseItem(errorMessage: string) {
     let result: ErrorDto = {
       message: "",
       hasError: false,
@@ -423,7 +421,10 @@ export class SurveyController {
       return result;
     }
 
-    let numParticipants = this.extractXLSXOptions<number>("Number participants", optionsRows);
+    let numParticipants = this.extractXLSXOptions<number>(
+      "Number participants",
+      optionsRows
+    );
     let pController = new ParticipantController();
 
     await pController.addParticipants(survey.id, numParticipants);
@@ -493,7 +494,10 @@ export class SurveyController {
       return error;
     }
 
-    let minimalInformationGain = this.extractXLSXOptions<number>("Item severity boundary", rows);
+    let minimalInformationGain = this.extractXLSXOptions<number>(
+      "Item severity boundary",
+      rows
+    );
     if (minimalInformationGain === undefined) {
       error = {
         message: "Cannot find 'Item severity boundary' option in survey",
@@ -511,7 +515,10 @@ export class SurveyController {
       return error;
     }
 
-    let legalDisclaimer = this.extractXLSXOptions<string>("Legal Disclaimer", rows);
+    let legalDisclaimer = this.extractXLSXOptions<string>(
+      "Legal Disclaimer",
+      rows
+    );
     if (legalDisclaimer === undefined) {
       error = {
         message: "Cannot find 'Legal Disclaimer' option in survey",
@@ -632,7 +639,7 @@ export class SurveyController {
     return error;
   }
 
-  private extractXLSXOptions<Type>(option: string, rows) : Type | undefined {
+  private extractXLSXOptions<Type>(option: string, rows): Type | undefined {
     let result: Type | undefined = undefined;
     rows.forEach((row) => {
       if (option === row[0]) {
@@ -724,6 +731,7 @@ export class SurveyController {
   }
   async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
     let cost = 1;
+    let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
       report: {
@@ -761,17 +769,22 @@ export class SurveyController {
 
       const dataset = newArrayView(participants.participants);
 
-      let [min, max, a, b] = [0, 0, 0, 0];
+      let [min, max, a, b] = [participants.participants[0].scoring, 0, 0, 0];
 
       participants.participants.forEach((d) => {
-        if (d.scoring < min) {
-          min = Math.floor(d.scoring);
-        } else if (d.scoring > max) {
-          max = Math.round(d.scoring);
+        if (d.finished) {
+          if (d.scoring < min) {
+            min = Math.floor(d.scoring);
+          } else if (d.scoring > max) {
+            max = Math.round(d.scoring);
+          }
         }
       });
 
-      let width = 0.5;
+      let width = 1;
+      while ((max - min) / width < minBuckets) {
+        width = width / 2;
+      }
       a = min;
       b = a + width;
 
@@ -806,12 +819,12 @@ export class SurveyController {
         } else {
           tempPrBucketSize.push(value);
         }
-        a += width;
-        b += width;
         tempPrHistogram.report.histogramData.push({
           bucketName: a + ".." + b,
           participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
+        a += width;
+        b += width;
       }
       resultPrivate = tempPrHistogram;
     }
@@ -820,6 +833,35 @@ export class SurveyController {
       body.privacyBudget - cost
     );
     return resultPrivate;
+  }
+
+  async getProgress(
+    body: SurveyProgressDto
+  ): Promise<SurveyProgressResponseDto> {
+    let result: SurveyProgressResponseDto = {
+      progress: 0,
+      error: {
+        hasError: false,
+        message: "no Error",
+      },
+    };
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+    let pController = new ParticipantController();
+    let participants = await pController.getParticipants(body.surveyId);
+    let finished = 0;
+    await participants.participants.forEach((p) => {
+      if (p.finished) {
+        finished += 1;
+      }
+    });
+    result.progress = (finished * 100) / participants.participants.length ?? 0;
+    return result;
   }
 
   async closeSurvey(body: CloseSurveyDto): Promise<CloseSurveyResponseDto> {
