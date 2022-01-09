@@ -13,6 +13,8 @@ import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
 import { CloseSurveyResponseDto } from "../../../Backend/src/routers/dto/CloseSurveyResponseDto";
 import { CloseSurveyDto } from "../../../Backend/src/routers/dto/CloseSurveyDto";
 import { LegalDisclaimerResponseDtoResponseDto } from "../DataModel/dto/LegalDisclaimerResponseDto";
+import { SurveyProgressResponseDto } from "../../../Backend/src/routers/dto/SurveyProgressResponseDto";
+import { SurveyProgressDto } from "../../../Backend/src/routers/dto/SurveyProgressDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -30,13 +32,13 @@ export default class SurveyApi extends HttpClient {
     return this.classInstance;
   }
 
-    public getCurrentQuestion = async (
-        surveyID: string,
-        uniqueSurveyID: string
-    ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
-        await this.instance.get<CurrentQuestionResponseDto>(
-            `/Survey/data/${surveyID}/${uniqueSurveyID}`
-        );
+  public getCurrentQuestion = async (
+    surveyID: string,
+    uniqueSurveyID: string
+  ): Promise<AxiosResponse<CurrentQuestionResponseDto>> =>
+    await this.instance.get<CurrentQuestionResponseDto>(
+      `/Survey/data/${surveyID}/${uniqueSurveyID}`
+    );
 
   public submitAnswer = async (
     surveyID: string,
@@ -81,6 +83,19 @@ export default class SurveyApi extends HttpClient {
 
     return await this.instance.post("/Survey/create-report", createReportDto);
   };
+  public getSurveyProgress = async (
+    login: string,
+    password: string,
+    surveyId: number
+  ): Promise<SurveyProgressResponseDto> => {
+    const surveyProgressDto: SurveyProgressDto = {
+      login,
+      password,
+      surveyId,
+    };
+
+    return await this.instance.post("/Survey/get-progress", surveyProgressDto);
+  };
 
   public getSurveys = async (
     login: string,
@@ -114,11 +129,15 @@ export default class SurveyApi extends HttpClient {
 
   // eslint-disable-next-line
   public getLegalDisclaimer = async (surveyId: string) => {
-      return await this.instance.get<LegalDisclaimerResponseDtoResponseDto>(`/survey/disclaimer/${surveyId}`);
-  }
+    return await this.instance.get<LegalDisclaimerResponseDtoResponseDto>(
+      `/survey/disclaimer/${surveyId}`
+    );
+  };
 
   // eslint-disable-next-line
   public acceptLegalDisclaimer = async (participantId: string) => {
-      return await this.instance.post(`/survey/accept-disclaimer/${participantId}`);
-  }
+    return await this.instance.post(
+      `/survey/accept-disclaimer/${participantId}`
+    );
+  };
 }

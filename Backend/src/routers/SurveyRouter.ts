@@ -6,65 +6,66 @@ import fileUpload from "express-fileupload";
 import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
 import { CreateReportDto } from "./dto/CreateReportDto";
 import { CloseSurveyDto } from "./dto/CloseSurveyDto";
-import {TrusteeDto} from "./dto/TrusteeDto";
+import { TrusteeDto } from "./dto/TrusteeDto";
+import { SurveyProgressDto } from "./dto/SurveyProgressDto";
 
 export class SurveyRouter {
-    private _router = Router();
-    private _controller = new SurveyController();
+  private _router = Router();
+  private _controller = new SurveyController();
 
-    get router() {
-        return this._router;
-    }
+  get router() {
+    return this._router;
+  }
 
-    constructor() {
-        this._configure();
-    }
+  constructor() {
+    this._configure();
+  }
 
-    private _configure() {
-        this._router.get(
-            '/data/:surveyId/:uniqueId',
-            (req: Request, res: Response, next: NextFunction) => {
-                try {
-                    this._controller
-                        .getCurrentSurvey(Number(req.params.surveyId), req.params.uniqueId)
-                        .then((obj) => {
-                            res.status(200).json(obj);
-                        });
-                } catch (error) {
-                    next(error);
-                }
-            }
-        );
+  private _configure() {
+    this._router.get(
+      "/data/:surveyId/:uniqueId",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .getCurrentSurvey(Number(req.params.surveyId), req.params.uniqueId)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
 
-        this._router.get(
-            '/disclaimer/:surveyId',
-            (req: Request, res: Response, next: NextFunction) => {
-                try {
-                    this._controller
-                        .getLegalDisclaimer(Number(req.params.surveyId))
-                        .then((obj) => {
-                            res.status(200).json(obj);
-                        });
-                } catch (error) {
-                    next(error);
-                }
-            }
-        );
+    this._router.get(
+      "/disclaimer/:surveyId",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .getLegalDisclaimer(Number(req.params.surveyId))
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
 
-        this._router.post(
-            '/accept-disclaimer/:participantId',
-            (req: Request, res: Response, next: NextFunction) => {
-                try {
-                    this._controller
-                        .acceptLegalDisclaimer(req.params.participantId)
-                        .then((obj) => {
-                            res.status(200).json(obj);
-                        });
-                } catch (error) {
-                    next(error);
-                }
-            }
-        );
+    this._router.post(
+      "/accept-disclaimer/:participantId",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .acceptLegalDisclaimer(req.params.participantId)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
 
     this._router.post(
       "/:surveyId/:uniqueId",
@@ -125,16 +126,29 @@ export class SurveyRouter {
       }
     );
 
+    this._router.post(
+      "/get-progress",
+      (req: Request, res: Response, next: NextFunction) => {
+        try {
+          this._controller
+            .getProgress(req.body as SurveyProgressDto)
+            .then((obj) => {
+              res.status(200).json(obj);
+            });
+        } catch (error) {
+          next(error);
+        }
+      }
+    );
+
     //todo: change to GET endpoint
     this._router.post(
       "/get-surveys",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller
-            .getAllSurveys(req.body as TrusteeDto)
-            .then((obj) => {
-              res.status(200).json(obj);
-            });
+          this._controller.getAllSurveys(req.body as TrusteeDto).then((obj) => {
+            res.status(200).json(obj);
+          });
         } catch (error) {
           next(error);
         }
