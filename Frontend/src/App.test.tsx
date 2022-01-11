@@ -10,7 +10,7 @@ test("render application name", () => {
     </MemoryRouter>
   );
   const appName = getByText(
-    /Secure Adaptive Testing for Organized Capability Assessment/i
+    /Secure Adaptive Testing for Organizational Capability Assessment/i
   );
   expect(appName).toBeInTheDocument();
 });
@@ -23,7 +23,7 @@ test("render application with route /init-survey/42-3-4", () => {
   );
 
   const appName = getByText(
-    /Secure Adaptive Testing for Organized Capability Assessment/i
+    /Secure Adaptive Testing for Organizational Capability Assessment/i
   );
   expect(appName).toBeInTheDocument();
 });
