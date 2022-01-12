@@ -259,12 +259,12 @@ export default function Reports(props: { password: string; login: string }) {
               <h4 className="alert-heading">
                 {" "}
                 {isSurveyClosed ? (
-                  <Badge color="info">🔒 Survey closed </Badge>
+                  <Badge color="info">🔒 SURVEY CLOSED </Badge>
                 ) : (
                   <Badge color="success">
-                    🔓 Survey open{" "}
+                    🔓 SURVEY OPEN <Badge color="success"> </Badge>
                     <Button color="danger" onClick={closeSurveyClick}>
-                      Close survey
+                      CLOSE
                     </Button>
                   </Badge>
                 )}{" "}
