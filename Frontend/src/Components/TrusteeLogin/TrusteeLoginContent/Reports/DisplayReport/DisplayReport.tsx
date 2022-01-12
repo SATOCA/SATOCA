@@ -21,19 +21,26 @@ export default function DisplayReport(props: { report: Report }) {
           data={props.report.histogramData}
           margin={{
             top: 5,
-            right: 30,
-            left: 20,
+            right: 135,
+            left: 10,
             bottom: 5,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="bucketName" />
+          <XAxis
+            label={{
+              value: "Scoring",
+              position: "insideBottom",
+              dy: 20,
+            }}
+            dataKey="bucketName"
+          />
           <YAxis
             label={{
-              value: "   in %    ",
-              angle: 0,
+              value: "Ratio [in %] ",
+              dx: -5,
+              angle: -90,
               position: "insideLeft",
-              textAnchor: "middle",
             }}
           />
           <Tooltip />
