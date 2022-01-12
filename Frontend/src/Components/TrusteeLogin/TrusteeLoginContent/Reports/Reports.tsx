@@ -249,7 +249,13 @@ export default function Reports(props: { password: string; login: string }) {
       <Container className="p-5">
         <Row className="row-margin">
           <Dropdown isOpen={toggleState} onClick={setToggle}>
-            <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
+            <DropdownToggle
+              color="light"
+              caret
+              className="border-info rounded-pill"
+            >
+              <b>{dropDownTitle}</b>
+            </DropdownToggle>
             <DropdownMenu>{dropDownElements}</DropdownMenu>
           </Dropdown>
         </Row>
