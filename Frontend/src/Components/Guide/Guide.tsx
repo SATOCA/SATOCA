@@ -13,14 +13,11 @@ export default function Guide() {
 
       <Container>
           <h2>How to use the platform</h2>
-
             <h4>How to Create a Survey?</h4>
-            <p>Survey is uploaded from an Excel File. You will find an example in /docs Folder
-                under UploadSurvey.xlsx.
+            <p>Survey is uploaded from an Excel File. You can download it from <a href="/SurveyUpload.xlsx" download>HERE</a></p>
             <p>Document has two Sheets:</p>
                 <li>Survey, where You save your questions</li>
                 <li>Options, where Survey parameters are defined.</li>
-            </p>
               <img src={survey} alt={"survey"} />
             <p>Survey Columns explanation:</p>
               <ul>
