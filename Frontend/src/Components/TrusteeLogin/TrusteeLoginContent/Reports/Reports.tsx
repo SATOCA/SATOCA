@@ -16,6 +16,7 @@ import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
 import ErrorModal from "./ErrorModal/ErrorModal";
 import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 import "./Reports.css";
+import { ExportToCsv } from "export-to-csv";
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue: SurveyInfo[] = [
@@ -41,6 +42,23 @@ export default function Reports(props: { password: string; login: string }) {
   const [selectedSurveyPrivacy, setPrivacy] = useState(0);
   const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
+
+  const [csvExporter] = useState(
+    new ExportToCsv({
+      fieldSeparator: ";",
+      // eslint-disable-next-line
+      quoteStrings: `"`,
+      decimalSeparator: ",",
+      showLabels: true,
+      showTitle: true,
+      title: "_Report.csv",
+      filename: "_Report",
+      useTextFile: false,
+      useBom: true,
+      headers: ["scoring range", "user percentage"],
+    })
+  );
+
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
@@ -99,16 +117,29 @@ export default function Reports(props: { password: string; login: string }) {
   const setToggle = () => {
     toggleValue(!toggleState);
   };
+
+  const setOptionItem = (title: string, header: string[]) => {
+    csvExporter.options.title = `${title}_report.csv`;
+    csvExporter.options.filename = `${title}_report`;
+    csvExporter.options.headers = header;
+  };
+
   const setSurveyItem = (survey: SurveyInfo) => {
     setSurveyId(survey.id);
     setPrivacy(survey.privacyBudget);
     setIsSurveyClosed(survey.isClosed);
+  };
+  const exportReport = () => {
+    csvExporter.generateCsv(
+      JSON.parse(JSON.stringify(privateData.histogramData))
+    );
   };
 
   const dropDownElements = surveyQuery.map((survey) => (
     <DropdownItem
       onClick={() => {
         setSurveyItem(survey);
+        setOptionItem(survey.title, ["scoring range", "user percentage"]);
         setDropDownTitle(
           `[${survey.id}] ${
             survey.title
@@ -130,6 +161,14 @@ export default function Reports(props: { password: string; login: string }) {
           <Row>
             <DisplayReport report={privateData} />
           </Row>
+          {privateData.histogramData !== undefined &&
+          privateData.histogramData.length > 0 ? (
+            <Button color="primary" onClick={exportReport}>
+              Download Report
+            </Button>
+          ) : (
+            <div />
+          )}
         </Container>
       );
     }
