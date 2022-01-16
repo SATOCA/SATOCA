@@ -86,6 +86,7 @@ export default function Guide() {
                 <li><h6>After uploading the file appropriately defined number
                         of links will be shown.
                     </h6>
+                    <h6>Trustee should send those links randomly to Participants.</h6>
                 </li>
                     <img src={links} alt={"links"} width="700px" />
                 <li><h6>Uploaded surveys are shown in a list.</h6></li>
