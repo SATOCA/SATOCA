@@ -1,6 +1,10 @@
 import { ErrorDto } from "./ErrorDto";
 
 export interface SurveyProgressResponseDto {
-  progress: number;
+  progress: SurveyProgress;
   error: ErrorDto;
+}
+interface SurveyProgress {
+  finished: number;
+  total: number;
 }

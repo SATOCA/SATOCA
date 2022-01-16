@@ -9,7 +9,7 @@ export interface Report {
   histogramData: HistogramData[];
 }
 
-interface HistogramData {
+export interface HistogramData {
   bucketName: string;
-  participantNumber: number;
+  score: number;
 }
