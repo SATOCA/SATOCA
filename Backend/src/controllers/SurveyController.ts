@@ -822,7 +822,7 @@ export class SurveyController {
         }
         tempPrHistogram.report.histogramData.push({
           bucketName: a + ".." + b,
-          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+          score: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
         a += width;
         b += width;

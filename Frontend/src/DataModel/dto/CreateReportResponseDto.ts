@@ -11,5 +11,5 @@ export interface Report {
 
 interface HistogramData {
   bucketName: string;
-  participantNumber: number;
+  score: number;
 }
