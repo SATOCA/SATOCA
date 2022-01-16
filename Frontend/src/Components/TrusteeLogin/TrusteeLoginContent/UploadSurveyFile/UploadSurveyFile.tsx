@@ -7,6 +7,7 @@ import SurveyApi from "../../../../Services/SurveyAPI";
 type UploadSurveyFileProps = {
   login: string;
   password: string;
+  surveyUploaded: () => void;
 };
 
 export default function UploadSurveyFile(props: UploadSurveyFileProps) {
@@ -22,6 +23,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
       return;
 
     setFile(event.target.files[0]);
+    setListItems(<div />);
   };
 
   const upload = async () => {
@@ -32,6 +34,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
         .uploadSurveyFile(file, props.login, props.password)
         .then((response) => {
           console.log(response);
+
           setListItems(
             <div>
               <h3>Participant links:</h3>
@@ -49,6 +52,8 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
 
           setHasError(response.error.hasError);
           setError(response.error.message);
+
+          props.surveyUploaded();
         })
         .catch();
     }
@@ -70,7 +75,7 @@ export default function UploadSurveyFile(props: UploadSurveyFileProps) {
       <Button color="primary" disabled={file === undefined} onClick={upload}>
         Submit
       </Button>
-      <div />
+      <div className="space-after-submit" />
       {listItems}
       {hasError ? (
         <div>
