@@ -23,7 +23,7 @@ export default function DisplayReport(props: { report: Report }) {
             top: 5,
             right: 135,
             left: 10,
-            bottom: 5,
+            bottom: 20,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
