@@ -11,14 +11,14 @@ export default function CustomTooltip({
   const parsePercentage = (input: any, precision: number) : string => {
     if (input === undefined)
       return "---";
-    return input.toPrecision(precision);
+    return input.toFixed(precision);
   };
 
   if (active) {
     return (
       <div className="custom-tooltip">
         <p className="tooltip-range">{`Range: ${label}`}</p>
-        <p className="tooltip-share">{`Share of participants: ${parsePercentage(payload?.[0].value, 3)}%`}</p>
+        <p className="tooltip-share">{`Share of participants: ${parsePercentage(payload?.[0].value, 2)}%`}</p>
       </div>
     );
   }
