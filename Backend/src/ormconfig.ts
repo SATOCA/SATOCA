@@ -8,6 +8,7 @@ import { Question } from "./entities/Question";
 import { Answer } from "./entities/Answer";
 import { FinishedQuestion } from "./entities/FinishedQuestion";
 import { Trustee } from "./entities/Trustee";
+import { TimeTracker } from "./entities/TimeTracker";
 
 // load the environment variables from the .env file
 dotenv.config({
@@ -23,7 +24,7 @@ const connectionOptions: ConnectionOptions = {
   username: process.env.DATABASE_USERNAME!,
   password: process.env.DATABASE_PASSWORD!,
   database: process.env.DATABASE_NAME!,
-  entities: [Survey, Participant, Question, Answer, FinishedQuestion, Trustee],
+  entities: [Survey, Participant, Question, Answer, FinishedQuestion, Trustee, TimeTracker],
   // We are using migrations, synchronize should be set to false.
   synchronize: false,
   dropSchema: false,

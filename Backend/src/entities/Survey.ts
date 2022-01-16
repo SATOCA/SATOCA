@@ -7,6 +7,7 @@ import {
 } from "typeorm";
 import { Participant } from "./Participant";
 import { Question } from "./Question";
+import {TimeTracker} from "./TimeTracker";
 
 @Entity()
 export class Survey extends BaseEntity {
@@ -33,4 +34,7 @@ export class Survey extends BaseEntity {
 
   @Column()
   legalDisclaimer: string = "";
+
+  @OneToMany((type) => TimeTracker, (tracker) => tracker.survey)
+  timeTrackers: TimeTracker[];
 }
