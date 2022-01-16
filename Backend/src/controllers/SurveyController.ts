@@ -851,7 +851,7 @@ export class SurveyController {
         }
         tempPrHistogram.report.histogramData.push({
           bucketName: a + ".." + b,
-          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+          score: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
         a += width;
         b += width;
@@ -869,7 +869,7 @@ export class SurveyController {
     body: SurveyProgressDto
   ): Promise<SurveyProgressResponseDto> {
     let result: SurveyProgressResponseDto = {
-      progress: 0,
+      progress: { finished: 0, total: 0 },
       error: {
         hasError: false,
         message: "no Error",
@@ -890,7 +890,9 @@ export class SurveyController {
         finished += 1;
       }
     });
-    result.progress = (finished * 100) / participants.participants.length ?? 0;
+    result.progress.finished = finished;
+    result.progress.total = participants.participants.length ?? 0;
+
     return result;
   }
 

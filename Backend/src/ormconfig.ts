@@ -8,6 +8,7 @@ import { Question } from "./entities/Question";
 import { Answer } from "./entities/Answer";
 import { FinishedQuestion } from "./entities/FinishedQuestion";
 import { Trustee } from "./entities/Trustee";
+import { Report } from "./entities/Report";
 import { TimeTracker } from "./entities/TimeTracker";
 
 // load the environment variables from the .env file
@@ -24,7 +25,16 @@ const connectionOptions: ConnectionOptions = {
   username: process.env.DATABASE_USERNAME!,
   password: process.env.DATABASE_PASSWORD!,
   database: process.env.DATABASE_NAME!,
-  entities: [Survey, Participant, Question, Answer, FinishedQuestion, Trustee, TimeTracker],
+  entities: [
+    Survey,
+    Participant,
+    Question,
+    Answer,
+    FinishedQuestion,
+    Trustee,
+    Report,
+    TimeTracker
+  ],
   // We are using migrations, synchronize should be set to false.
   synchronize: false,
   dropSchema: false,

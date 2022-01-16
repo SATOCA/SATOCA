@@ -3,11 +3,13 @@ import {
   Column,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from "typeorm";
 import { Participant } from "./Participant";
 import { Question } from "./Question";
-import {TimeTracker} from "./TimeTracker";
+import { Report } from "./Report";
+import { TimeTracker } from "./TimeTracker";
 
 @Entity()
 export class Survey extends BaseEntity {
@@ -34,6 +36,9 @@ export class Survey extends BaseEntity {
 
   @Column()
   legalDisclaimer: string = "";
+
+  @OneToOne((type) => Report, (report) => report.id)
+  report: Report;
 
   @OneToMany((type) => TimeTracker, (tracker) => tracker.survey)
   timeTrackers: TimeTracker[];

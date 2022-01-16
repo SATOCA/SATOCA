@@ -4,12 +4,16 @@ import { Report } from "../../../../DataModel/dto/CreateReportResponseDto";
 import SurveyApi from "../../../../Services/SurveyAPI";
 import { AxiosError } from "axios";
 import {
+  Alert,
+  Badge,
   Button,
   Container,
   Dropdown,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
+  Fade,
+  Progress,
   Row,
 } from "reactstrap";
 import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
@@ -17,6 +21,7 @@ import ErrorModal from "./ErrorModal/ErrorModal";
 import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 import "./Reports.css";
 import { ExportToCsv } from "export-to-csv";
+import { SurveyProgress } from "../../../../DataModel/dto/SurveyProgressResponseDto";
 
 export default function Reports(props: { password: string; login: string }) {
   const initialValue: SurveyInfo[] = [
@@ -31,7 +36,10 @@ export default function Reports(props: { password: string; login: string }) {
 
   const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
-  const [surveyProgress, setSurveyProgress] = useState(0);
+  const [surveyProgress, setSurveyProgress] = useState<SurveyProgress>({
+    finished: 0,
+    total: 0,
+  });
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [areYouSureCloseSurvey, setAreYouSureCloseSurvey] = useState(false);
@@ -42,7 +50,7 @@ export default function Reports(props: { password: string; login: string }) {
   const [selectedSurveyPrivacy, setPrivacy] = useState(0);
   const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
-
+  const [percentage, setPercentage] = useState(0);
   const [csvExporter] = useState(
     new ExportToCsv({
       fieldSeparator: ";",
@@ -58,7 +66,6 @@ export default function Reports(props: { password: string; login: string }) {
       headers: ["scoring range", "user percentage"],
     })
   );
-
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
@@ -81,6 +88,9 @@ export default function Reports(props: { password: string; login: string }) {
             alert(response.error.message);
           } else {
             setSurveyProgress(response.progress);
+            setPercentage(
+              (response.progress.finished * 100) / response.progress.total
+            );
           }
         })
         .catch((error: AxiosError) => {
@@ -119,7 +129,9 @@ export default function Reports(props: { password: string; login: string }) {
   };
 
   const setOptionItem = (title: string, header: string[]) => {
-    csvExporter.options.title = `${title}_report.csv`;
+    csvExporter.options.title = `SCORING-REPORT - SURVEY: ${title}   PARTICIPATION: ${
+      surveyProgress.finished
+    }/${surveyProgress.total} (${percentage.toPrecision(3)}%)`;
     csvExporter.options.filename = `${title}_report`;
     csvExporter.options.headers = header;
   };
@@ -140,26 +152,51 @@ export default function Reports(props: { password: string; login: string }) {
       onClick={() => {
         setSurveyItem(survey);
         setOptionItem(survey.title, ["scoring range", "user percentage"]);
-        setDropDownTitle(
-          `[${survey.id}] ${
-            survey.title
-          }: survey progress ${surveyProgress.toPrecision(3)}%`
-        );
+        setDropDownTitle(`${survey.id} | ${survey.title}`);
       }}
     >
-      Survey id:{survey.id} title:{survey.title}
+      {`${survey.id} | ${survey.title}`}
     </DropdownItem>
   ));
+
+  const progress = () => {
+    let color = "danger";
+    switch (true) {
+      case percentage >= 90:
+        color = "success";
+        break;
+      case percentage >= 60:
+        color = "info";
+        break;
+      case percentage >= 30:
+        color = "warning";
+        break;
+      default:
+        break;
+    }
+    return (
+      <div>
+        <div className="text-center">
+          Progress: {surveyProgress.finished}/{surveyProgress.total} (
+          {percentage?.toPrecision(3)}
+          %)
+        </div>
+        <Progress value={percentage?.toPrecision(3)} color={color} />
+      </div>
+    );
+  };
 
   const surveyDisplay = () => {
     if (isSurveyClosed) {
       return (
-        <Container className="p-5">
+        <>
           <Row>
-            <h1>Report</h1>
+            <h3>Report</h3>
           </Row>
           <Row>
-            <DisplayReport report={privateData} />
+            <Fade>
+              <DisplayReport report={privateData} />
+            </Fade>
           </Row>
           {privateData.histogramData !== undefined &&
           privateData.histogramData.length > 0 ? (
@@ -169,7 +206,7 @@ export default function Reports(props: { password: string; login: string }) {
           ) : (
             <div />
           )}
-        </Container>
+        </>
       );
     }
   };
@@ -212,28 +249,41 @@ export default function Reports(props: { password: string; login: string }) {
       <Container className="p-5">
         <Row className="row-margin">
           <Dropdown isOpen={toggleState} onClick={setToggle}>
-            <DropdownToggle caret>{dropDownTitle}</DropdownToggle>
+            <DropdownToggle
+              color="light"
+              caret
+              className="border-info rounded-pill"
+            >
+              <b>{dropDownTitle}</b>
+            </DropdownToggle>
             <DropdownMenu>{dropDownElements}</DropdownMenu>
           </Dropdown>
         </Row>
         {selectedSurvey >= 0 ? (
-          <Row className="row-margin">
-            <div className="closed-status-text">
-              {isSurveyClosed ? "🔒 Survey closed" : "🔓 Survey open"}
-            </div>
-            {isSurveyClosed ? (
-              <div />
-            ) : (
-              <Button color="primary" onClick={closeSurveyClick}>
-                Close survey
-              </Button>
-            )}
-          </Row>
+          <Fade>
+            <Alert color={isSurveyClosed ? "info" : "success"}>
+              <h4 className="alert-heading">
+                {" "}
+                {isSurveyClosed ? (
+                  <Badge color="info">🔒 SURVEY CLOSED </Badge>
+                ) : (
+                  <Badge color="success">
+                    🔓 SURVEY OPEN <Badge color="success"> </Badge>
+                    <Button color="danger" onClick={closeSurveyClick}>
+                      CLOSE
+                    </Button>
+                  </Badge>
+                )}{" "}
+              </h4>
+              {progress()}
+              <hr />
+            </Alert>
+          </Fade>
         ) : (
           <div />
         )}
+        <Row className="row-margin">{surveyDisplay()}</Row>
       </Container>
-      {surveyDisplay()}
     </div>
   );
 }
