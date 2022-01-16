@@ -5,32 +5,14 @@ import {
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
-  TooltipProps,
   XAxis,
   YAxis,
 } from "recharts";
-import "./DisplayReport.css";
+
 import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
+import { CustomTooltip } from "./CustomTooltip/CustomTooltip";
 
-type ValueType = number | string | Array<number | string>;
-type NameType = number | string;
-
-const CustomTooltip = ({
-  active,
-  payload,
-  label,
-}: TooltipProps<ValueType, NameType>) => {
-  if (active) {
-    return (
-      <div className="custom-tooltip">
-        <p className="tooltip-range">{`Range: ${label}`}</p>
-        <p className="tooltip-share">{`Share of participants: ${payload?.[0].value}`}</p>
-      </div>
-    );
-  }
-
-  return null;
-};
+import "./DisplayReport.css";
 
 export default function DisplayReport(props: { report: Report }) {
   return (
@@ -42,24 +24,31 @@ export default function DisplayReport(props: { report: Report }) {
           data={props.report.histogramData}
           margin={{
             top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
+            right: 135,
+            left: 10,
+            bottom: 20,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="bucketName" />
+          <XAxis
+            label={{
+              value: "Scoring",
+              position: "insideBottom",
+              dy: 20,
+            }}
+            dataKey="bucketName"
+          />
           <YAxis
             label={{
-              value: "   in %    ",
-              angle: 0,
+              value: "Ratio [in %] ",
+              dx: -5,
+              angle: -90,
               position: "insideLeft",
-              textAnchor: "middle",
             }}
           />
           <Tooltip content={<CustomTooltip />} />
           <ReferenceLine y={0} stroke="#000" />
-          <Bar dataKey="participantNumber" fill="#0055a2" />
+          <Bar dataKey="score" fill="#0055a2" />
         </BarChart>
       </ResponsiveContainer>
     </div>
