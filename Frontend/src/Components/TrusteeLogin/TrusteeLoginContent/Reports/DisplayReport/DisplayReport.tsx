@@ -8,9 +8,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-
+import CustomTooltip from "./CustomTooltip/CustomTooltip";
 import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
-import { CustomTooltip } from "./CustomTooltip/CustomTooltip";
 
 import "./DisplayReport.css";
 
