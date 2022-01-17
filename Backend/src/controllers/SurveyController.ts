@@ -787,8 +787,6 @@ export class SurveyController {
   }
 
   static async createReport(survey: Survey): Promise<CreateReportResponseDto> {
-    let minBuckets = 4;
-    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
       scoringReport: {
         histogramData: [],
@@ -801,87 +799,20 @@ export class SurveyController {
     };
 
     let resultPrivate = result;
-
     if (!(survey.privacyBudget > 0)) {
       resultPrivate.error = {
         message: "Not enough budget left on this survey!",
         hasError: true,
       };
       return resultPrivate;
-    } else {
-      let pController = new ParticipantController();
-      let participants = await pController.getParticipants(survey.id);
-
-      const dataset = newArrayView(participants.participants);
-
-      let [min, max, a, b] = [
-        Math.floor(participants.participants[0].scoring),
-        0,
-        0,
-        0,
-      ];
-
-      participants.participants.forEach((d) => {
-        if (d.finished) {
-          if (d.scoring < min) {
-            min = Math.floor(d.scoring);
-          } else if (d.scoring > max) {
-            max = Math.round(d.scoring);
-          }
-        }
-      });
-
-      let width = 1;
-      while ((max - min) / width < minBuckets) {
-        width = width / 2;
-      }
-      a = min;
-      b = a + width;
-
-      const bucketFunc = (view) => {
-        let bucketSize = 0;
-        let total = 0;
-
-        view.forEach((p) => {
-          if (a <= p.scoring && p.scoring < b) {
-            bucketSize += 1;
-          }
-          total += 1;
-        });
-        return (bucketSize * 100) / total;
-      };
-
-      const options = {
-        maxEpsilon: survey.privacyBudget / 2,
-        newShadowIterator: dataset.newShadowIterator,
-      };
-      let tempPrBucketSize: number[] = [];
-      let tempPrHistogram: CreateReportResponseDto = {
-        scoringReport: { histogramData: [] },
-        responseTimeReport: { histogramData: [] },
-        error: { hasError: false, message: "no Error" },
-      };
-
-      for (let i = 0; i < max - min; i += width) {
-        const getPrivateBucket = privatize(bucketFunc, options);
-        let value = (await getPrivateBucket(dataset)).result;
-        if (value < 0) {
-          tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
-        } else {
-          tempPrBucketSize.push(value);
-        }
-        tempPrHistogram.scoringReport.histogramData.push({
-          bucketName: a + ".." + b,
-          score: tempPrBucketSize[tempPrBucketSize.length - 1],
-        });
-        a += width;
-        b += width;
-      }
-      resultPrivate = tempPrHistogram;
     }
     //resultPrivate.scoringReport = await SurveyController.createScoringReport();
-    resultPrivate.scoringReport = resultPrivate.scoringReport;
-    resultPrivate.responseTimeReport = await SurveyController.createScoringReport();
+    resultPrivate.scoringReport = await SurveyController.createScoringReport(
+      survey.id,
+      survey.privacyBudget / 2
+    );
+    resultPrivate.responseTimeReport = await SurveyController.createResponseTimeReport(/*survey.id,
+        survey.privacyBudget / 2*/);
 
     await SurveyController.updateSurveyPrivacyBudget(survey.id, 0);
 
@@ -892,12 +823,78 @@ export class SurveyController {
     );
   }
 
-  static async createScoringReport() {
-    return {
+  static async createScoringReport(surveyId: number, budget: number) {
+    let minBuckets = 4;
+    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+    let pController = new ParticipantController();
+    let participants = await pController.getParticipants(surveyId);
+
+    const dataset = newArrayView(participants.participants);
+
+    let [min, max, a, b] = [
+      Math.floor(participants.participants[0].scoring),
+      0,
+      0,
+      0,
+    ];
+
+    participants.participants.forEach((d) => {
+      if (d.finished) {
+        if (d.scoring < min) {
+          min = Math.floor(d.scoring);
+        } else if (d.scoring > max) {
+          max = Math.round(d.scoring);
+        }
+      }
+    });
+
+    let width = 1;
+    while ((max - min) / width < minBuckets) {
+      width = width / 2;
+    }
+    a = min;
+    b = a + width;
+
+    const bucketFunc = (view) => {
+      let bucketSize = 0;
+      let total = 0;
+
+      view.forEach((p) => {
+        if (a <= p.scoring && p.scoring < b) {
+          bucketSize += 1;
+        }
+        total += 1;
+      });
+      return (bucketSize * 100) / total;
+    };
+
+    const options = {
+      maxEpsilon: budget,
+      newShadowIterator: dataset.newShadowIterator,
+    };
+    let tempPrBucketSize: number[] = [];
+    let tempPrScoringReport = {
       histogramData: [],
     };
+
+    for (let i = 0; i < max - min; i += width) {
+      const getPrivateBucket = privatize(bucketFunc, options);
+      let value = (await getPrivateBucket(dataset)).result;
+      if (value < 0) {
+        tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
+      } else {
+        tempPrBucketSize.push(value);
+      }
+      tempPrScoringReport.histogramData.push({
+        bucketName: a + ".." + b,
+        score: tempPrBucketSize[tempPrBucketSize.length - 1],
+      });
+      a += width;
+      b += width;
+    }
+    return tempPrScoringReport;
   }
-  static async createResponseTimeReport() {
+  static async createResponseTimeReport(/*surveyId: number, budget: number*/) {
     return {
       histogramData: [],
     };
