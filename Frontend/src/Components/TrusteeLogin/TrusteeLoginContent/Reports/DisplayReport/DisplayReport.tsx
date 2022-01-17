@@ -8,8 +8,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import "./DisplayReport.css";
+import CustomTooltip from "./CustomTooltip/CustomTooltip";
 import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
+
+import "./DisplayReport.css";
 
 export default function DisplayReport(props: { report: Report }) {
   return (
@@ -43,9 +45,9 @@ export default function DisplayReport(props: { report: Report }) {
               position: "insideLeft",
             }}
           />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <ReferenceLine y={0} stroke="#000" />
-          <Bar dataKey="score" fill="#0055a2" label="Test" />
+          <Bar dataKey="score" fill="#0055a2" />
         </BarChart>
       </ResponsiveContainer>
     </div>
