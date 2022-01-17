@@ -736,12 +736,7 @@ export class SurveyController {
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
       report: {
-        histogramData: [
-          {
-            bucketName: "-",
-            participantNumber: 0,
-          },
-        ],
+        histogramData: [],
       },
       error: {
         hasError: false,
@@ -770,7 +765,12 @@ export class SurveyController {
 
       const dataset = newArrayView(participants.participants);
 
-      let [min, max, a, b] = [participants.participants[0].scoring, 0, 0, 0];
+      let [min, max, a, b] = [
+        Math.floor(participants.participants[0].scoring),
+        0,
+        0,
+        0,
+      ];
 
       participants.participants.forEach((d) => {
         if (d.finished) {
@@ -822,7 +822,7 @@ export class SurveyController {
         }
         tempPrHistogram.report.histogramData.push({
           bucketName: a + ".." + b,
-          participantNumber: tempPrBucketSize[tempPrBucketSize.length - 1],
+          score: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
         a += width;
         b += width;
@@ -840,7 +840,7 @@ export class SurveyController {
     body: SurveyProgressDto
   ): Promise<SurveyProgressResponseDto> {
     let result: SurveyProgressResponseDto = {
-      progress: 0,
+      progress: { finished: 0, total: 0 },
       error: {
         hasError: false,
         message: "no Error",
@@ -861,7 +861,9 @@ export class SurveyController {
         finished += 1;
       }
     });
-    result.progress = (finished * 100) / participants.participants.length ?? 0;
+    result.progress.finished = finished;
+    result.progress.total = participants.participants.length ?? 0;
+
     return result;
   }
 

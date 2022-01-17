@@ -8,8 +8,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import "./DisplayReport.css";
+import CustomTooltip from "./CustomTooltip/CustomTooltip";
 import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
+
+import "./DisplayReport.css";
 
 export default function DisplayReport(props: { report: Report }) {
   return (
@@ -21,24 +23,31 @@ export default function DisplayReport(props: { report: Report }) {
           data={props.report.histogramData}
           margin={{
             top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
+            right: 135,
+            left: 10,
+            bottom: 20,
           }}
         >
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="bucketName" />
+          <XAxis
+            label={{
+              value: "Scoring",
+              position: "insideBottom",
+              dy: 20,
+            }}
+            dataKey="bucketName"
+          />
           <YAxis
             label={{
-              value: "   in %    ",
-              angle: 0,
+              value: "Ratio [in %] ",
+              dx: -5,
+              angle: -90,
               position: "insideLeft",
-              textAnchor: "middle",
             }}
           />
-          <Tooltip />
+          <Tooltip content={<CustomTooltip />} />
           <ReferenceLine y={0} stroke="#000" />
-          <Bar dataKey="participantNumber" fill="#0055a2" label="Test" />
+          <Bar dataKey="score" fill="#0055a2" />
         </BarChart>
       </ResponsiveContainer>
     </div>
