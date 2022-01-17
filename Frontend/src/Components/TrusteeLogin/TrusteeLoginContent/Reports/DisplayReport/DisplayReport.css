@@ -2,3 +2,18 @@
     height: 40vh;
     width: 80vw;
 }
+
+.custom-tooltip{
+    background: white;
+    border: black;
+    border-radius: 1px;
+    padding: 10px;
+}
+
+.tooltip-range{
+    font-weight: bold;
+}
+
+.tooltip-share{
+
+}
