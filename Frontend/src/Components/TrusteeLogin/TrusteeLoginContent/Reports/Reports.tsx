@@ -66,43 +66,43 @@ export default function Reports(props: {
     // only trigger Report creation, when Survey is selected
     if (selectedSurvey >= 0) {
       surveyApi
-          .getSurveyProgress(props.login, props.password, selectedSurvey)
+        .getSurveyProgress(props.login, props.password, selectedSurvey)
+        .then(async (response) => {
+          if (response.error.hasError) {
+            alert(response.error.message);
+          } else {
+            setSurveyProgress(response.progress);
+            setPercentage(
+              (response.progress.finished * 100) / response.progress.total
+            );
+          }
+        })
+        .catch((error: AxiosError) => {
+          setHasError(true);
+          setErrorMessage(error.message);
+        });
+      if (isSurveyClosed) {
+        surveyApi
+          .createReport(
+            props.login,
+            props.password,
+            selectedSurvey,
+            selectedSurveyPrivacy
+          )
           .then(async (response) => {
+            setPrivateData(response.report);
             if (response.error.hasError) {
               alert(response.error.message);
-            } else {
-              setSurveyProgress(response.progress);
-              setPercentage(
-                  (response.progress.finished * 100) / response.progress.total
-              );
             }
+            setHasError(false);
           })
           .catch((error: AxiosError) => {
             setHasError(true);
             setErrorMessage(error.message);
           });
-      if (isSurveyClosed) {
-        surveyApi
-            .createReport(
-                props.login,
-                props.password,
-                selectedSurvey,
-                selectedSurveyPrivacy
-            )
-            .then(async (response) => {
-              setPrivateData(response.report);
-              if (response.error.hasError) {
-                alert(response.error.message);
-              }
-              setHasError(false);
-            })
-            .catch((error: AxiosError) => {
-              setHasError(true);
-              setErrorMessage(error.message);
-            });
       }
     }
-  }, [props.login, props.password, selectedSurvey, isSurveyClosed, surveyApi]);
+  }, [props.login, props.password, selectedSurvey, selectedSurveyPrivacy, isSurveyClosed, surveyApi]);
 
   const setToggle = () => {
     toggleValue(!toggleState);

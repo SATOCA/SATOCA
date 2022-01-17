@@ -44,7 +44,7 @@ export default function TrusteeLoginContent(props: {
 
   useEffect(() => {
     updateSurveyQuery();
-  }, [props.login, props.password, surveyApi]);
+  }, [props.login, props.password, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggle = (tab: string) => {
     if (activeTab !== tab) setActiveTab(tab);
