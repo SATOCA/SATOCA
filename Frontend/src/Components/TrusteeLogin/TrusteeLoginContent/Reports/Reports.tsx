@@ -102,7 +102,14 @@ export default function Reports(props: {
           });
       }
     }
-  }, [props.login, props.password, selectedSurvey, selectedSurveyPrivacy, isSurveyClosed, surveyApi]);
+  }, [
+    props.login,
+    props.password,
+    selectedSurvey,
+    selectedSurveyPrivacy,
+    isSurveyClosed,
+    surveyApi,
+  ]);
 
   const setToggle = () => {
     toggleValue(!toggleState);
