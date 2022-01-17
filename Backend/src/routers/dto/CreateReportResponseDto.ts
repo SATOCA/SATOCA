@@ -1,7 +1,8 @@
 import { ErrorDto } from "./ErrorDto";
 
 export interface CreateReportResponseDto {
-  report: Report;
+  scoringReport: Report;
+  responseTimeReport: Report;
   error: ErrorDto;
 }
 

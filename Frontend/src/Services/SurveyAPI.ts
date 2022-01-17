@@ -7,7 +7,6 @@ import { TrusteeLoginDto } from "../DataModel/dto/TrusteeLoginDto";
 import { TrusteeLoginResponseDto } from "../DataModel/dto/TrusteeLoginResponseDto";
 import { UploadSurveyFileResponseDto } from "../DataModel/dto/UploadSurveyFileResponseDto";
 import { CreateReportResponseDto } from "../DataModel/dto/CreateReportResponseDto";
-import { CreateReportDto } from "../DataModel/dto/CreateReportDto";
 import { SurveyResponseDto } from "../DataModel/dto/SurveyResponseDto";
 import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
 import { CloseSurveyResponseDto } from "../../../Backend/src/routers/dto/CloseSurveyResponseDto";
@@ -68,20 +67,18 @@ export default class SurveyApi extends HttpClient {
   ): Promise<AxiosResponse<TrusteeLoginResponseDto>> =>
     await this.instance.post<TrusteeLoginResponseDto>("/trustee/login/", data);
 
-  public createReport = async (
+  public getReports = async (
     login: string,
     password: string,
-    surveyId: number,
-    privacyBudget: number
+    surveyId: number
   ): Promise<CreateReportResponseDto> => {
-    const createReportDto: CreateReportDto = {
+    const closeSurveyDto: CloseSurveyDto = {
       login,
       password,
       surveyId,
-      privacyBudget,
     };
 
-    return await this.instance.post("/Survey/create-report", createReportDto);
+    return await this.instance.post("/Survey/get-reports", closeSurveyDto);
   };
   public getSurveyProgress = async (
     login: string,

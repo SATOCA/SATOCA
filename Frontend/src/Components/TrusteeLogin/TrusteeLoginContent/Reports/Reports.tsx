@@ -47,7 +47,6 @@ export default function Reports(props: { password: string; login: string }) {
     "Select the query to show report"
   );
   const [selectedSurvey, setSurveyId] = useState(-1);
-  const [selectedSurveyPrivacy, setPrivacy] = useState(0);
   const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
   const [percentage, setPercentage] = useState(0);
@@ -99,14 +98,9 @@ export default function Reports(props: { password: string; login: string }) {
         });
       if (isSurveyClosed) {
         surveyApi
-          .createReport(
-            props.login,
-            props.password,
-            selectedSurvey,
-            selectedSurveyPrivacy
-          )
+          .getReports(props.login, props.password, selectedSurvey)
           .then(async (response) => {
-            setPrivateData(response.report);
+            setPrivateData(response.scoringReport);
             if (response.error.hasError) {
               alert(response.error.message);
             }
@@ -138,7 +132,6 @@ export default function Reports(props: { password: string; login: string }) {
 
   const setSurveyItem = (survey: SurveyInfo) => {
     setSurveyId(survey.id);
-    setPrivacy(survey.privacyBudget);
     setIsSurveyClosed(survey.isClosed);
   };
   const exportReport = () => {

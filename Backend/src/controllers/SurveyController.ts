@@ -16,14 +16,17 @@ import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
-import { CreateReportDto } from "../routers/dto/CreateReportDto";
-import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
+import {
+  CreateReportResponseDto,
+  HistogramData,
+} from "../routers/dto/CreateReportResponseDto";
 import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
 import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
 import { TrusteeDto } from "../routers/dto/TrusteeDto";
 import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDisclaimerResponseDto";
 import { SurveyProgressResponseDto } from "../routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../routers/dto/SurveyProgressDto";
+import { Report } from "../entities/Report";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -708,7 +711,59 @@ export class SurveyController {
   };
 
   // end Excel Upload
+  static async saveReports(
+    surveyId: number,
+    scoring: HistogramData[],
+    responseTime: HistogramData[]
+  ) {
+    const ReportRepository = await getConnection().getRepository(Report);
 
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    let surveyReport = new Report();
+    surveyReport.SurveyId = surveyId;
+    surveyReport.scoringReport = scoring;
+    surveyReport.responseTimeReport = responseTime;
+
+    await ReportRepository.save(surveyReport)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+  }
+
+  async getReports(body: CloseSurveyDto): Promise<CreateReportResponseDto> {
+    let result: CreateReportResponseDto = {
+      scoringReport: {
+        histogramData: [],
+      },
+      responseTimeReport: { histogramData: [] },
+      error: {
+        message: "",
+        hasError: false,
+      },
+    };
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+    const ReportRepository = await getConnection().getRepository(Report);
+    let report = await ReportRepository.find({
+      where: { SurveyId: body.surveyId },
+    });
+
+    result.scoringReport.histogramData = report[0].scoringReport;
+    result.responseTimeReport.histogramData = report[0].responseTimeReport;
+    return result;
+  }
   static async updateSurveyPrivacyBudget(
     surveyId: number,
     newPrivacyBudget: number
@@ -730,30 +785,24 @@ export class SurveyController {
         result.message = e;
       });
   }
-  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
-    let cost = 1;
+
+  static async createReport(survey: Survey): Promise<CreateReportResponseDto> {
     let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let result: CreateReportResponseDto = {
-      report: {
+      scoringReport: {
         histogramData: [],
       },
+      responseTimeReport: { histogramData: [] },
       error: {
         hasError: false,
         message: "no Error",
       },
     };
 
-    //check User rights
-    let loginResult = await SurveyController.checkTrusteeLogin(body);
-
-    if (loginResult.hasError) {
-      result.error = loginResult;
-      return result;
-    }
     let resultPrivate = result;
 
-    if (body.privacyBudget < cost) {
+    if (!(survey.privacyBudget > 0)) {
       resultPrivate.error = {
         message: "Not enough budget left on this survey!",
         hasError: true,
@@ -761,7 +810,7 @@ export class SurveyController {
       return resultPrivate;
     } else {
       let pController = new ParticipantController();
-      let participants = await pController.getParticipants(body.surveyId);
+      let participants = await pController.getParticipants(survey.id);
 
       const dataset = newArrayView(participants.participants);
 
@@ -803,12 +852,13 @@ export class SurveyController {
       };
 
       const options = {
-        maxEpsilon: cost,
+        maxEpsilon: survey.privacyBudget / 2,
         newShadowIterator: dataset.newShadowIterator,
       };
       let tempPrBucketSize: number[] = [];
       let tempPrHistogram: CreateReportResponseDto = {
-        report: { histogramData: [] },
+        scoringReport: { histogramData: [] },
+        responseTimeReport: { histogramData: [] },
         error: { hasError: false, message: "no Error" },
       };
 
@@ -820,7 +870,7 @@ export class SurveyController {
         } else {
           tempPrBucketSize.push(value);
         }
-        tempPrHistogram.report.histogramData.push({
+        tempPrHistogram.scoringReport.histogramData.push({
           bucketName: a + ".." + b,
           score: tempPrBucketSize[tempPrBucketSize.length - 1],
         });
@@ -829,11 +879,28 @@ export class SurveyController {
       }
       resultPrivate = tempPrHistogram;
     }
-    await SurveyController.updateSurveyPrivacyBudget(
-      body.surveyId,
-      body.privacyBudget - cost
+    //resultPrivate.scoringReport = await SurveyController.createScoringReport();
+    resultPrivate.scoringReport = resultPrivate.scoringReport;
+    resultPrivate.responseTimeReport = await SurveyController.createScoringReport();
+
+    await SurveyController.updateSurveyPrivacyBudget(survey.id, 0);
+
+    await SurveyController.saveReports(
+      survey.id,
+      resultPrivate.scoringReport.histogramData,
+      resultPrivate.responseTimeReport.histogramData
     );
-    return resultPrivate;
+  }
+
+  static async createScoringReport() {
+    return {
+      histogramData: [],
+    };
+  }
+  static async createResponseTimeReport() {
+    return {
+      histogramData: [],
+    };
   }
 
   async getProgress(
@@ -906,6 +973,8 @@ export class SurveyController {
         hasError: true,
       };
     });
+
+    await SurveyController.createReport(targetSurvey);
 
     return result;
   }
