@@ -20,7 +20,6 @@ import { SurveyInfo } from "../../../../DataModel/dto/SurveyResponseDto";
 import ErrorModal from "./ErrorModal/ErrorModal";
 import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 import "./Reports.css";
-import { ExportToCsv } from "export-to-csv";
 import { SurveyProgress } from "../../../../DataModel/dto/SurveyProgressResponseDto";
 
 export default function Reports(props: { password: string; login: string }) {
@@ -34,7 +33,15 @@ export default function Reports(props: { password: string; login: string }) {
     },
   ];
 
-  const [privateData, setPrivateData] = useState<Report>({ histogramData: [] });
+  const [privateScoringData, setPrivateScoringData] = useState<Report>({
+    histogramData: [],
+  });
+  const [
+    privateResponseTimeData,
+    setprivateResponseTimeData,
+  ] = useState<Report>({
+    histogramData: [],
+  });
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [surveyProgress, setSurveyProgress] = useState<SurveyProgress>({
     finished: 0,
@@ -47,24 +54,10 @@ export default function Reports(props: { password: string; login: string }) {
     "Select the query to show report"
   );
   const [selectedSurvey, setSurveyId] = useState(-1);
+  const [selectedSurveyName, setSurveyName] = useState("default");
   const [isSurveyClosed, setIsSurveyClosed] = useState(false);
   const [toggleState, toggleValue] = useState(false);
   const [percentage, setPercentage] = useState(0);
-  const [csvExporter] = useState(
-    new ExportToCsv({
-      fieldSeparator: ";",
-      // eslint-disable-next-line
-      quoteStrings: `"`,
-      decimalSeparator: ",",
-      showLabels: true,
-      showTitle: true,
-      title: "_Report.csv",
-      filename: "_Report",
-      useTextFile: false,
-      useBom: true,
-      headers: ["scoring range", "user percentage"],
-    })
-  );
   const surveyApi = SurveyApi.getInstance();
 
   function updateSurveyDisplay() {
@@ -100,7 +93,8 @@ export default function Reports(props: { password: string; login: string }) {
         surveyApi
           .getReports(props.login, props.password, selectedSurvey)
           .then(async (response) => {
-            setPrivateData(response.scoringReport);
+            await setPrivateScoringData(response.scoringReport);
+            await setprivateResponseTimeData(response.responseTimeReport);
             if (response.error.hasError) {
               alert(response.error.message);
             }
@@ -122,29 +116,16 @@ export default function Reports(props: { password: string; login: string }) {
     toggleValue(!toggleState);
   };
 
-  const setOptionItem = (title: string, header: string[]) => {
-    csvExporter.options.title = `SCORING-REPORT - SURVEY: ${title}   PARTICIPATION: ${
-      surveyProgress.finished
-    }/${surveyProgress.total} (${percentage.toPrecision(3)}%)`;
-    csvExporter.options.filename = `${title}_report`;
-    csvExporter.options.headers = header;
-  };
-
-  const setSurveyItem = (survey: SurveyInfo) => {
+  const setSurveyItem = async (survey: SurveyInfo) => {
     setSurveyId(survey.id);
+    await setSurveyName(survey.title);
     setIsSurveyClosed(survey.isClosed);
-  };
-  const exportReport = () => {
-    csvExporter.generateCsv(
-      JSON.parse(JSON.stringify(privateData.histogramData))
-    );
   };
 
   const dropDownElements = surveyQuery.map((survey) => (
     <DropdownItem
-      onClick={() => {
-        setSurveyItem(survey);
-        setOptionItem(survey.title, ["scoring range", "user percentage"]);
+      onClick={async () => {
+        await setSurveyItem(survey);
         setDropDownTitle(`${survey.id} | ${survey.title}`);
       }}
     >
@@ -188,17 +169,14 @@ export default function Reports(props: { password: string; login: string }) {
           </Row>
           <Row>
             <Fade>
-              <DisplayReport report={privateData} />
+              <DisplayReport
+                scoringReport={privateScoringData}
+                respondTimeReport={privateResponseTimeData}
+                surveyTitle={selectedSurveyName}
+                surveyProgress={surveyProgress}
+              />
             </Fade>
           </Row>
-          {privateData.histogramData !== undefined &&
-          privateData.histogramData.length > 0 ? (
-            <Button color="primary" onClick={exportReport}>
-              Download Report
-            </Button>
-          ) : (
-            <div />
-          )}
         </>
       );
     }
