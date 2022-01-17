@@ -148,7 +148,7 @@ export default function Reports(props: { password: string; login: string }) {
         setDropDownTitle(`${survey.id} | ${survey.title}`);
       }}
     >
-      Survey id:{survey.id} title:{survey.title}
+      {`${survey.id} | ${survey.title}`}
     </DropdownItem>
   ));
 
