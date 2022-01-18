@@ -171,7 +171,7 @@ export default function Reports(props: { password: string; login: string }) {
             <Fade>
               <DisplayReport
                 scoringReport={privateScoringData}
-                respondTimeReport={privateResponseTimeData}
+                responseTimeReport={privateResponseTimeData}
                 surveyTitle={selectedSurveyName}
                 surveyProgress={surveyProgress}
               />

@@ -28,7 +28,7 @@ import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressRespo
 
 export default function DisplayReport(props: {
   scoringReport: Report;
-  respondTimeReport: Report;
+  responseTimeReport: Report;
   surveyTitle: string;
   surveyProgress: SurveyProgress;
 }) {
@@ -133,7 +133,7 @@ export default function DisplayReport(props: {
               toggle("2");
             }}
           >
-            Average Respond Time
+            Average Response Time
           </NavLink>
         </NavItem>
       </Nav>
@@ -155,13 +155,15 @@ export default function DisplayReport(props: {
           )}
         </TabPane>
         <TabPane tabId="2">
-          {reportChart(props.respondTimeReport.histogramData)}
-          {props.respondTimeReport.histogramData !== undefined &&
-          props.respondTimeReport.histogramData.length > 0 ? (
+          {reportChart(props.responseTimeReport.histogramData)}
+          {props.responseTimeReport.histogramData !== undefined &&
+          props.responseTimeReport.histogramData.length > 0 ? (
             <Button
               color="primary"
               onClick={() => {
-                exportResponseTimeReport(props.respondTimeReport.histogramData);
+                exportResponseTimeReport(
+                  props.responseTimeReport.histogramData
+                );
               }}
             >
               Download Report
