@@ -9,6 +9,7 @@ import {
 import { Survey } from "./Survey";
 import { FinishedQuestion } from "./FinishedQuestion";
 import { Question } from "./Question";
+import {TimeTracker} from "./TimeTracker";
 
 @Entity()
 export class Participant extends BaseEntity {
@@ -38,4 +39,7 @@ export class Participant extends BaseEntity {
 
   @Column()
   legalDisclaimerAccepted: boolean = false;
+
+  @OneToMany((type) => TimeTracker, (tracker) => tracker.participant)
+  timeTrackers: TimeTracker[];
 }

@@ -24,6 +24,7 @@ import { TrusteeDto } from "../routers/dto/TrusteeDto";
 import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDisclaimerResponseDto";
 import { SurveyProgressResponseDto } from "../routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../routers/dto/SurveyProgressDto";
+import { TimeTracker } from "../entities/TimeTracker";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -200,6 +201,26 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
+    if (targetParticipant.legalDisclaimerAccepted === true)
+    {
+      const survey = await getConnection()
+          .getRepository(Survey)
+          .createQueryBuilder("survey")
+          .where("survey.id = :id", { id: surveyId })
+          .getOne();
+
+      let tracker = new TimeTracker();
+      tracker.survey = survey;
+      tracker.participant = targetParticipant;
+      tracker.question = question;
+      tracker.start = new Date(Date.now());
+      //! \todo maybe adjust
+      tracker.stop = new Date(Date.now());
+
+      let timeTrackerTable = await getConnection().getRepository(TimeTracker);
+      await timeTrackerTable.save(tracker);
+    }
+
     const err: ErrorDto = {
       message: "",
       hasError: false,
@@ -234,6 +255,14 @@ export class SurveyController {
       .leftJoinAndSelect("question.choices", "choices")
       .where("question.id = :id", { id: body.itemId })
       .getOne();
+
+    await getConnection()
+        .createQueryBuilder()
+        .update(TimeTracker)
+        .set({ stop: new Date(Date.now()) })
+        .where("question.id = :qid", { qid: question.id })
+        .andWhere("participant.id = :pid", { pid: participant.id })
+        .execute();
 
     let result: ErrorDto = {
       message: "",
