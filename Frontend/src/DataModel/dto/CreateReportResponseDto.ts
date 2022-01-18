@@ -10,7 +10,7 @@ export interface Report {
   histogramData: HistogramData[];
 }
 
-interface HistogramData {
+export interface HistogramData {
   bucketName: string;
   score: number;
 }

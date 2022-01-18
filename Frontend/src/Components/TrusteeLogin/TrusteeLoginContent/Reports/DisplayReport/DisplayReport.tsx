@@ -1,3 +1,4 @@
+import React, { useState } from "react";
 import {
   Bar,
   BarChart,
@@ -8,10 +9,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import "./DisplayReport.css";
-import CustomTooltip from "./CustomTooltip/CustomTooltip";
-import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
-import React, { useState } from "react";
 import {
   Button,
   Container,
@@ -22,9 +19,11 @@ import {
   TabPane,
 } from "reactstrap";
 import classnames from "classnames";
-import { HistogramData } from "../../../../../../../Backend/src/routers/dto/CreateReportResponseDto";
 import { ExportToCsv } from "export-to-csv";
+import CustomTooltip from "./CustomTooltip/CustomTooltip";
 import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressResponseDto";
+import { Report, HistogramData } from "../../../../../DataModel/dto/CreateReportResponseDto";
+import "./DisplayReport.css";
 
 export default function DisplayReport(props: {
   scoringReport: Report;
