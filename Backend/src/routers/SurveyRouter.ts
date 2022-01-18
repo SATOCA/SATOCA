@@ -7,6 +7,7 @@ import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
 import { CloseSurveyDto } from "./dto/CloseSurveyDto";
 import { TrusteeDto } from "./dto/TrusteeDto";
 import { SurveyProgressDto } from "./dto/SurveyProgressDto";
+import { GetReportDto } from "./dto/GetReportDto";
 
 export class SurveyRouter {
   private _router = Router();
@@ -114,11 +115,9 @@ export class SurveyRouter {
       "/get-reports",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller
-            .getReports(req.body as CloseSurveyDto)
-            .then((obj) => {
-              res.status(200).json(obj);
-            });
+          this._controller.getReports(req.body as GetReportDto).then((obj) => {
+            res.status(200).json(obj);
+          });
         } catch (error) {
           next(error);
         }

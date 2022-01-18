@@ -14,6 +14,7 @@ import { CloseSurveyDto } from "../../../Backend/src/routers/dto/CloseSurveyDto"
 import { LegalDisclaimerResponseDtoResponseDto } from "../DataModel/dto/LegalDisclaimerResponseDto";
 import { SurveyProgressResponseDto } from "../../../Backend/src/routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../../../Backend/src/routers/dto/SurveyProgressDto";
+import { GetReportDto } from "../DataModel/dto/GetReportDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -72,13 +73,13 @@ export default class SurveyApi extends HttpClient {
     password: string,
     surveyId: number
   ): Promise<CreateReportResponseDto> => {
-    const closeSurveyDto: CloseSurveyDto = {
+    const getReportDto: GetReportDto = {
       login,
       password,
       surveyId,
     };
 
-    return await this.instance.post("/Survey/get-reports", closeSurveyDto);
+    return await this.instance.post("/Survey/get-reports", getReportDto);
   };
   public getSurveyProgress = async (
     login: string,

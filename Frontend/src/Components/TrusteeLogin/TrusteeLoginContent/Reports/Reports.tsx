@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import DisplayReport from "./DisplayReport/DisplayReport";
-import { Report } from "../../../../DataModel/dto/CreateReportResponseDto";
+import { HistogramData } from "../../../../DataModel/dto/CreateReportResponseDto";
 import SurveyApi from "../../../../Services/SurveyAPI";
 import { AxiosError } from "axios";
 import {
@@ -33,15 +33,12 @@ export default function Reports(props: { password: string; login: string }) {
     },
   ];
 
-  const [privateScoringData, setPrivateScoringData] = useState<Report>({
-    histogramData: [],
-  });
-  const [
-    privateResponseTimeData,
-    setprivateResponseTimeData,
-  ] = useState<Report>({
-    histogramData: [],
-  });
+  const [privateScoringData, setPrivateScoringData] = useState<HistogramData[]>(
+    []
+  );
+  const [privateResponseTimeData, setprivateResponseTimeData] = useState<
+    HistogramData[]
+  >([]);
   const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [surveyProgress, setSurveyProgress] = useState<SurveyProgress>({
     finished: 0,

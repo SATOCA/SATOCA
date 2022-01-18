@@ -10,7 +10,7 @@ import {
 } from "recharts";
 import "./DisplayReport.css";
 import CustomTooltip from "./CustomTooltip/CustomTooltip";
-import { Report } from "../../../../../DataModel/dto/CreateReportResponseDto";
+import { HistogramData } from "../../../../../DataModel/dto/CreateReportResponseDto";
 import React, { useState } from "react";
 import {
   Button,
@@ -22,13 +22,12 @@ import {
   TabPane,
 } from "reactstrap";
 import classnames from "classnames";
-import { HistogramData } from "../../../../../../../Backend/src/routers/dto/CreateReportResponseDto";
 import { ExportToCsv } from "export-to-csv";
 import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressResponseDto";
 
 export default function DisplayReport(props: {
-  scoringReport: Report;
-  responseTimeReport: Report;
+  scoringReport: HistogramData[];
+  responseTimeReport: HistogramData[];
   surveyTitle: string;
   surveyProgress: SurveyProgress;
 }) {
@@ -139,13 +138,13 @@ export default function DisplayReport(props: {
       </Nav>
       <TabContent activeTab={activeTab}>
         <TabPane tabId="1">
-          {reportChart(props.scoringReport.histogramData)}
-          {props.scoringReport.histogramData !== undefined &&
-          props.scoringReport.histogramData.length > 0 ? (
+          {reportChart(props.scoringReport)}
+          {props.scoringReport !== undefined &&
+          props.scoringReport.length > 0 ? (
             <Button
               color="primary"
               onClick={() => {
-                exportScoringReport(props.scoringReport.histogramData);
+                exportScoringReport(props.scoringReport);
               }}
             >
               Download Report
@@ -155,15 +154,13 @@ export default function DisplayReport(props: {
           )}
         </TabPane>
         <TabPane tabId="2">
-          {reportChart(props.responseTimeReport.histogramData)}
-          {props.responseTimeReport.histogramData !== undefined &&
-          props.responseTimeReport.histogramData.length > 0 ? (
+          {reportChart(props.responseTimeReport)}
+          {props.responseTimeReport !== undefined &&
+          props.responseTimeReport.length > 0 ? (
             <Button
               color="primary"
               onClick={() => {
-                exportResponseTimeReport(
-                  props.responseTimeReport.histogramData
-                );
+                exportResponseTimeReport(props.responseTimeReport);
               }}
             >
               Download Report

@@ -27,6 +27,7 @@ import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDiscl
 import { SurveyProgressResponseDto } from "../routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../routers/dto/SurveyProgressDto";
 import { Report } from "../entities/Report";
+import { GetReportDto } from "../routers/dto/GetReportDto";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
   function f(x) {
@@ -737,12 +738,10 @@ export class SurveyController {
       });
   }
 
-  async getReports(body: CloseSurveyDto): Promise<CreateReportResponseDto> {
+  async getReports(body: GetReportDto): Promise<CreateReportResponseDto> {
     let result: CreateReportResponseDto = {
-      scoringReport: {
-        histogramData: [],
-      },
-      responseTimeReport: { histogramData: [] },
+      scoringReport: [],
+      responseTimeReport: [],
       error: {
         message: "",
         hasError: false,
@@ -760,8 +759,8 @@ export class SurveyController {
       where: { SurveyId: body.surveyId },
     });
 
-    result.scoringReport.histogramData = report[0].scoringReport;
-    result.responseTimeReport.histogramData = report[0].responseTimeReport;
+    result.scoringReport = report[0].scoringReport;
+    result.responseTimeReport = report[0].responseTimeReport;
     return result;
   }
   static async updateSurveyPrivacyBudget(
@@ -788,10 +787,8 @@ export class SurveyController {
 
   static async createReport(survey: Survey): Promise<CreateReportResponseDto> {
     let result: CreateReportResponseDto = {
-      scoringReport: {
-        histogramData: [],
-      },
-      responseTimeReport: { histogramData: [] },
+      scoringReport: [],
+      responseTimeReport: [],
       error: {
         hasError: false,
         message: "no Error",
@@ -818,12 +815,15 @@ export class SurveyController {
 
     await SurveyController.saveReports(
       survey.id,
-      resultPrivate.scoringReport.histogramData,
-      resultPrivate.responseTimeReport.histogramData
+      resultPrivate.scoringReport,
+      resultPrivate.responseTimeReport
     );
   }
 
-  static async createScoringReport(surveyId: number, budget: number) {
+  static async createScoringReport(
+    surveyId: number,
+    budget: number
+  ): Promise<HistogramData[]> {
     let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
     let pController = new ParticipantController();
@@ -831,7 +831,7 @@ export class SurveyController {
 
     const dataset = newArrayView(participants.participants);
 
-    let [min, max, a, b] = [
+    let [min, max, lowerBucketBound, upperBuckerBound] = [
       Math.floor(participants.participants[0].scoring),
       0,
       0,
@@ -852,15 +852,15 @@ export class SurveyController {
     while ((max - min) / width < minBuckets) {
       width = width / 2;
     }
-    a = min;
-    b = a + width;
+    lowerBucketBound = min;
+    upperBuckerBound = lowerBucketBound + width;
 
     const bucketFunc = (view) => {
       let bucketSize = 0;
       let total = 0;
 
       view.forEach((p) => {
-        if (a <= p.scoring && p.scoring < b) {
+        if (lowerBucketBound <= p.scoring && p.scoring < upperBuckerBound) {
           bucketSize += 1;
         }
         total += 1;
@@ -873,9 +873,7 @@ export class SurveyController {
       newShadowIterator: dataset.newShadowIterator,
     };
     let tempPrBucketSize: number[] = [];
-    let tempPrScoringReport = {
-      histogramData: [],
-    };
+    let tempPrScoringReport = [];
 
     for (let i = 0; i < max - min; i += width) {
       const getPrivateBucket = privatize(bucketFunc, options);
@@ -885,19 +883,19 @@ export class SurveyController {
       } else {
         tempPrBucketSize.push(value);
       }
-      tempPrScoringReport.histogramData.push({
-        bucketName: a + ".." + b,
+      tempPrScoringReport.push({
+        bucketName: lowerBucketBound + ".." + upperBuckerBound,
         score: tempPrBucketSize[tempPrBucketSize.length - 1],
       });
-      a += width;
-      b += width;
+      lowerBucketBound += width;
+      upperBuckerBound += width;
     }
     return tempPrScoringReport;
   }
-  static async createResponseTimeReport(/*surveyId: number, budget: number*/) {
-    return {
-      histogramData: [],
-    };
+  static async createResponseTimeReport(/*surveyId: number, budget: number*/): Promise<
+    HistogramData[]
+  > {
+    return [];
   }
 
   async getProgress(

@@ -1,5 +1,5 @@
 import { TrusteeDto } from "./TrusteeDto";
 
-export interface CreateReportDto extends TrusteeDto {
+export interface GetReportDto extends TrusteeDto {
   surveyId: number;
 }

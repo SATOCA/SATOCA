@@ -1,16 +1,12 @@
 import { ErrorDto } from "./ErrorDto";
 
 export interface CreateReportResponseDto {
-  scoringReport: Report;
-  responseTimeReport: Report;
+  scoringReport: HistogramData[];
+  responseTimeReport: HistogramData[];
   error: ErrorDto;
 }
 
-export interface Report {
-  histogramData: HistogramData[];
-}
-
-interface HistogramData {
+export interface HistogramData {
   bucketName: string;
   score: number;
 }

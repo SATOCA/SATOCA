@@ -1,13 +1,9 @@
 import { ErrorDto } from "./ErrorDto";
 
 export interface CreateReportResponseDto {
-  scoringReport: Report;
-  responseTimeReport: Report;
+  scoringReport: HistogramData[];
+  responseTimeReport: HistogramData[];
   error: ErrorDto;
-}
-
-export interface Report {
-  histogramData: HistogramData[];
 }
 
 export interface HistogramData {
