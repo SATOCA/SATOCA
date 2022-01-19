@@ -12,7 +12,7 @@ import {
 import classnames from "classnames";
 import { ExportToCsv } from "export-to-csv";
 import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressResponseDto";
-import ReportChart from "./ReportChart";
+import reportChart from "./ReportChart";
 
 export default function DisplayReport(props: {
   scoringReport: HistogramData[];
@@ -88,7 +88,7 @@ export default function DisplayReport(props: {
       </Nav>
       <TabContent activeTab={activeTab}>
         <TabPane tabId="1">
-          {ReportChart(props.scoringReport)}
+          {reportChart(props.scoringReport)}
           {props.scoringReport !== undefined &&
           props.scoringReport.length > 0 ? (
             <Button
@@ -104,7 +104,7 @@ export default function DisplayReport(props: {
           )}
         </TabPane>
         <TabPane tabId="2">
-          {ReportChart(props.responseTimeReport)}
+          {reportChart(props.responseTimeReport)}
           {props.responseTimeReport !== undefined &&
           props.responseTimeReport.length > 0 ? (
             <Button

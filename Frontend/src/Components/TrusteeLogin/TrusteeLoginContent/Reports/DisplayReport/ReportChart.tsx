@@ -13,7 +13,7 @@ import "./ReportChart.css";
 import CustomTooltip from "./CustomTooltip/CustomTooltip";
 import React from "react";
 
-export default function ReportChart(data: HistogramData[]) {
+export default function reportChart(data: HistogramData[]) {
   return (
     <div className="histogram">
       <ResponsiveContainer width="100%" height="90%">
