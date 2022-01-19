@@ -7,7 +7,6 @@ import { TrusteeLoginDto } from "../DataModel/dto/TrusteeLoginDto";
 import { TrusteeLoginResponseDto } from "../DataModel/dto/TrusteeLoginResponseDto";
 import { UploadSurveyFileResponseDto } from "../DataModel/dto/UploadSurveyFileResponseDto";
 import { CreateReportResponseDto } from "../DataModel/dto/CreateReportResponseDto";
-import { CreateReportDto } from "../DataModel/dto/CreateReportDto";
 import { SurveyResponseDto } from "../DataModel/dto/SurveyResponseDto";
 import { TrusteeDto } from "../DataModel/dto/TrusteeDto";
 import { CloseSurveyResponseDto } from "../../../Backend/src/routers/dto/CloseSurveyResponseDto";
@@ -15,6 +14,7 @@ import { CloseSurveyDto } from "../../../Backend/src/routers/dto/CloseSurveyDto"
 import { LegalDisclaimerResponseDtoResponseDto } from "../DataModel/dto/LegalDisclaimerResponseDto";
 import { SurveyProgressResponseDto } from "../../../Backend/src/routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../../../Backend/src/routers/dto/SurveyProgressDto";
+import { GetReportDto } from "../DataModel/dto/GetReportDto";
 
 // s. https://levelup.gitconnected.com/enhance-your-http-request-with-axios-and-typescript-f52a6c6c2c8e
 export default class SurveyApi extends HttpClient {
@@ -68,20 +68,18 @@ export default class SurveyApi extends HttpClient {
   ): Promise<AxiosResponse<TrusteeLoginResponseDto>> =>
     await this.instance.post<TrusteeLoginResponseDto>("/trustee/login/", data);
 
-  public createReport = async (
+  public getReports = async (
     login: string,
     password: string,
-    surveyId: number,
-    privacyBudget: number
+    surveyId: number
   ): Promise<CreateReportResponseDto> => {
-    const createReportDto: CreateReportDto = {
+    const getReportDto: GetReportDto = {
       login,
       password,
       surveyId,
-      privacyBudget,
     };
 
-    return await this.instance.post("/Survey/create-report", createReportDto);
+    return await this.instance.post("/Survey/get-reports", getReportDto);
   };
   public getSurveyProgress = async (
     login: string,

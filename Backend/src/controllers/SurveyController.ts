@@ -16,14 +16,18 @@ import { Survey } from "../entities/Survey";
 import { Question } from "../entities/Question";
 import { Answer } from "../entities/Answer";
 import { UploadSurveyFileResponseDto } from "../routers/dto/UploadSurveyFileResponseDto";
-import { CreateReportDto } from "../routers/dto/CreateReportDto";
-import { CreateReportResponseDto } from "../routers/dto/CreateReportResponseDto";
+import {
+  CreateReportResponseDto,
+  HistogramData,
+} from "../routers/dto/CreateReportResponseDto";
 import { CloseSurveyDto } from "../routers/dto/CloseSurveyDto";
 import { CloseSurveyResponseDto } from "../routers/dto/CloseSurveyResponseDto";
 import { TrusteeDto } from "../routers/dto/TrusteeDto";
 import { LegalDisclaimerResponseDtoResponseDto } from "../routers/dto/LegalDisclaimerResponseDto";
 import { SurveyProgressResponseDto } from "../routers/dto/SurveyProgressResponseDto";
 import { SurveyProgressDto } from "../routers/dto/SurveyProgressDto";
+import { Report } from "../entities/Report";
+import { GetReportDto } from "../routers/dto/GetReportDto";
 import { TimeTracker } from "../entities/TimeTracker";
 
 function normal(mean: number, stdDev: number): Array<[number, number]> {
@@ -737,7 +741,57 @@ export class SurveyController {
   };
 
   // end Excel Upload
+  static async saveReports(
+    surveyId: number,
+    scoring: HistogramData[],
+    responseTime: HistogramData[]
+  ) {
+    const ReportRepository = await getConnection().getRepository(Report);
 
+    let result: ErrorDto = {
+      message: "",
+      hasError: false,
+    };
+    let surveyReport = new Report();
+    surveyReport.SurveyId = surveyId;
+    surveyReport.scoringReport = scoring;
+    surveyReport.responseTimeReport = responseTime;
+
+    await ReportRepository.save(surveyReport)
+      .then(() => {
+        result.hasError = false;
+      })
+      .catch((e) => {
+        result.hasError = true;
+        result.message = e;
+      });
+  }
+
+  async getReports(body: GetReportDto): Promise<CreateReportResponseDto> {
+    let result: CreateReportResponseDto = {
+      scoringReport: [],
+      responseTimeReport: [],
+      error: {
+        message: "",
+        hasError: false,
+      },
+    };
+    //check User rights
+    let loginResult = await SurveyController.checkTrusteeLogin(body);
+
+    if (loginResult.hasError) {
+      result.error = loginResult;
+      return result;
+    }
+    const ReportRepository = await getConnection().getRepository(Report);
+    let report = await ReportRepository.find({
+      where: { SurveyId: body.surveyId },
+    });
+
+    result.scoringReport = report[0].scoringReport;
+    result.responseTimeReport = report[0].responseTimeReport;
+    return result;
+  }
   static async updateSurveyPrivacyBudget(
     surveyId: number,
     newPrivacyBudget: number
@@ -759,110 +813,118 @@ export class SurveyController {
         result.message = e;
       });
   }
-  async createReport(body: CreateReportDto): Promise<CreateReportResponseDto> {
-    let cost = 1;
-    let minBuckets = 4;
-    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+
+  static async createReport(survey: Survey): Promise<CreateReportResponseDto> {
     let result: CreateReportResponseDto = {
-      report: {
-        histogramData: [],
-      },
+      scoringReport: [],
+      responseTimeReport: [],
       error: {
         hasError: false,
         message: "no Error",
       },
     };
 
-    //check User rights
-    let loginResult = await SurveyController.checkTrusteeLogin(body);
-
-    if (loginResult.hasError) {
-      result.error = loginResult;
-      return result;
-    }
     let resultPrivate = result;
-
-    if (body.privacyBudget < cost) {
+    if (!(survey.privacyBudget > 0)) {
       resultPrivate.error = {
         message: "Not enough budget left on this survey!",
         hasError: true,
       };
       return resultPrivate;
-    } else {
-      let pController = new ParticipantController();
-      let participants = await pController.getParticipants(body.surveyId);
-
-      const dataset = newArrayView(participants.participants);
-
-      let [min, max, a, b] = [
-        Math.floor(participants.participants[0].scoring),
-        0,
-        0,
-        0,
-      ];
-
-      participants.participants.forEach((d) => {
-        if (d.finished) {
-          if (d.scoring < min) {
-            min = Math.floor(d.scoring);
-          } else if (d.scoring > max) {
-            max = Math.round(d.scoring);
-          }
-        }
-      });
-
-      let width = 1;
-      while ((max - min) / width < minBuckets) {
-        width = width / 2;
-      }
-      a = min;
-      b = a + width;
-
-      const bucketFunc = (view) => {
-        let bucketSize = 0;
-        let total = 0;
-
-        view.forEach((p) => {
-          if (a <= p.scoring && p.scoring < b) {
-            bucketSize += 1;
-          }
-          total += 1;
-        });
-        return (bucketSize * 100) / total;
-      };
-
-      const options = {
-        maxEpsilon: cost,
-        newShadowIterator: dataset.newShadowIterator,
-      };
-      let tempPrBucketSize: number[] = [];
-      let tempPrHistogram: CreateReportResponseDto = {
-        report: { histogramData: [] },
-        error: { hasError: false, message: "no Error" },
-      };
-
-      for (let i = 0; i < max - min; i += width) {
-        const getPrivateBucket = privatize(bucketFunc, options);
-        let value = (await getPrivateBucket(dataset)).result;
-        if (value < 0) {
-          tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
-        } else {
-          tempPrBucketSize.push(value);
-        }
-        tempPrHistogram.report.histogramData.push({
-          bucketName: a + ".." + b,
-          score: tempPrBucketSize[tempPrBucketSize.length - 1],
-        });
-        a += width;
-        b += width;
-      }
-      resultPrivate = tempPrHistogram;
     }
-    await SurveyController.updateSurveyPrivacyBudget(
-      body.surveyId,
-      body.privacyBudget - cost
+    //resultPrivate.scoringReport = await SurveyController.createScoringReport();
+    resultPrivate.scoringReport = await SurveyController.createScoringReport(
+      survey.id,
+      survey.privacyBudget / 2
     );
-    return resultPrivate;
+    resultPrivate.responseTimeReport = await SurveyController.createResponseTimeReport(/*survey.id,
+        survey.privacyBudget / 2*/);
+
+    await SurveyController.updateSurveyPrivacyBudget(survey.id, 0);
+
+    await SurveyController.saveReports(
+      survey.id,
+      resultPrivate.scoringReport,
+      resultPrivate.responseTimeReport
+    );
+  }
+
+  static async createScoringReport(
+    surveyId: number,
+    budget: number
+  ): Promise<HistogramData[]> {
+    let minBuckets = 4;
+    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+    let pController = new ParticipantController();
+    let participants = await pController.getParticipants(surveyId);
+
+    const dataset = newArrayView(participants.participants);
+
+    let [min, max, lowerBucketBound, upperBuckerBound] = [
+      Math.floor(participants.participants[0].scoring),
+      0,
+      0,
+      0,
+    ];
+
+    participants.participants.forEach((d) => {
+      if (d.finished) {
+        if (d.scoring < min) {
+          min = Math.floor(d.scoring);
+        } else if (d.scoring > max) {
+          max = Math.round(d.scoring);
+        }
+      }
+    });
+
+    let width = 1;
+    while ((max - min) / width < minBuckets) {
+      width = width / 2;
+    }
+    lowerBucketBound = min;
+    upperBuckerBound = lowerBucketBound + width;
+
+    const bucketFunc = (view) => {
+      let bucketSize = 0;
+      let total = 0;
+
+      view.forEach((p) => {
+        if (lowerBucketBound <= p.scoring && p.scoring < upperBuckerBound) {
+          bucketSize += 1;
+        }
+        total += 1;
+      });
+      return (bucketSize * 100) / total;
+    };
+
+    const options = {
+      maxEpsilon: budget,
+      newShadowIterator: dataset.newShadowIterator,
+    };
+    let tempPrBucketSize: number[] = [];
+    let tempPrScoringReport = [];
+
+    for (let i = 0; i < max - min; i += width) {
+      const getPrivateBucket = privatize(bucketFunc, options);
+      let value = (await getPrivateBucket(dataset)).result;
+      if (value < 0) {
+        tempPrBucketSize.push(cutToZero ? 0 : Math.abs(value));
+      } else {
+        tempPrBucketSize.push(value);
+      }
+      tempPrScoringReport.push({
+        bucketName: lowerBucketBound + ".." + upperBuckerBound,
+        score: tempPrBucketSize[tempPrBucketSize.length - 1],
+      });
+      lowerBucketBound += width;
+      upperBuckerBound += width;
+    }
+    return tempPrScoringReport;
+  }
+  static async createResponseTimeReport(/*surveyId: number, budget: number*/): Promise<
+    HistogramData[]
+  > {
+    return [];
   }
 
   async getProgress(
@@ -935,6 +997,8 @@ export class SurveyController {
         hasError: true,
       };
     });
+
+    await SurveyController.createReport(targetSurvey);
 
     return result;
   }

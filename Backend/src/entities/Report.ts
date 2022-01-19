@@ -19,8 +19,8 @@ export class Report extends BaseEntity {
   SurveyId: number = 0;
 
   @Column({ type: "json" })
-  scoringReport: HistogramData;
+  scoringReport: HistogramData[];
 
   @Column({ type: "json" })
-  responseTimeReport: HistogramData;
+  responseTimeReport: HistogramData[];
 }

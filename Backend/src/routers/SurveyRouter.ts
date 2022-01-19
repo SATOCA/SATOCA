@@ -4,10 +4,10 @@ import { AnswerSurveyDto } from "./dto/AnswerSurveyDto";
 import { ErrorDto } from "./dto/ErrorDto";
 import fileUpload from "express-fileupload";
 import { UploadSurveyFileDto } from "./dto/UploadSurveyFileDto";
-import { CreateReportDto } from "./dto/CreateReportDto";
 import { CloseSurveyDto } from "./dto/CloseSurveyDto";
 import { TrusteeDto } from "./dto/TrusteeDto";
 import { SurveyProgressDto } from "./dto/SurveyProgressDto";
+import { GetReportDto } from "./dto/GetReportDto";
 
 export class SurveyRouter {
   private _router = Router();
@@ -112,14 +112,12 @@ export class SurveyRouter {
     );
 
     this._router.post(
-      "/create-report",
+      "/get-reports",
       (req: Request, res: Response, next: NextFunction) => {
         try {
-          this._controller
-            .createReport(req.body as CreateReportDto)
-            .then((obj) => {
-              res.status(200).json(obj);
-            });
+          this._controller.getReports(req.body as GetReportDto).then((obj) => {
+            res.status(200).json(obj);
+          });
         } catch (error) {
           next(error);
         }
