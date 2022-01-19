@@ -22,24 +22,17 @@ import AreYouSureModal from "./AreYouSureModal/AreYouSureModal";
 import "./Reports.css";
 import { SurveyProgress } from "../../../../DataModel/dto/SurveyProgressResponseDto";
 
-export default function Reports(props: { password: string; login: string }) {
-  const initialValue: SurveyInfo[] = [
-    {
-      id: -1,
-      title: "",
-      itemSeverityBoundary: 0,
-      privacyBudget: 1.0,
-      isClosed: false,
-    },
-  ];
-
+export default function Reports(props: {
+  password: string;
+  login: string
+  surveyQuery: SurveyInfo[];
+}) {
   const [privateScoringData, setPrivateScoringData] = useState<HistogramData[]>(
     []
   );
   const [privateResponseTimeData, setprivateResponseTimeData] = useState<
     HistogramData[]
   >([]);
-  const [surveyQuery, setSurveyQuery] = useState(initialValue);
   const [surveyProgress, setSurveyProgress] = useState<SurveyProgress>({
     finished: 0,
     total: 0,
@@ -57,17 +50,7 @@ export default function Reports(props: { password: string; login: string }) {
   const [percentage, setPercentage] = useState(0);
   const surveyApi = SurveyApi.getInstance();
 
-  function updateSurveyDisplay() {
-    surveyApi
-      .getSurveys(props.login, props.password)
-      .then(async (response) => {
-        setSurveyQuery(response.surveys.sort((lhs, rhs) => lhs.id - rhs.id));
-      })
-      .catch((error: AxiosError) => {
-        setHasError(true);
-        setErrorMessage(error.message);
-      });
-
+  useEffect(() => {
     // only trigger Report creation, when Survey is selected
     if (selectedSurvey >= 0) {
       surveyApi
@@ -103,11 +86,13 @@ export default function Reports(props: { password: string; login: string }) {
           });
       }
     }
-  }
-
-  useEffect(() => {
-    updateSurveyDisplay();
-  }, [props.login, props.password, selectedSurvey, isSurveyClosed, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [
+      props.login,
+    props.password,
+    selectedSurvey,
+    isSurveyClosed,
+    surveyApi
+  ]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -119,7 +104,7 @@ export default function Reports(props: { password: string; login: string }) {
     setIsSurveyClosed(survey.isClosed);
   };
 
-  const dropDownElements = surveyQuery.map((survey) => (
+  const dropDownElements = props.surveyQuery.map((survey) => (
     <DropdownItem
       onClick={async () => {
         await setSurveyItem(survey);
@@ -196,7 +181,6 @@ export default function Reports(props: { password: string; login: string }) {
           setErrorMessage(response.error.message);
         } else {
           setIsSurveyClosed(true);
-          updateSurveyDisplay();
         }
       })
       .finally(() => setAreYouSureCloseSurvey(false));
