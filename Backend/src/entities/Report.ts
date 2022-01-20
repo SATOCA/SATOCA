@@ -18,9 +18,10 @@ export class Report extends BaseEntity {
   @JoinColumn()
   SurveyId: number = 0;
 
-  @Column({ type: "json" })
-  scoringReport: HistogramData;
+  //! \todo Json is not supported from Sqlite
+  // @Column({ type: "json" })
+  // scoringReport: HistogramData;
 
-  @Column({ type: "json" })
-  responseTimeReport: HistogramData;
+  // @Column({ type: "json" })
+  // responseTimeReport: HistogramData;
 }
