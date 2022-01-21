@@ -1,15 +1,6 @@
 import { HistogramData } from "../../../../../DataModel/dto/CreateReportResponseDto";
 import React, { useState } from "react";
-import {
-  Button,
-  Container,
-  Nav,
-  NavItem,
-  NavLink,
-  TabContent,
-  TabPane,
-} from "reactstrap";
-import classnames from "classnames";
+import { Button, Container } from "reactstrap";
 import { ExportToCsv } from "export-to-csv";
 import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressResponseDto";
 import reportChart from "./ReportChart";
@@ -20,7 +11,6 @@ export default function DisplayReport(props: {
   surveyTitle: string;
   surveyProgress: SurveyProgress;
 }) {
-  const [activeTab, setActiveTab] = useState("1");
   const [csvExporter] = useState(
     new ExportToCsv({
       fieldSeparator: ";",
@@ -33,10 +23,6 @@ export default function DisplayReport(props: {
       useBom: true,
     })
   );
-
-  const toggle = (tab: string) => {
-    if (activeTab !== tab) setActiveTab(tab);
-  };
 
   const exportScoringReport = (data: HistogramData[]) => {
     csvExporter.options.title = `Scoring_Report:; ${props.surveyTitle}; ${
@@ -64,62 +50,37 @@ export default function DisplayReport(props: {
 
   return (
     <Container className="glass-card-content" fluid="lg">
-      <Nav tabs>
-        <NavItem>
-          <NavLink
-            className={classnames({ active: activeTab === "1" })}
-            onClick={() => {
-              toggle("1");
-            }}
-          >
-            Participant Scoring
-          </NavLink>
-        </NavItem>
-        <NavItem>
-          <NavLink
-            className={classnames({ active: activeTab === "2" })}
-            onClick={() => {
-              toggle("2");
-            }}
-          >
-            Average Response Time
-          </NavLink>
-        </NavItem>
-      </Nav>
-      <TabContent activeTab={activeTab}>
-        <TabPane tabId="1">
-          {reportChart(props.scoringReport)}
-          {props.scoringReport !== undefined &&
-          props.scoringReport.length > 0 ? (
-            <Button
-              color="primary"
-              onClick={() => {
-                exportScoringReport(props.scoringReport);
-              }}
-            >
-              Download Report
-            </Button>
-          ) : (
-            <div />
-          )}
-        </TabPane>
-        <TabPane tabId="2">
-          {reportChart(props.responseTimeReport)}
-          {props.responseTimeReport !== undefined &&
-          props.responseTimeReport.length > 0 ? (
-            <Button
-              color="primary"
-              onClick={() => {
-                exportResponseTimeReport(props.responseTimeReport);
-              }}
-            >
-              Download Report
-            </Button>
-          ) : (
-            <div />
-          )}
-        </TabPane>
-      </TabContent>
+      <h1>Participant Scoring</h1>
+
+      {reportChart(props.scoringReport)}
+      {props.scoringReport !== undefined && props.scoringReport.length > 0 ? (
+        <Button
+          color="primary"
+          onClick={() => {
+            exportScoringReport(props.scoringReport);
+          }}
+        >
+          Download Report
+        </Button>
+      ) : (
+        <div />
+      )}
+
+      <h1>Average Response Time</h1>
+      {reportChart(props.responseTimeReport)}
+      {props.responseTimeReport !== undefined &&
+      props.responseTimeReport.length > 0 ? (
+        <Button
+          color="primary"
+          onClick={() => {
+            exportResponseTimeReport(props.responseTimeReport);
+          }}
+        >
+          Download Report
+        </Button>
+      ) : (
+        <div />
+      )}
     </Container>
   );
 }
