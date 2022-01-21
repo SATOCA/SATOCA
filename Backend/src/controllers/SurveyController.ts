@@ -96,6 +96,20 @@ export function estimateAbilityEAP(answers: Array<0 | 1>, zeta: Array<Zeta>) {
   return num / nf;
 }
 
+function median(values: number[]) {
+  if (values.length === 0) throw new Error("No inputs");
+
+  values.sort(function (a, b) {
+    return a - b;
+  });
+
+  const half = Math.floor(values.length / 2);
+
+  if (values.length % 2) return values[half];
+
+  return (values[half - 1] + values[half]) / 2.0;
+}
+
 export class SurveyController {
   async getSurveys(): Promise<SurveyResponseDto> {
     const query = await getConnection().getRepository(Survey).find();
@@ -205,13 +219,12 @@ export class SurveyController {
       .getOne();
     //! \todo handle error case
 
-    if (targetParticipant.legalDisclaimerAccepted === true)
-    {
+    if (targetParticipant.legalDisclaimerAccepted === true) {
       const survey = await getConnection()
-          .getRepository(Survey)
-          .createQueryBuilder("survey")
-          .where("survey.id = :id", { id: surveyId })
-          .getOne();
+        .getRepository(Survey)
+        .createQueryBuilder("survey")
+        .where("survey.id = :id", { id: surveyId })
+        .getOne();
 
       let tracker = new TimeTracker();
       tracker.survey = survey;
@@ -261,12 +274,12 @@ export class SurveyController {
       .getOne();
 
     await getConnection()
-        .createQueryBuilder()
-        .update(TimeTracker)
-        .set({ stop: new Date(Date.now()) })
-        .where("question.id = :qid", { qid: question.id })
-        .andWhere("participant.id = :pid", { pid: participant.id })
-        .execute();
+      .createQueryBuilder()
+      .update(TimeTracker)
+      .set({ stop: new Date(Date.now()) })
+      .where("question.id = :qid", { qid: question.id })
+      .andWhere("participant.id = :pid", { pid: participant.id })
+      .execute();
 
     let result: ErrorDto = {
       message: "",
@@ -837,8 +850,10 @@ export class SurveyController {
       survey.id,
       survey.privacyBudget / 2
     );
-    resultPrivate.responseTimeReport = await SurveyController.createResponseTimeReport(/*survey.id,
-        survey.privacyBudget / 2*/);
+    resultPrivate.responseTimeReport = await SurveyController.createResponseTimeReport(
+      survey.id,
+      survey.privacyBudget / 2
+    );
 
     await SurveyController.updateSurveyPrivacyBudget(survey.id, 0);
 
@@ -921,9 +936,50 @@ export class SurveyController {
     }
     return tempPrScoringReport;
   }
-  static async createResponseTimeReport(/*surveyId: number, budget: number*/): Promise<
-    HistogramData[]
-  > {
+
+  static async createResponseTimeReport(
+    surveyId: number,
+    budget: number
+  ): Promise<HistogramData[]> {
+    let minBuckets = 4;
+    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+
+    const participants = await getConnection()
+      .getRepository(Participant)
+      .createQueryBuilder("participant")
+      .leftJoinAndSelect("participant.survey", "survey")
+      .leftJoinAndSelect("participant.timeTrackers", "timeTrackers")
+      .where("survey.id = :id", { id: surveyId })
+      .andWhere("participant.finished = true")
+      .getMany();
+
+    const medians = participants.map((participant) =>
+      median(
+        participant.timeTrackers.map(
+          (timeTracker) =>
+            timeTracker.stop.getTime() - timeTracker.start.getTime()
+        )
+      )
+    );
+
+    //todo error when medians empty!
+
+    let min: number = medians[0];
+    let max: number = 0;
+
+    medians.forEach((median) => {
+      if (median < min) {
+        min = median;
+      } else if (median > max) {
+        max = median;
+      }
+    });
+
+    let width = 1;
+    while ((max - min) / width < minBuckets) {
+      width = width / 2;
+    }
+
     return [];
   }
 
