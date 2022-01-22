@@ -845,7 +845,7 @@ export class SurveyController {
       };
       return resultPrivate;
     }
-    //resultPrivate.scoringReport = await SurveyController.createScoringReport();
+
     resultPrivate.scoringReport = await SurveyController.createScoringReport(
       survey.id,
       survey.privacyBudget / 2
@@ -928,7 +928,7 @@ export class SurveyController {
         tempPrBucketSize.push(value);
       }
       tempPrScoringReport.push({
-        bucketName: lowerBucketBound + ".." + upperBuckerBound,
+        bucketName: lowerBucketBound + " - " + upperBuckerBound,
         score: tempPrBucketSize[tempPrBucketSize.length - 1],
       });
       lowerBucketBound += width;
@@ -975,12 +975,54 @@ export class SurveyController {
       }
     });
 
-    let width = 1;
+    let width = 100000;
     while ((max - min) / width < minBuckets) {
       width = width / 2;
     }
 
-    return [];
+    const bucketCount = Math.floor((max - min) / width);
+
+    const absoluteBuckets: number[] = new Array(bucketCount);
+    absoluteBuckets.fill(0);
+
+    medians.forEach((median) => {
+      const bucketIndex = Math.floor((median - min) / width);
+      if (bucketIndex == bucketCount)
+        //make sure, that the max value doesn't result in a bucketIndex that is to high
+        absoluteBuckets[bucketCount - 1] += 1;
+      else absoluteBuckets[bucketIndex] += 1;
+    });
+
+    const total = medians.length;
+
+    const bucketFunc = (view) => {
+      let absoluteValue = 0;
+      view.forEach((p) => (absoluteValue = p));
+      return (absoluteValue * 100) / total;
+    };
+
+    const resultBuckets: HistogramData[] = [];
+
+    for (const absoluteBucket of absoluteBuckets) {
+      const index = absoluteBuckets.indexOf(absoluteBucket);
+      const tempArray = [absoluteBucket];
+      const absoluteBucketsDataSet = newArrayView(tempArray);
+
+      const options = {
+        maxEpsilon: budget,
+        newShadowIterator: absoluteBucketsDataSet.newShadowIterator,
+      };
+
+      const getPrivateBucket = privatize(bucketFunc, options);
+      let value = (await getPrivateBucket(absoluteBucketsDataSet)).result;
+
+      resultBuckets.push({
+        bucketName: index * width + " - " + (index + 1) * width,
+        score: value < 0 ? (cutToZero ? 0 : Math.abs(value)) : value,
+      });
+    }
+
+    return resultBuckets;
   }
 
   async getProgress(
