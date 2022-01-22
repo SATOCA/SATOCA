@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import { Button, Container } from "reactstrap";
 import { ExportToCsv } from "export-to-csv";
 import { SurveyProgress } from "../../../../../DataModel/dto/SurveyProgressResponseDto";
-import reportChart from "./ReportChart";
+import ReportChart from "./ReportChart";
+import BehaviorTooltip from "./Tooltips/BehaviorTooltip";
+import ScoringTooltip from "./Tooltips/ScoringTooltip";
 
 export default function DisplayReport(props: {
   scoringReport: HistogramData[];
@@ -52,7 +54,10 @@ export default function DisplayReport(props: {
     <Container className="glass-card-content" fluid="lg">
       <h1>Participant Scoring</h1>
 
-      {reportChart(props.scoringReport)}
+      <ReportChart
+          data={props.scoringReport}
+          xAxisLabel="Scoring"
+          tooltip={<ScoringTooltip />} />
       {props.scoringReport !== undefined && props.scoringReport.length > 0 ? (
         <Button
           color="primary"
@@ -67,7 +72,11 @@ export default function DisplayReport(props: {
       )}
 
       <h1>Average Response Time</h1>
-      {reportChart(props.responseTimeReport)}
+      <ReportChart
+        data={props.responseTimeReport}
+        xAxisLabel="Time needed [in ms]"
+        tooltip={<BehaviorTooltip />}
+      />
       {props.responseTimeReport !== undefined &&
       props.responseTimeReport.length > 0 ? (
         <Button
