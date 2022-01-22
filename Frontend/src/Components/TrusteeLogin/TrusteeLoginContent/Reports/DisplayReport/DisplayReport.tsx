@@ -57,7 +57,8 @@ export default function DisplayReport(props: {
       <ReportChart
           data={props.scoringReport}
           xAxisLabel="Scoring"
-          tooltip={<ScoringTooltip />} />
+          tooltip={<ScoringTooltip />}
+      />
       {props.scoringReport !== undefined && props.scoringReport.length > 0 ? (
         <Button
           color="primary"

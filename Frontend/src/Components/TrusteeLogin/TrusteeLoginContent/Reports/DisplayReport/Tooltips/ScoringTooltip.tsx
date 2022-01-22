@@ -17,10 +17,9 @@ export default function ScoringTooltip({
     return (
       <div className="custom-tooltip">
         <p className="tooltip-range">{`Range: ${label}`}</p>
-        <p className="tooltip-share">{`Share of participants: ${parsePercentage(
-          payload?.[0].value,
-          2
-        )}%`}</p>
+        <p className="tooltip-share">
+          {`Share of participants: ${parsePercentage(payload?.[0].value, 2)}%`}
+        </p>
       </div>
     );
   }
