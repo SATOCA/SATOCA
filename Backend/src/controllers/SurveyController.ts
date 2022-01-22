@@ -962,7 +962,8 @@ export class SurveyController {
       )
     );
 
-    //todo error when medians empty!
+    if(medians.length == 0)
+      return [];
 
     let min: number = medians[0];
     let max: number = 0;
