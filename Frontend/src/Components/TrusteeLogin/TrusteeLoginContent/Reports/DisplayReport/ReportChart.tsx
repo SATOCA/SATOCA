@@ -10,7 +10,6 @@ import {
   YAxis,
 } from "recharts";
 import "./ReportChart.css";
-import ScoringTooltip from "./Tooltips/ScoringTooltip";
 import React, { ReactElement } from "react";
 
 export default function ReportChart(props: {
