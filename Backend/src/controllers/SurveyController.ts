@@ -1008,13 +1008,13 @@ export class SurveyController {
     const resultBuckets: HistogramData[] = [];
     const absoluteBucketsDataSet = newArrayView(absoluteBuckets);
 
+    const options = {
+      maxEpsilon: budget,
+      newShadowIterator: absoluteBucketsDataSet.newShadowIterator,
+    };
+
     for (const absoluteBucket of absoluteBuckets) {
       currentIteratorIndex = absoluteBuckets.indexOf(absoluteBucket);
-
-      const options = {
-        maxEpsilon: budget,
-        newShadowIterator: absoluteBucketsDataSet.newShadowIterator,
-      };
 
       const getPrivateBucket = privatize(bucketFunc, options);
       let value = (await getPrivateBucket(absoluteBucketsDataSet)).result;
