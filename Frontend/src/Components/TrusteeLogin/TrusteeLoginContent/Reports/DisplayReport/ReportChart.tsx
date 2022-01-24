@@ -15,6 +15,7 @@ import React, { ReactElement } from "react";
 export default function ReportChart(props: {
   data: HistogramData[];
   xAxisLabel: string;
+  yAxisLabel: string;
   tooltip: ReactElement;
 }) {
   return (
@@ -42,7 +43,7 @@ export default function ReportChart(props: {
           />
           <YAxis
             label={{
-              value: "Ratio [in %] ",
+              value: props.yAxisLabel,
               dx: -5,
               angle: -90,
               position: "insideLeft",

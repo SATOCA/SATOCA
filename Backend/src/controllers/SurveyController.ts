@@ -801,6 +801,9 @@ export class SurveyController {
       where: { SurveyId: body.surveyId },
     });
 
+    if(report.length == 0)
+      return result;
+
     result.scoringReport = report[0].scoringReport;
     result.responseTimeReport = report[0].responseTimeReport;
     return result;
@@ -943,7 +946,6 @@ export class SurveyController {
   ): Promise<HistogramData[]> {
     let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
-    let width = 3000; //start-width
 
     const participants = await getConnection()
       .getRepository(Participant)
@@ -963,70 +965,43 @@ export class SurveyController {
       )
     );
 
-    if (medians.length == 0)
-      return [];
-
-    let min: number = medians[0];
-    let max: number = 0;
-
-    medians.forEach((median) => {
-      if (median < min) {
-        min = median;
-      } else if (median > max) {
-        max = median;
-      }
+    medians.sort(function(a, b) {
+      return a - b;
     });
 
-    while ((max - min) / width < minBuckets) {
-      width = width / 2;
-    }
-
-    const bucketCount = Math.floor((max - min) / width);
-
-    const absoluteBuckets: number[] = new Array(bucketCount);
-    absoluteBuckets.fill(0);
-
-    medians.forEach((median) => {
-      const bucketIndex = Math.floor((median - min) / width);
-      if (bucketIndex == bucketCount)
-        //make sure, that the max value doesn't result in a bucketIndex that is to high
-        absoluteBuckets[bucketCount - 1] += 1;
-      else absoluteBuckets[bucketIndex] += 1;
-    });
-
-    const total = medians.length;
     let currentIteratorIndex: number = 0;
 
-    const bucketFunc = (view) => {
-      let absoluteValue = 0;
-      view.forEach((absoluteBucket, index) => {
-        if (index == currentIteratorIndex) absoluteValue = absoluteBucket;
+    const barFunc = (view) => {
+      let value = 0;
+      view.forEach((iteratorValue, index) => {
+        if (index == currentIteratorIndex) value = iteratorValue;
       });
-      return (absoluteValue * 100) / total;
+      return value;
     };
 
     const resultBuckets: HistogramData[] = [];
-    const absoluteBucketsDataSet = newArrayView(absoluteBuckets);
+    const mediansDataSet = newArrayView(medians);
 
     const options = {
       maxEpsilon: budget,
-      newShadowIterator: absoluteBucketsDataSet.newShadowIterator,
+      newShadowIterator: mediansDataSet.newShadowIterator,
     };
 
-    for (const absoluteBucket of absoluteBuckets) {
-      currentIteratorIndex = absoluteBuckets.indexOf(absoluteBucket);
+    for (const median of medians) {
+      currentIteratorIndex = medians.indexOf(median);
 
-      const getPrivateBucket = privatize(bucketFunc, options);
-      let value = (await getPrivateBucket(absoluteBucketsDataSet)).result;
+      const getPrivateBucket = privatize(barFunc, options);
+      let value = (await getPrivateBucket(mediansDataSet)).result;
 
       resultBuckets.push({
-        bucketName:
-          currentIteratorIndex * width +
-          " - " +
-          (currentIteratorIndex + 1) * width,
+        bucketName: "",
         score: value < 0 ? (cutToZero ? 0 : Math.abs(value)) : value,
       });
     }
+
+    resultBuckets.sort(function(a, b) {
+      return a.score - b.score;
+    });
 
     return resultBuckets;
   }
