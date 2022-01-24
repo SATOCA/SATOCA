@@ -18,7 +18,7 @@ export default function BehaviorTooltip({
       <div className="custom-tooltip">
         <p className="tooltip-range">{`Range: ${label} ms`}</p>
         <p className="tooltip-share">
-          {`Share of participants: ${parsePercentage(payload, 2)}%`}
+          {`Share of participants: ${parsePercentage(payload?.[0].value, 2)}%`}
         </p>
       </div>
     );

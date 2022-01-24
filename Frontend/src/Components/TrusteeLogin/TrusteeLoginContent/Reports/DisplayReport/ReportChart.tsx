@@ -49,7 +49,7 @@ export default function ReportChart(props: {
               position: "insideLeft",
             }}
           />
-          <Tooltip content={<ScoringTooltip />} />
+          <Tooltip content={props.tooltip} />
           <ReferenceLine y={0} stroke="#000" />
           <Bar dataKey="score" fill="#0055a2" label="Test" />
         </BarChart>
