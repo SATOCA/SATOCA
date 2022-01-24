@@ -943,6 +943,7 @@ export class SurveyController {
   ): Promise<HistogramData[]> {
     let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+    let width = 3000; //start-width
 
     const participants = await getConnection()
       .getRepository(Participant)
@@ -962,7 +963,7 @@ export class SurveyController {
       )
     );
 
-    if(medians.length == 0)
+    if (medians.length == 0)
       return [];
 
     let min: number = medians[0];
@@ -976,7 +977,6 @@ export class SurveyController {
       }
     });
 
-    let width = 100000;
     while ((max - min) / width < minBuckets) {
       width = width / 2;
     }
@@ -995,19 +995,21 @@ export class SurveyController {
     });
 
     const total = medians.length;
+    let currentIteratorIndex: number = 0;
 
     const bucketFunc = (view) => {
       let absoluteValue = 0;
-      view.forEach((p) => (absoluteValue = p));
+      view.forEach((absoluteBucket, index) => {
+        if (index == currentIteratorIndex) absoluteValue = absoluteBucket;
+      });
       return (absoluteValue * 100) / total;
     };
 
     const resultBuckets: HistogramData[] = [];
+    const absoluteBucketsDataSet = newArrayView(absoluteBuckets);
 
     for (const absoluteBucket of absoluteBuckets) {
-      const index = absoluteBuckets.indexOf(absoluteBucket);
-      const tempArray = [absoluteBucket];
-      const absoluteBucketsDataSet = newArrayView(tempArray);
+      currentIteratorIndex = absoluteBuckets.indexOf(absoluteBucket);
 
       const options = {
         maxEpsilon: budget,
@@ -1018,7 +1020,10 @@ export class SurveyController {
       let value = (await getPrivateBucket(absoluteBucketsDataSet)).result;
 
       resultBuckets.push({
-        bucketName: index * width + " - " + (index + 1) * width,
+        bucketName:
+          currentIteratorIndex * width +
+          " - " +
+          (currentIteratorIndex + 1) * width,
         score: value < 0 ? (cutToZero ? 0 : Math.abs(value)) : value,
       });
     }
