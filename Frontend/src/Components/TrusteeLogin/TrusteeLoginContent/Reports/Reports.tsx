@@ -24,7 +24,7 @@ import { SurveyProgress } from "../../../../DataModel/dto/SurveyProgressResponse
 
 export default function Reports(props: {
   password: string;
-  login: string
+  login: string;
   surveyQuery: SurveyInfo[];
 }) {
   const [privateScoringData, setPrivateScoringData] = useState<HistogramData[]>(
@@ -86,13 +86,7 @@ export default function Reports(props: {
           });
       }
     }
-  }, [
-      props.login,
-    props.password,
-    selectedSurvey,
-    isSurveyClosed,
-    surveyApi
-  ]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [props.login, props.password, selectedSurvey, isSurveyClosed, surveyApi]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const setToggle = () => {
     toggleValue(!toggleState);
@@ -145,9 +139,9 @@ export default function Reports(props: {
   const surveyDisplay = () => {
     if (isSurveyClosed) {
       return (
-        <>
+        <Container>
           <Row>
-            <h3>Report</h3>
+            <h1>Report</h1>
           </Row>
           <Row>
             <Fade>
@@ -159,7 +153,7 @@ export default function Reports(props: {
               />
             </Fade>
           </Row>
-        </>
+        </Container>
       );
     }
   };
