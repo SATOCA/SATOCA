@@ -51,8 +51,8 @@ export default function DisplayReport(props: {
   };
 
   return (
-    <Container className="glass-card-content" fluid="lg">
-      <h1>Participant Scoring</h1>
+    <Container style={{ width: "85vw" }} fluid="lg">
+      <h2>Participant Scoring</h2>
 
       <ReportChart
         data={props.scoringReport}
@@ -67,13 +67,13 @@ export default function DisplayReport(props: {
             exportScoringReport(props.scoringReport);
           }}
         >
-          Download Report
+          Download Scoring Report
         </Button>
       ) : (
         <div />
       )}
-
-      <h1>Median Response Time per Question</h1>
+      <div style={{height: "25px"}} />
+      <h2>Median Response Time per Question</h2>
       <ReportChart
         data={props.responseTimeReport}
         xAxisLabel="Participant"
@@ -88,7 +88,7 @@ export default function DisplayReport(props: {
             exportResponseTimeReport(props.responseTimeReport);
           }}
         >
-          Download Report
+          Download Behavior Report
         </Button>
       ) : (
         <div />
