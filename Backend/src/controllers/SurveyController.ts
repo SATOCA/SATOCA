@@ -804,6 +804,9 @@ export class SurveyController {
       where: { SurveyId: body.surveyId },
     });
 
+    if(report.length == 0)
+      return result;
+
     result.scoringReport = report[0].scoringReport;
     result.responseTimeReport = report[0].responseTimeReport;
     return result;
@@ -878,7 +881,7 @@ export class SurveyController {
 
     const dataset = newArrayView(participants.participants);
 
-    let [min, max, lowerBucketBound, upperBuckerBound] = [
+    let [min, max, lowerBucketBound, upperBucketBound] = [
       Math.floor(participants.participants[0].scoring),
       0,
       0,
@@ -900,14 +903,14 @@ export class SurveyController {
       width = width / 2;
     }
     lowerBucketBound = min;
-    upperBuckerBound = lowerBucketBound + width;
+    upperBucketBound = lowerBucketBound + width;
 
     const bucketFunc = (view) => {
       let bucketSize = 0;
       let total = 0;
 
       view.forEach((p) => {
-        if (lowerBucketBound <= p.scoring && p.scoring < upperBuckerBound) {
+        if (lowerBucketBound <= p.scoring && p.scoring < upperBucketBound) {
           bucketSize += 1;
         }
         total += 1;
@@ -931,11 +934,11 @@ export class SurveyController {
         tempPrBucketSize.push(value);
       }
       tempPrScoringReport.push({
-        bucketName: lowerBucketBound + " - " + upperBuckerBound,
+        bucketName: lowerBucketBound + " - " + upperBucketBound,
         score: tempPrBucketSize[tempPrBucketSize.length - 1],
       });
       lowerBucketBound += width;
-      upperBuckerBound += width;
+      upperBucketBound += width;
     }
     return tempPrScoringReport;
   }
@@ -944,7 +947,6 @@ export class SurveyController {
     surveyId: number,
     budget: number
   ): Promise<HistogramData[]> {
-    let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
 
     const participants = await getConnection()
@@ -965,66 +967,43 @@ export class SurveyController {
       )
     );
 
-    if(medians.length == 0)
-      return [];
-
-    let min: number = medians[0];
-    let max: number = 0;
-
-    medians.forEach((median) => {
-      if (median < min) {
-        min = median;
-      } else if (median > max) {
-        max = median;
-      }
+    medians.sort(function(a, b) {
+      return a - b;
     });
 
-    let width = 100000;
-    while ((max - min) / width < minBuckets) {
-      width = width / 2;
-    }
+    let currentIteratorIndex: number = 0;
 
-    const bucketCount = Math.floor((max - min) / width);
-
-    const absoluteBuckets: number[] = new Array(bucketCount);
-    absoluteBuckets.fill(0);
-
-    medians.forEach((median) => {
-      const bucketIndex = Math.floor((median - min) / width);
-      if (bucketIndex == bucketCount)
-        //make sure, that the max value doesn't result in a bucketIndex that is to high
-        absoluteBuckets[bucketCount - 1] += 1;
-      else absoluteBuckets[bucketIndex] += 1;
-    });
-
-    const total = medians.length;
-
-    const bucketFunc = (view) => {
-      let absoluteValue = 0;
-      view.forEach((p) => (absoluteValue = p));
-      return (absoluteValue * 100) / total;
+    const barFunc = (view) => {
+      let value = 0;
+      view.forEach((iteratorValue, index) => {
+        if (index == currentIteratorIndex) value = iteratorValue;
+      });
+      return value;
     };
 
     const resultBuckets: HistogramData[] = [];
+    const mediansDataSet = newArrayView(medians);
 
-    for (const absoluteBucket of absoluteBuckets) {
-      const index = absoluteBuckets.indexOf(absoluteBucket);
-      const tempArray = [absoluteBucket];
-      const absoluteBucketsDataSet = newArrayView(tempArray);
+    const options = {
+      maxEpsilon: budget,
+      newShadowIterator: mediansDataSet.newShadowIterator,
+    };
 
-      const options = {
-        maxEpsilon: budget,
-        newShadowIterator: absoluteBucketsDataSet.newShadowIterator,
-      };
+    for (const median of medians) {
+      currentIteratorIndex = medians.indexOf(median);
 
-      const getPrivateBucket = privatize(bucketFunc, options);
-      let value = (await getPrivateBucket(absoluteBucketsDataSet)).result;
+      const getPrivateBucket = privatize(barFunc, options);
+      let value = (await getPrivateBucket(mediansDataSet)).result;
 
       resultBuckets.push({
-        bucketName: index * width + " - " + (index + 1) * width,
-        score: value < 0 ? (cutToZero ? 0 : Math.abs(value)) : value,
+        bucketName: "",
+        score: value < 0 ? (cutToZero ? 0 : Math.abs(value/1000)) : value/1000,
       });
     }
+
+    resultBuckets.sort(function(a, b) {
+      return a.score - b.score;
+    });
 
     return resultBuckets;
   }

@@ -10,12 +10,12 @@ import {
   YAxis,
 } from "recharts";
 import "./ReportChart.css";
-import ScoringTooltip from "./Tooltips/ScoringTooltip";
 import React, { ReactElement } from "react";
 
 export default function ReportChart(props: {
   data: HistogramData[];
   xAxisLabel: string;
+  yAxisLabel: string;
   tooltip: ReactElement;
 }) {
   return (
@@ -43,13 +43,13 @@ export default function ReportChart(props: {
           />
           <YAxis
             label={{
-              value: "Ratio [in %] ",
+              value: props.yAxisLabel,
               dx: -5,
               angle: -90,
               position: "insideLeft",
             }}
           />
-          <Tooltip content={<ScoringTooltip />} />
+          <Tooltip content={props.tooltip} />
           <ReferenceLine y={0} stroke="#000" />
           <Bar dataKey="score" fill="#0055a2" label="Test" />
         </BarChart>

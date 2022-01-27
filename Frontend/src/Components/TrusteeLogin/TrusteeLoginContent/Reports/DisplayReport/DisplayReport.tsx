@@ -55,9 +55,10 @@ export default function DisplayReport(props: {
       <h1>Participant Scoring</h1>
 
       <ReportChart
-          data={props.scoringReport}
-          xAxisLabel="Scoring"
-          tooltip={<ScoringTooltip />}
+        data={props.scoringReport}
+        xAxisLabel="Scoring"
+        yAxisLabel="Ratio [in %] "
+        tooltip={<ScoringTooltip />}
       />
       {props.scoringReport !== undefined && props.scoringReport.length > 0 ? (
         <Button
@@ -72,10 +73,11 @@ export default function DisplayReport(props: {
         <div />
       )}
 
-      <h1>Average Response Time</h1>
+      <h1>Median Response Time per Question</h1>
       <ReportChart
         data={props.responseTimeReport}
-        xAxisLabel="Time needed [in ms]"
+        xAxisLabel="Participant"
+        yAxisLabel="Time needed [s]"
         tooltip={<BehaviorTooltip />}
       />
       {props.responseTimeReport !== undefined &&
