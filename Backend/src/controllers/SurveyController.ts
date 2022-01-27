@@ -920,7 +920,7 @@ export class SurveyController {
 
     const options = {
       maxEpsilon: budget,
-      newShadowIterator: dataset.newShadowIterator,
+      newShadowIterator: dataset.newShadowIterator
     };
     let tempPrBucketSize: number[] = [];
     let tempPrScoringReport = [];
@@ -947,7 +947,7 @@ export class SurveyController {
     surveyId: number,
     budget: number
   ): Promise<HistogramData[]> {
-    let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
+    let cutToZero = false; // if true, privatize returns zero when output is negative, else absolute value
 
     const participants = await getConnection()
       .getRepository(Participant)
@@ -958,39 +958,31 @@ export class SurveyController {
       .andWhere("participant.finished = true")
       .getMany();
 
-    const medians = participants.map((participant) =>
-      median(
-        participant.timeTrackers.map(
-          (timeTracker) =>
-            timeTracker.stop.getTime() - timeTracker.start.getTime()
-        )
-      )
-    );
-
-    medians.sort(function(a, b) {
-      return a - b;
-    });
-
     let currentIteratorIndex: number = 0;
 
     const barFunc = (view) => {
       let value = 0;
-      view.forEach((iteratorValue, index) => {
-        if (index == currentIteratorIndex) value = iteratorValue;
+      view.forEach((iteratorValue: Participant, index: number) => {
+        if(currentIteratorIndex == index){
+          value = median(iteratorValue.timeTrackers.map(
+              (timeTracker) =>
+                  timeTracker.stop.getTime() - timeTracker.start.getTime()
+          ))
+        }
       });
       return value;
     };
 
     const resultBuckets: HistogramData[] = [];
-    const mediansDataSet = newArrayView(medians);
+    const mediansDataSet = newArrayView(participants);
 
     const options = {
       maxEpsilon: budget,
-      newShadowIterator: mediansDataSet.newShadowIterator,
+      newShadowIterator: mediansDataSet.newShadowIterator
     };
 
-    for (const median of medians) {
-      currentIteratorIndex = medians.indexOf(median);
+    for (const participant of participants) {
+      currentIteratorIndex = participants.indexOf(participant);
 
       const getPrivateBucket = privatize(barFunc, options);
       let value = (await getPrivateBucket(mediansDataSet)).result;
