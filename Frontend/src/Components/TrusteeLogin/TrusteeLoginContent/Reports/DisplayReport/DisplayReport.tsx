@@ -77,7 +77,7 @@ export default function DisplayReport(props: {
       <ReportChart
         data={props.responseTimeReport}
         xAxisLabel="Participant"
-        yAxisLabel="Time needed [ms]"
+        yAxisLabel="Time needed [s]"
         tooltip={<BehaviorTooltip />}
       />
       {props.responseTimeReport !== undefined &&

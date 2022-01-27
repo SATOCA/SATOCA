@@ -878,7 +878,7 @@ export class SurveyController {
 
     const dataset = newArrayView(participants.participants);
 
-    let [min, max, lowerBucketBound, upperBuckerBound] = [
+    let [min, max, lowerBucketBound, upperBucketBound] = [
       Math.floor(participants.participants[0].scoring),
       0,
       0,
@@ -900,14 +900,14 @@ export class SurveyController {
       width = width / 2;
     }
     lowerBucketBound = min;
-    upperBuckerBound = lowerBucketBound + width;
+    upperBucketBound = lowerBucketBound + width;
 
     const bucketFunc = (view) => {
       let bucketSize = 0;
       let total = 0;
 
       view.forEach((p) => {
-        if (lowerBucketBound <= p.scoring && p.scoring < upperBuckerBound) {
+        if (lowerBucketBound <= p.scoring && p.scoring < upperBucketBound) {
           bucketSize += 1;
         }
         total += 1;
@@ -931,11 +931,11 @@ export class SurveyController {
         tempPrBucketSize.push(value);
       }
       tempPrScoringReport.push({
-        bucketName: lowerBucketBound + " - " + upperBuckerBound,
+        bucketName: lowerBucketBound + " - " + upperBucketBound,
         score: tempPrBucketSize[tempPrBucketSize.length - 1],
       });
       lowerBucketBound += width;
-      upperBuckerBound += width;
+      upperBucketBound += width;
     }
     return tempPrScoringReport;
   }
@@ -944,7 +944,6 @@ export class SurveyController {
     surveyId: number,
     budget: number
   ): Promise<HistogramData[]> {
-    let minBuckets = 4;
     let cutToZero = true; // if true, privatize returns zero when output is negative, else absolute value
 
     const participants = await getConnection()
@@ -995,7 +994,7 @@ export class SurveyController {
 
       resultBuckets.push({
         bucketName: "",
-        score: value < 0 ? (cutToZero ? 0 : Math.abs(value)) : value,
+        score: value < 0 ? (cutToZero ? 0 : Math.abs(value/1000)) : value/1000,
       });
     }
 

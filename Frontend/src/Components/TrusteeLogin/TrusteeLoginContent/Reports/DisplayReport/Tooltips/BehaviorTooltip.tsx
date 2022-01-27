@@ -17,7 +17,7 @@ export default function BehaviorTooltip({
     return (
       <div className="custom-tooltip">
         <p className="tooltip-share">
-          {`Median time per question: ${parsePercentage(payload?.[0].value, 2)} ms`}
+          {`Median time per question: ${parsePercentage(payload?.[0].value, 2)} s`}
         </p>
       </div>
     );
