@@ -62,8 +62,7 @@ export function itemResponseFunction(
   c: number,
   theta: number
 ): number {
-  //  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
-  return c + (1 - c) / (1 + Math.exp(a * (theta - b)));
+  return c + (1 - c) / (1 + Math.exp(-a * (theta - b)));
 }
 
 export type Zeta = { a: number; b: number; c: number };
@@ -353,10 +352,14 @@ export class SurveyController {
       };
       return currentZeta;
     });
+    console.log(zeta)
     const responseVector = finishedQuestions.map((fq) => {
-      // only one anwers is submitted, therefore select the first one
+      // only one answer is submitted, therefore select the first one
+      console.log(fq)
       return fq.givenAnswers[0].correct ? 1 : 0;
     });
+    console.log(responseVector)
+
     const ability = estimateAbilityEAP(responseVector, zeta);
 
     // update Participant
@@ -665,8 +668,8 @@ export class SurveyController {
 
     const answersRepository = await getConnection().getRepository(Answer);
 
-    for (let i = 0; i < answers.length; i++) {
-      const element = answers[i];
+    for (let i = 1; i < answers.length + 1; i++) {
+      const element = answers[i - 1];
 
       if (element === undefined) continue;
 
@@ -677,7 +680,7 @@ export class SurveyController {
 
       answersRepository.save(answer).catch((e) => {
         error = {
-          message: error.message + "\n Error at answer (" + i + "): " + e,
+          message: error.message + "\n Error at answer (" + (i - 1) + "): " + e,
           hasError: true,
         };
       });
