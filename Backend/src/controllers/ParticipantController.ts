@@ -6,7 +6,7 @@ import { ParticipantResponseDto } from "../routers/dto/ParticipantResponseDto";
 import { v4 as uuidv4 } from "uuid";
 import { Question } from "../entities/Question";
 import { QuestionController } from "./QuestionController";
-import { itemResponseFunction } from "./SurveyController";
+import {itemResponseFunction} from "./SurveyController";
 
 export class ParticipantController {
   //todo export user links
@@ -170,9 +170,11 @@ export class ParticipantController {
 
     let itemSeverityBoundary = bestNextQuestion.survey.itemSeverityBoundary;
 
+    console.log(probability);
+
     return (
       probability < 1 - itemSeverityBoundary &&
-      probability > itemSeverityBoundary
+      probability > itemSeverityBoundary + guessingRate
     );
   }
 
