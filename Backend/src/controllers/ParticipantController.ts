@@ -9,7 +9,7 @@ import { QuestionController } from "./QuestionController";
 import { itemResponseFunction } from "./SurveyController";
 
 export class ParticipantController {
-  //todo export user links
+
   async addParticipants(surveyId: number, numberOfParticipants: number) {
     // todo errorhandling
 
@@ -110,10 +110,8 @@ export class ParticipantController {
       id: progressQuery.id,
     });
 
-    // todo: replace answered currentQuestion with the next/following question -> get from adaption logic
     let qController = new QuestionController();
-
-    // TODO: rename
+    
     targetUser.scoring = ability;
 
     let bestNextQuestion = await qController.getNextQuestion(
@@ -166,13 +164,20 @@ export class ParticipantController {
 
     let difficulty = bestNextQuestion.difficulty;
 
-    let probability = itemResponseFunction(slope, difficulty, guessingRate, ability);
+    let probability = itemResponseFunction(
+      slope,
+      difficulty,
+      guessingRate,
+      ability
+    );
 
     let itemSeverityBoundary = bestNextQuestion.survey.itemSeverityBoundary;
 
+    console.log(probability);
+
     return (
       probability < 1 - itemSeverityBoundary &&
-      probability > itemSeverityBoundary
+      probability > itemSeverityBoundary + guessingRate
     );
   }
 
