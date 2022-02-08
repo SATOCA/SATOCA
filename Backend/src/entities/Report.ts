@@ -7,7 +7,6 @@ import {
   JoinColumn,
 } from "typeorm";
 import { Survey } from "./Survey";
-import { HistogramData } from "../routers/dto/CreateReportResponseDto";
 
 @Entity()
 export class Report extends BaseEntity {
@@ -18,9 +17,9 @@ export class Report extends BaseEntity {
   @JoinColumn()
   SurveyId: number = 0;
 
-  @Column({ type: "json" })
-  scoringReport: HistogramData[];
+  @Column()
+  scoringReport: string;
 
-  @Column({ type: "json" })
-  responseTimeReport: HistogramData[];
+  @Column()
+  responseTimeReport: string;
 }

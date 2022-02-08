@@ -352,13 +352,13 @@ export class SurveyController {
       };
       return currentZeta;
     });
-    console.log(zeta)
+    console.log(zeta);
     const responseVector = finishedQuestions.map((fq) => {
       // only one answer is submitted, therefore select the first one
-      console.log(fq)
+      console.log(fq);
       return fq.givenAnswers[0].correct ? 1 : 0;
     });
-    console.log(responseVector)
+    console.log(responseVector);
 
     const ability = estimateAbilityEAP(responseVector, zeta);
 
@@ -770,8 +770,8 @@ export class SurveyController {
     };
     let surveyReport = new Report();
     surveyReport.SurveyId = surveyId;
-    surveyReport.scoringReport = scoring;
-    surveyReport.responseTimeReport = responseTime;
+    surveyReport.scoringReport = JSON.stringify(scoring);
+    surveyReport.responseTimeReport = JSON.stringify(responseTime);
 
     await ReportRepository.save(surveyReport)
       .then(() => {
@@ -804,11 +804,10 @@ export class SurveyController {
       where: { SurveyId: body.surveyId },
     });
 
-    if(report.length == 0)
-      return result;
+    if (report.length == 0) return result;
 
-    result.scoringReport = report[0].scoringReport;
-    result.responseTimeReport = report[0].responseTimeReport;
+    result.scoringReport = JSON.parse(report[0].scoringReport);
+    result.responseTimeReport = JSON.parse(report[0].responseTimeReport);
     return result;
   }
   static async updateSurveyPrivacyBudget(
@@ -883,7 +882,7 @@ export class SurveyController {
 
     let [min, max, lowerBucketBound, upperBucketBound] = [
       Math.floor(participants.participants[0].scoring),
-      0,
+      Number.MIN_VALUE,
       0,
       0,
     ];
@@ -920,7 +919,7 @@ export class SurveyController {
 
     const options = {
       maxEpsilon: budget,
-      newShadowIterator: dataset.newShadowIterator
+      newShadowIterator: dataset.newShadowIterator,
     };
     let tempPrBucketSize: number[] = [];
     let tempPrScoringReport = [];
@@ -963,11 +962,13 @@ export class SurveyController {
     const barFunc = (view) => {
       let value = 0;
       view.forEach((iteratorValue: Participant, index: number) => {
-        if(currentIteratorIndex == index){
-          value = median(iteratorValue.timeTrackers.map(
+        if (currentIteratorIndex == index) {
+          value = median(
+            iteratorValue.timeTrackers.map(
               (timeTracker) =>
-                  timeTracker.stop.getTime() - timeTracker.start.getTime()
-          ))
+                timeTracker.stop.getTime() - timeTracker.start.getTime()
+            )
+          );
         }
       });
       return value;
@@ -978,7 +979,7 @@ export class SurveyController {
 
     const options = {
       maxEpsilon: budget,
-      newShadowIterator: mediansDataSet.newShadowIterator
+      newShadowIterator: mediansDataSet.newShadowIterator,
     };
 
     for (const participant of participants) {
@@ -989,11 +990,12 @@ export class SurveyController {
 
       resultBuckets.push({
         bucketName: "",
-        score: value < 0 ? (cutToZero ? 0 : Math.abs(value/1000)) : value/1000,
+        score:
+          value < 0 ? (cutToZero ? 0 : Math.abs(value / 1000)) : value / 1000,
       });
     }
 
-    resultBuckets.sort(function(a, b) {
+    resultBuckets.sort(function (a, b) {
       return a.score - b.score;
     });
 
