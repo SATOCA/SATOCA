@@ -26,3 +26,7 @@ To run the frontend follow:
 
 To run the backend locally follow:
 [Backend](Backend/HowToBackend.md)
+
+## Pitch video (in German)
+
+[![]](https://user-images.githubusercontent.com/20556511/154804407-b45fc356-78a1-48ab-a435-3af3092edecf.mp4)
